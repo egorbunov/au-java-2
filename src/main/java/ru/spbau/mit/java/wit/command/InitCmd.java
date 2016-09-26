@@ -8,10 +8,10 @@ import io.airlift.airline.Command;
  * Email: egor-mailbox@ya.com
  */
 
-@Command(name = "log", description = "List current branch commits")
-public class Log implements Runnable {
+@Command(name = "init", description = "initializes empty wit repository")
+public class InitCmd implements Runnable {
     @Override
     public void run() {
-        System.out.println("LOG; IMPLEMENT ME");
+        System.out.println("INIT; Implement me");
     }
 }

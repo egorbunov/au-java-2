@@ -1,6 +1,5 @@
 package ru.spbau.mit.java.wit.model;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -10,18 +9,31 @@ import java.util.List;
  */
 
 public class Commit {
-    public final List<Id> parentCommitsIds;
-    public final Id dirTreeId;
-    public final String msg;
+    private List<ShaId> parentCommitsIds;
+    private ShaId dirTreeId;
+    private String msg;
 
-    /**
-     * @param parentCommitsIds parent commits ids
-     * @param dirTreeId id of tree entry (SnapshotTree)
-     * @param msg commit message
-     */
-    public Commit(List<Id> parentCommitsIds, Id dirTreeId, String msg) {
-        this.parentCommitsIds = Collections.unmodifiableList(parentCommitsIds);
+    public List<ShaId> getParentCommitsIds() {
+        return parentCommitsIds;
+    }
+
+    public void setParentCommitsIds(List<ShaId> parentCommitsIds) {
+        this.parentCommitsIds = parentCommitsIds;
+    }
+
+    public ShaId getDirTreeId() {
+        return dirTreeId;
+    }
+
+    public void setDirTreeId(ShaId dirTreeId) {
         this.dirTreeId = dirTreeId;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
         this.msg = msg;
     }
 }

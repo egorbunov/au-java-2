@@ -8,10 +8,10 @@ import io.airlift.airline.Command;
  * Email: egor-mailbox@ya.com
  */
 
-@Command(name = "help", description = "Print help")
-public class Help implements Runnable {
+@Command(name = "add", description = "AddCmd files to be managed by vcs")
+public class AddCmd implements Runnable {
     @Override
     public void run() {
-        System.out.println("HELP; IMPLEMENT ME");
+        System.out.println("ADD");
     }
 }

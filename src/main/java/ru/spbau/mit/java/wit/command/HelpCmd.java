@@ -8,10 +8,10 @@ import io.airlift.airline.Command;
  * Email: egor-mailbox@ya.com
  */
 
-@Command(name = "branch", description = "Create new branch starting and current commit")
-public class Branch implements Runnable {
+@Command(name = "help", description = "Print help")
+public class HelpCmd implements Runnable {
     @Override
     public void run() {
-        System.out.println("BRANCH; IMPLEMENT ME");
+        System.out.println("HELP; IMPLEMENT ME");
     }
 }

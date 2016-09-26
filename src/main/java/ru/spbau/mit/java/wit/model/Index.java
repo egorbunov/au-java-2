@@ -11,12 +11,12 @@ import java.util.*;
 
 public class Index {
     public static class Entry {
-        final Id blobId;
+        final ShaId blobId;
         final Date modificationDate;
         final String fileName;
         final boolean isCommited;
 
-        private Entry(Id blobId,
+        private Entry(ShaId blobId,
                       Date modificationDate,
                       String fileName,
                       boolean isCommited) {
@@ -41,11 +41,7 @@ public class Index {
         }
     }
 
-    private Set<Entry> entries;
-
-    public Index() {
-        entries = new HashSet<>();
-    }
+    private Set<Entry> entries = new HashSet<>();
 
     boolean addEntry(Entry entry) {
         return entries.add(entry);

@@ -8,10 +8,10 @@ import io.airlift.airline.Command;
  * Email: egor-mailbox@ya.com
  */
 
-@Command(name = "checkout", description = "Switch to branch or revision")
-public class Checkout implements Runnable {
+@Command(name = "merge", description = "MergeCmd some branch to currently active")
+public class MergeCmd implements Runnable {
     @Override
     public void run() {
-        System.out.println("CHECKOUT; IMPLEMENT ME");
+        System.out.println("MERGE; IMPLEMENT ME");
     }
 }

@@ -5,10 +5,10 @@ package ru.spbau.mit.java.wit.model;
  * Date: 9/26/16
  * Email: egor-mailbox@ya.com
  */
-public class Id {
+public class ShaId {
     public final String sha;
 
-    public Id(String sha) {
+    public ShaId(String sha) {
         this.sha = sha;
     }
 

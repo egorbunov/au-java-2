@@ -16,21 +16,21 @@ import java.util.Set;
  */
 public class SnapshotTree {
     /**
-     * Id -> FileName
-     * Id is blob id -- id of file, where contents are stored
+     * ShaId -> FileName
+     * ShaId is blob id -- id of file, where contents are stored
      * FileName is name of the file, witch contents are stored in that blob
      */
-    private Map<Id, String> files;
+    private Map<ShaId, String> files;
 
-    public Set<Id> getBlobIds() {
+    public Set<ShaId> getBlobIds() {
         return Collections.unmodifiableSet(files.keySet());
     }
 
-    public String getFileNameByBlobId(Id id) {
+    public String getFileNameByBlobId(ShaId id) {
         return files.get(id);
     }
 
-    public boolean putFile(Id blobId, String fileName) {
+    public boolean putFile(ShaId blobId, String fileName) {
         if (files.containsKey(blobId)) {
             return false;
         }

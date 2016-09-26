@@ -13,16 +13,16 @@ public class Wit {
         @SuppressWarnings("unchecked")
         Cli.CliBuilder<Runnable> builder = Cli.<Runnable>builder("wit")
                 .withDescription("Dead simple VCS")
-                .withDefaultCommand(Help.class)
+                .withDefaultCommand(HelpCmd.class)
                 .withCommands(
-                        Help.class,
-                        Add.class,
-                        Checkout.class,
-                        Branch.class,
-                        Commit.class,
-                        Init.class,
-                        Log.class,
-                        Merge.class
+                        HelpCmd.class,
+                        AddCmd.class,
+                        CheckoutCmd.class,
+                        BranchCmd.class,
+                        CommitCmd.class,
+                        InitCmd.class,
+                        LogCmd.class,
+                        MergeCmd.class
                 );
         Cli<Runnable> parser = builder.build();
         parser.parse(args).run();
