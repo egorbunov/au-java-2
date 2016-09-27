@@ -8,7 +8,7 @@ package ru.spbau.mit.java.wit.model;
 public class ShaId {
     public static ShaId EmptyId = new ShaId("");
 
-    public final String sha;
+    private final String sha;
 
     public ShaId(String sha) {
         this.sha = sha;
@@ -17,5 +17,10 @@ public class ShaId {
     @Override
     public int hashCode() {
         return sha.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return sha;
     }
 }

@@ -11,23 +11,27 @@ import java.util.List;
  */
 
 public class Log {
-    public class Entry {
+    public static class Entry {
         public final ShaId commitId;
-        public final String branch;
+        public final String msg;
 
-        public Entry(ShaId commitId, String branch) {
+        public Entry(ShaId commitId, String msg) {
             this.commitId = commitId;
-            this.branch = branch;
+            this.msg = msg;
         }
     }
 
-    ArrayList<Entry> log;
-
-    void add(Entry entry) {
-        log.add(entry);
+    public Log(String branchName) {
+        this.branchName = branchName;
     }
 
-    List<Entry> getEntries() {
+    private ArrayList<Entry> log;
+    private final String branchName;
+
+    public void add(Entry entry) {
+        log.add(entry);
+    }
+    public List<Entry> getEntries() {
         return Collections.unmodifiableList(log);
     }
 }

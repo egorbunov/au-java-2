@@ -86,6 +86,5 @@ public class CheckoutCmd implements Runnable {
 
         // replacing index
         IndexStorage.writeIndex(newIndex);
-
     }
 }

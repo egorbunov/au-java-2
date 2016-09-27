@@ -2,6 +2,10 @@ package ru.spbau.mit.java.wit.command;
 
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
+import ru.spbau.mit.java.wit.model.Log;
+import ru.spbau.mit.java.wit.storage.BranchStorage;
+import ru.spbau.mit.java.wit.storage.LogStorage;
+import ru.spbau.mit.java.wit.storage.WitRepo;
 
 /**
  * Created by: Egor Gorbunov
@@ -16,6 +20,19 @@ public class LogCmd implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("LOG; IMPLEMENT ME");
+        if (WitRepo.findRepositoryRoot() == null) {
+            System.err.println("Error: You are not under WIT repository");
+            return;
+        }
+
+        if (branchName.isEmpty()) {
+            branchName = BranchStorage.readCurBranchName();
+        }
+
+        Log log = LogStorage.readLog(branchName);
+
+        for (Log.Entry e : log.getEntries()) {
+            System.out.println(e.commitId + " | " + e.msg);
+        }
     }
 }
