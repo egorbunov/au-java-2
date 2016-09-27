@@ -11,7 +11,7 @@ public class BranchStorage {
     private BranchStorage() {}
 
     public static void write(Branch b) {
-        
+
     }
 
     public static Branch read(String branchName) {
