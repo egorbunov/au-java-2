@@ -1,6 +1,5 @@
 package ru.spbau.mit.java.wit.storage;
 
-import ru.spbau.mit.java.wit.model.Branch;
 import ru.spbau.mit.java.wit.model.Log;
 
 /**
@@ -9,11 +8,13 @@ import ru.spbau.mit.java.wit.model.Log;
  * Email: egor-mailbox@ya.com
  */
 public class LogStorage {
-    void write(Log log) {
+    private LogStorage() {}
+
+    public static void write(Log log) {
 
     }
 
-    Log readLog(String branchName) {
+    public static Log readLog(String branchName) {
         return null;
     }
 }

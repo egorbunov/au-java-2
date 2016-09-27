@@ -3,27 +3,25 @@ package ru.spbau.mit.java.wit.model;
 
 import java.util.*;
 
-/**
- * Created by: Egor Gorbunov
- * Date: 9/26/16
- * Email: egor-mailbox@ya.com
- */
 
+/**
+ * Represents current repository state
+ */
 public class Index {
     public static class Entry {
-        final ShaId blobId;
-        final Date modificationDate;
-        final String fileName;
-        final boolean isCommited;
+        public final String fileName;
+        public final ShaId lastCommitedBlobId;
+        public final ShaId curBlobId;
+        public final long lastModified;
 
-        private Entry(ShaId blobId,
-                      Date modificationDate,
+        public Entry(ShaId blobId,
+                      long lastModified,
                       String fileName,
-                      boolean isCommited) {
-            this.blobId = blobId;
-            this.modificationDate = modificationDate;
+                      ShaId lastCommitedBlobId) {
+            this.curBlobId = blobId;
+            this.lastModified = lastModified;
             this.fileName = fileName;
-            this.isCommited = isCommited;
+            this.lastCommitedBlobId = lastCommitedBlobId;
         }
 
         @Override
@@ -42,12 +40,26 @@ public class Index {
     }
 
     private Set<Entry> entries = new HashSet<>();
+    private Map<String, Entry> entriesByFileName= new HashMap<>();
 
-    boolean addEntry(Entry entry) {
-        return entries.add(entry);
+    public boolean addEntry(Entry entry) {
+        if (entries.contains(entry)) {
+            return false;
+        }
+        entries.add(entry);
+        entriesByFileName.put(entry.fileName, entry);
+        return true;
     }
 
-    Collection<Entry> getEntries() {
+    public boolean removeEntry(Entry entry) {
+        return entries.remove(entry);
+    }
+
+    public Collection<Entry> getEntries() {
         return Collections.unmodifiableCollection(entries);
+    }
+
+    public Entry getEntry(String filename) {
+        return entriesByFileName.get(filename);
     }
 }

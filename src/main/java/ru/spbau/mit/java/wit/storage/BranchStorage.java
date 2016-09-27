@@ -8,19 +8,20 @@ import ru.spbau.mit.java.wit.model.Branch;
  * Email: egor-mailbox@ya.com
  */
 public class BranchStorage {
-    void write(Branch b) {
+    private BranchStorage() {}
+
+    public static void write(Branch b) {
 
     }
 
-    Branch read(String branchName) {
+    public static Branch read(String branchName) {
         return null;
     }
 
-    void writeBranchAsCurrent(String branchName) {
-
+    public static void writeBranchAsCurrent(String branchName) {
     }
 
-    String readCurBranchName() {
+    public static String readCurBranchName() {
         return null;
     }
 }

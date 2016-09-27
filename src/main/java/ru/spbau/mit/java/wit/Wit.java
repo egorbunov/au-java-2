@@ -1,6 +1,7 @@
 package ru.spbau.mit.java.wit;
 
 import io.airlift.airline.Cli;
+import io.airlift.airline.Help;
 import ru.spbau.mit.java.wit.command.*;
 
 /**
@@ -13,9 +14,9 @@ public class Wit {
         @SuppressWarnings("unchecked")
         Cli.CliBuilder<Runnable> builder = Cli.<Runnable>builder("wit")
                 .withDescription("Dead simple VCS")
-                .withDefaultCommand(HelpCmd.class)
+                .withDefaultCommand(Help.class)
                 .withCommands(
-                        HelpCmd.class,
+                        Help.class,
                         AddCmd.class,
                         CheckoutCmd.class,
                         BranchCmd.class,

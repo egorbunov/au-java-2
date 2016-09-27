@@ -9,6 +9,16 @@ repositories {
     mavenCentral()
 }
 
+//create a single Jar with all dependencies
+task buildExecutableJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'ru.spbau.mit.java.wit.Wit'
+    }
+    baseName = project.name + '-d'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
 dependencies {
     compile group: 'io.airlift', name: 'airline', version: '0.7'
     compile group: 'org.msgpack', 'name': 'msgpack-core', version: '0.8.10'

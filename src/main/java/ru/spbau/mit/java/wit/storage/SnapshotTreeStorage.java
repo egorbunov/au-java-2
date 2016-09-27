@@ -9,15 +9,14 @@ import ru.spbau.mit.java.wit.model.SnapshotTree;
  * Email: egor-mailbox@ya.com
  */
 
-public class SnaphotTreeStorage extends ObjStorage<SnapshotTree> {
+public class SnapshotTreeStorage {
+    private SnapshotTreeStorage() {}
 
-    @Override
-    public SnapshotTree read(ShaId id) {
+    public static SnapshotTree read(ShaId id) {
         return null;
     }
 
-    @Override
-    public ShaId write(SnapshotTree tree) {
+    public static ShaId write(SnapshotTree tree) {
         return null;
     }
 }
