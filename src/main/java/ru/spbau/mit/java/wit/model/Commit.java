@@ -1,5 +1,7 @@
 package ru.spbau.mit.java.wit.model;
 
+import ru.spbau.mit.java.wit.model.id.ShaId;
+
 import java.util.List;
 
 /**
@@ -10,7 +12,7 @@ import java.util.List;
 
 public class Commit {
     private List<ShaId> parentCommitsIds;
-    private ShaId dirTreeId;
+    private ShaId snapshotId;
     private String msg;
 
     public List<ShaId> getParentCommitsIds() {
@@ -21,12 +23,12 @@ public class Commit {
         this.parentCommitsIds = parentCommitsIds;
     }
 
-    public ShaId getDirTreeId() {
-        return dirTreeId;
+    public ShaId getSnapshotId() {
+        return snapshotId;
     }
 
-    public void setDirTreeId(ShaId dirTreeId) {
-        this.dirTreeId = dirTreeId;
+    public void setSnapshotId(ShaId snapshotId) {
+        this.snapshotId = snapshotId;
     }
 
     public String getMsg() {

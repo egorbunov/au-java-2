@@ -4,7 +4,7 @@ import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessageUnpacker;
 import ru.spbau.mit.java.wit.model.Commit;
-import ru.spbau.mit.java.wit.model.ShaId;
+import ru.spbau.mit.java.wit.model.id.ShaId;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -27,7 +27,7 @@ public class CommitStore {
         for (ShaId id : commit.getParentCommitsIds()) {
             p.packString(id.toString());
         }
-        p.packString(commit.getDirTreeId().toString());
+        p.packString(commit.getSnapshotId().toString());
         p.packString(commit.getMsg());
 
         return new ByteArrayInputStream(p.toByteArray());
@@ -44,7 +44,7 @@ public class CommitStore {
             parentIds.add(new ShaId(u.unpackString()));
         }
         commit.setParentCommitsIds(parentIds);
-        commit.setDirTreeId(new ShaId(u.unpackString()));
+        commit.setSnapshotId(new ShaId(u.unpackString()));
         commit.setMsg(u.unpackString());
 
         return commit;

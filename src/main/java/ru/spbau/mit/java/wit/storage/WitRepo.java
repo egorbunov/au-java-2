@@ -2,7 +2,7 @@ package ru.spbau.mit.java.wit.storage;
 
 import org.apache.commons.io.FileUtils;
 import ru.spbau.mit.java.wit.model.Branch;
-import ru.spbau.mit.java.wit.model.ShaId;
+import ru.spbau.mit.java.wit.model.id.ShaId;
 import ru.spbau.mit.java.wit.storage.io.StoreUtils;
 import ru.spbau.mit.java.wit.storage.pack.BranchStore;
 

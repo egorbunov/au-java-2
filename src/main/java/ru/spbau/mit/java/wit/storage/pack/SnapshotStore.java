@@ -3,7 +3,7 @@ package ru.spbau.mit.java.wit.storage.pack;
 import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessageUnpacker;
-import ru.spbau.mit.java.wit.model.ShaId;
+import ru.spbau.mit.java.wit.model.id.ShaId;
 import ru.spbau.mit.java.wit.model.Snapshot;
 
 import java.io.ByteArrayInputStream;

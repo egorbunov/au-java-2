@@ -4,7 +4,7 @@ import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessageUnpacker;
 import ru.spbau.mit.java.wit.model.Branch;
-import ru.spbau.mit.java.wit.model.ShaId;
+import ru.spbau.mit.java.wit.model.id.ShaId;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

@@ -3,16 +3,18 @@ package ru.spbau.mit.java.wit.command;
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
 import ru.spbau.mit.java.wit.model.Branch;
+import ru.spbau.mit.java.wit.model.Commit;
 import ru.spbau.mit.java.wit.model.Index;
-import ru.spbau.mit.java.wit.model.ShaId;
+import ru.spbau.mit.java.wit.model.id.ShaId;
 import ru.spbau.mit.java.wit.model.Snapshot;
 import ru.spbau.mit.java.wit.storage.*;
 
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * Created by: Egor Gorbunov
@@ -27,54 +29,93 @@ public class CheckoutCmd implements Runnable {
 
     @Override
     public void run() {
-        Path root = WitRepo.findRepositoryRoot();
-        if (root == null) {
+        Path baseDir = Paths.get(System.getProperty("user.dir"));
+        Path witRoot = WitRepo.findRepositoryRoot(baseDir);
+        if (witRoot == null) {
             System.err.println("Error: You are not under WIT repository");
             return;
         }
 
-        // resolving commit reference
-        ShaId commitId;
-        Branch b = BranchStorage.read(ref);
-        if (b != null) {
-            commitId = b.getHeadCommitId();
-        } else {
-            commitId = CommitStorage.resolveCommitByPrefix(ref);
-        }
+        WitStorage storage = new WitStorage(witRoot);
 
-        if (commitId.equals(ShaId.EmptyId)) {
-            System.err.println("Error: can't find neither branch nor commit with given identifier");
+        // resolving commit reference
+        // WARNING: super ugly try/catch code =(
+        ShaId commitId;
+        try {
+            Branch b = storage.readBranch(ref);
+            commitId = b.getHeadCommitId();
+        } catch (FileNotFoundException e) {
+            try {
+                List<ShaId> cmts = storage.resolveCommitIdsByPrefix(ref);
+                if (cmts.size() > 1) {
+                    System.err.println("Error: can't resolve commit, " +
+                            "too short prefix: " + ref);
+                    return;
+                } else if (cmts.isEmpty()) {
+                    System.err.println("Error: can't find commit or branch!");
+                    return;
+                }
+                commitId = cmts.get(0);
+            } catch (IOException e1) {
+                System.err.println("Error: failed to resolve commit" + ref);
+                e1.printStackTrace();
+                return;
+            }
+        } catch (IOException e) {
+            System.err.println("Error: Failed to read branch file");
+            e.printStackTrace();
             return;
         }
 
         // checking out and creating new index
         Index newIndex = new Index();
-        Snapshot snapshot = SnapshotTreeStorage.read(commitId);
-        for (ShaId id : snapshot.getBlobIds()) {
-            String name = snapshot.getFileNameByBlobId(id);
-            Path pToCheckout = root.resolve(name);
-            File blobFile = FileStorage.getBlobFile(id);
-            Path target;
+
+        Snapshot snapshot;
+        try {
+            Commit commit = storage.readCommit(commitId);
+            snapshot = storage.readSnapshot(commit.getSnapshotId());
+        } catch (IOException e) {
+            System.err.println("Error: Can't read snapshot!");
+            e.printStackTrace();
+            return;
+        }
+
+        for (Snapshot.Entry entry : snapshot) {
+            String name = entry.fileName;
+            Path pToCheckout = baseDir.resolve(name);
+
             try {
                 // TODO: do not copy if files are equal
-                target = Files.copy(blobFile.toPath(), pToCheckout,
-                        StandardCopyOption.REPLACE_EXISTING);
+                storage.checkoutBlob(entry.id, pToCheckout);
             } catch (IOException e) {
                 System.err.println("Error: can't checkout file " + pToCheckout);
                 return;
             }
+
             // index update...
-            newIndex.add(new Index.Entry(id, target.toFile().lastModified(), name, id));
+            newIndex.add(new Index.Entry(
+                    entry.id,
+                    pToCheckout.toFile().lastModified(),
+                    name,
+                    entry.id));
         }
 
         // deleting files not existing in target revision
-        Index curIndex = IndexStorage.readIndex();
-        for (Index.Entry e : curIndex.getEntries()) {
+        Index curIndex;
+        try {
+            curIndex = storage.readIndex();
+        } catch (IOException e) {
+            System.err.println("Can't read index");
+            e.printStackTrace();
+            return;
+        }
+
+        for (Index.Entry e : curIndex) {
             // deleting not in target revision && only if file is commited
             if (snapshot.getBlobIdByFileName(e.fileName) == null &&
                     e.curBlobId.equals(e.lastCommitedBlobId)) {
 
-                Path p = root.resolve(e.fileName);
+                Path p = baseDir.resolve(e.fileName);
                 try {
                     Files.deleteIfExists(p);
                 } catch (IOException e1) {
@@ -85,6 +126,11 @@ public class CheckoutCmd implements Runnable {
         }
 
         // replacing index
-        IndexStorage.writeIndex(newIndex);
+        try {
+            storage.writeIndex(newIndex);
+        } catch (IOException e) {
+            System.err.println("Error: can't write index");
+            e.printStackTrace();
+        }
     }
 }

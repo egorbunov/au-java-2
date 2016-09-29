@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.wit.model;
+package ru.spbau.mit.java.wit.model.id;
 
 /**
  * Created by: Egor Gorbunov

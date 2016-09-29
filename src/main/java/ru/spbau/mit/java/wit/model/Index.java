@@ -1,6 +1,8 @@
 package ru.spbau.mit.java.wit.model;
 
 
+import ru.spbau.mit.java.wit.model.id.ShaId;
+
 import java.util.*;
 import java.util.function.Consumer;
 

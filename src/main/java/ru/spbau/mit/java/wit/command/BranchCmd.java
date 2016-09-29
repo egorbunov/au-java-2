@@ -5,8 +5,10 @@ import io.airlift.airline.Command;
 import ru.spbau.mit.java.wit.model.Branch;
 import ru.spbau.mit.java.wit.storage.WitPaths;
 import ru.spbau.mit.java.wit.storage.WitRepo;
+import ru.spbau.mit.java.wit.storage.WitStorage;
 import ru.spbau.mit.java.wit.storage.io.StoreUtils;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,15 +34,30 @@ public class BranchCmd implements Runnable {
             return;
         }
 
+        WitStorage storage = new WitStorage(witRoot);
+
         if (Files.exists(WitPaths.getBranchInfoFilePath(witRoot, branchName))) {
             System.err.println("Error: Branch with name " + branchName + " already exists");
             return;
         }
 
-        String curBranchName = StoreUtils.read()
-        Branch curBranch = BranchStorage.read(curBranchName);
+        Branch curBranch;
+        try {
+            String curBranchName = storage.readCurBranchName();
+            curBranch = storage.readBranch(curBranchName);
+        } catch (IOException e) {
+            System.err.println("Error: Can't read current branch");
+            e.printStackTrace();
+            return;
+        }
 
-        BranchStorage.write(new Branch(branchName, curBranch.getCurCommitId(),
-                curBranch.getCurCommitId()));
+        try {
+            storage.writeBranch(new Branch(branchName, curBranch.getCurCommitId(),
+                    curBranch.getCurCommitId()));
+        } catch (IOException e) {
+            System.err.println("Error: Can't create new branch");
+            e.printStackTrace();
+            return;
+        }
     }
 }

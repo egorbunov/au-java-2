@@ -59,4 +59,8 @@ public class WitPaths {
     public static Path getBranchesDirPath(Path witRoot) {
         return witRoot.resolve("branches");
     }
+
+    public static Path getLogPath(Path witRoot, String branch) {
+        return witRoot.resolve("log").resolve(branch);
+    }
 }

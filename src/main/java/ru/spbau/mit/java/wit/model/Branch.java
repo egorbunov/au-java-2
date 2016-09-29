@@ -1,5 +1,7 @@
 package ru.spbau.mit.java.wit.model;
 
+import ru.spbau.mit.java.wit.model.id.ShaId;
+
 /**
  * Created by: Egor Gorbunov
  * Date: 9/26/16

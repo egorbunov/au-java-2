@@ -1,5 +1,7 @@
 package ru.spbau.mit.java.wit.model;
 
+import ru.spbau.mit.java.wit.model.id.ShaId;
+
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -33,11 +35,23 @@ public class Snapshot extends AbstractCollection<Snapshot.Entry> {
     }
 
     private Set<Entry> records = new HashSet<>();
+    private Map<String, Entry> recordsByFile = new HashMap<>();
 
+    public ShaId getBlobIdByFileName(String fileName) {
+        if (!recordsByFile.containsKey(fileName)) {
+            return null;
+        }
+        return recordsByFile.get(fileName).id;
+    }
 
     @Override
     public boolean add(Entry entry) {
-        return records.add(entry);
+        if (records.contains(entry)) {
+            return false;
+        }
+        records.add(entry);
+        recordsByFile.put(entry.fileName, entry);
+        return true;
     }
 
     @Override

@@ -3,7 +3,8 @@ package ru.spbau.mit.java.wit.command;
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
 import ru.spbau.mit.java.wit.model.Index;
-import ru.spbau.mit.java.wit.model.ShaId;
+import ru.spbau.mit.java.wit.model.id.ShaId;
+import ru.spbau.mit.java.wit.storage.WitStorage;
 import ru.spbau.mit.java.wit.storage.pack.IndexStore;
 import ru.spbau.mit.java.wit.storage.WitPaths;
 import ru.spbau.mit.java.wit.storage.WitRepo;
@@ -39,6 +40,8 @@ public class AddCmd implements Runnable {
             return;
         }
 
+        WitStorage storage = new WitStorage(witRoot);
+
         // checking if all files are existing
         List<Path> nonExisting = fileNames.stream().map(Paths::get).filter(Files::notExists)
                 .collect(Collectors.toList());
@@ -68,7 +71,7 @@ public class AddCmd implements Runnable {
         // staging files; preparing new index
         Index index;
         try {
-            index = StoreUtils.read(WitPaths.getIndexFilePath(witRoot), IndexStore::unpack);
+            index = storage.readIndex();
         } catch (IOException e) {
             System.err.println("Can't read index");
             return;
@@ -85,8 +88,7 @@ public class AddCmd implements Runnable {
             // trying to write file to storage
             ShaId id;
             try {
-                id = StoreUtils.writeSha(file, WitPaths.getBlobsDir(witRoot),
-                        StoreUtils::filePack);
+                id = storage.writeBlob(file);
             } catch (IOException e) {
                 System.out.println("Error: Can't add file: " + file
                         + "[ " + e.getMessage() + " ]");
@@ -110,7 +112,7 @@ public class AddCmd implements Runnable {
 
         // updating index on disk
         try {
-            StoreUtils.write(index, WitPaths.getIndexFilePath(witRoot), IndexStore::pack);
+            storage.writeIndex(index);
         } catch (IOException e) {
             System.out.println("Error: Can't write index "
                     + "[ " + e.getMessage() + " ]");
