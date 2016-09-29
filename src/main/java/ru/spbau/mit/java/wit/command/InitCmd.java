@@ -1,10 +1,10 @@
 package ru.spbau.mit.java.wit.command;
 
 import io.airlift.airline.Command;
-import ru.spbau.mit.java.wit.Wit;
 import ru.spbau.mit.java.wit.storage.WitRepo;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Created by: Egor Gorbunov
@@ -16,10 +16,10 @@ import java.nio.file.Path;
 public class InitCmd implements Runnable {
     @Override
     public void run() {
-        System.out.println("INIT");
+        Path baseDir = Paths.get(System.getProperty("user.dir"));
 
         // checking if repository is already initialized
-        Path repoRoot = WitRepo.findStorageRoot();
+        Path repoRoot = WitRepo.findRepositoryRoot(baseDir);
         if (repoRoot != null) {
             System.out.println("Wit Repository is already initialized under" +
                     repoRoot.toString());
@@ -28,7 +28,7 @@ public class InitCmd implements Runnable {
 
         // initializing new repository
         try {
-            WitRepo.init();
+            WitRepo.init(baseDir);
         } catch (Exception e) { // TODO: change exception
             System.err.println("ERROR: Can't initialize repository");
         }

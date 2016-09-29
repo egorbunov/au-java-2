@@ -5,7 +5,7 @@ import io.airlift.airline.Command;
 import ru.spbau.mit.java.wit.model.Branch;
 import ru.spbau.mit.java.wit.model.Index;
 import ru.spbau.mit.java.wit.model.ShaId;
-import ru.spbau.mit.java.wit.model.SnapshotTree;
+import ru.spbau.mit.java.wit.model.Snapshot;
 import ru.spbau.mit.java.wit.storage.*;
 
 import java.io.File;
@@ -49,7 +49,7 @@ public class CheckoutCmd implements Runnable {
 
         // checking out and creating new index
         Index newIndex = new Index();
-        SnapshotTree snapshot = SnapshotTreeStorage.read(commitId);
+        Snapshot snapshot = SnapshotTreeStorage.read(commitId);
         for (ShaId id : snapshot.getBlobIds()) {
             String name = snapshot.getFileNameByBlobId(id);
             Path pToCheckout = root.resolve(name);
@@ -64,7 +64,7 @@ public class CheckoutCmd implements Runnable {
                 return;
             }
             // index update...
-            newIndex.addEntry(new Index.Entry(id, target.toFile().lastModified(), name, id));
+            newIndex.add(new Index.Entry(id, target.toFile().lastModified(), name, id));
         }
 
         // deleting files not existing in target revision

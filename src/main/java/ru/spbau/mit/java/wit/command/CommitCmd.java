@@ -32,11 +32,11 @@ public class CommitCmd implements Runnable {
         // Creating new Snapshot tree and new Index
         Index index = IndexStorage.readIndex();
         Index newIndex = new Index();
-        SnapshotTree newSnapshot = new SnapshotTree();
+        Snapshot newSnapshot = new Snapshot();
         for (Index.Entry e : index.getEntries()) {
             newSnapshot.putFile(e.curBlobId, e.fileName);
             // marking blob as commited
-            newIndex.addEntry(new Index.Entry(e.curBlobId, e.lastModified,
+            newIndex.add(new Index.Entry(e.curBlobId, e.lastModified,
                     e.fileName, e.curBlobId));
         }
 

@@ -3,8 +3,6 @@ package ru.spbau.mit.java.wit.command;
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
 import ru.spbau.mit.java.wit.model.Log;
-import ru.spbau.mit.java.wit.storage.BranchStorage;
-import ru.spbau.mit.java.wit.storage.LogStorage;
 import ru.spbau.mit.java.wit.storage.WitRepo;
 
 /**

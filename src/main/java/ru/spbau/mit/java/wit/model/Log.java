@@ -1,8 +1,7 @@
 package ru.spbau.mit.java.wit.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Created by: Egor Gorbunov
@@ -10,7 +9,7 @@ import java.util.List;
  * Email: egor-mailbox@ya.com
  */
 
-public class Log {
+public class Log extends AbstractCollection<Log.Entry> {
     public static class Entry {
         public final ShaId commitId;
         public final String msg;
@@ -21,17 +20,31 @@ public class Log {
         }
     }
 
-    public Log(String branchName) {
-        this.branchName = branchName;
-    }
-
     private ArrayList<Entry> log;
-    private final String branchName;
 
-    public void add(Entry entry) {
+    @Override
+    public boolean add(Entry entry) {
         log.add(entry);
+        return true;
     }
-    public List<Entry> getEntries() {
-        return Collections.unmodifiableList(log);
+
+    @Override
+    public Iterator<Entry> iterator() {
+        return log.iterator();
+    }
+
+    @Override
+    public int size() {
+        return log.size();
+    }
+
+    @Override
+    public void forEach(Consumer<? super Entry> action) {
+        log.forEach(action);
+    }
+
+    @Override
+    public Spliterator<Entry> spliterator() {
+        return log.spliterator();
     }
 }

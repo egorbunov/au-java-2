@@ -6,6 +6,7 @@ package ru.spbau.mit.java.wit.model;
  * Email: egor-mailbox@ya.com
  */
 public class ShaId {
+    // Use it as null id
     public static ShaId EmptyId = new ShaId("");
 
     private final String sha;

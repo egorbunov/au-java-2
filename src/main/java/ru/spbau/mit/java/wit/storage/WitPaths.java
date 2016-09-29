@@ -1,13 +1,14 @@
 package ru.spbau.mit.java.wit.storage;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Created by: Egor Gorbunov
  * Date: 9/26/16
  * Email: egor-mailbox@ya.com
  */
-class WitPaths {
+public class WitPaths {
     private WitPaths() {}
 
     /**
@@ -15,7 +16,7 @@ class WitPaths {
      * @param baseDir base directory for version control
      * @return wit vcs storage root dir
      */
-    public static Path resolveStorageRoot(Path baseDir) {
+    public static Path resolveStoragePath(Path baseDir) {
         return baseDir.resolve(".wit");
     }
 
@@ -23,8 +24,12 @@ class WitPaths {
      * Find wit storage root directory as parent of given base directory
      * @return null if no such directory found or path to that dir
      */
-    public static Path findStorageRoot(Path baseDir) {
-        return null; // FIXME
+    public static Path lookupStoragePath(Path baseDir) {
+        Path dir = baseDir;
+        while (dir != null && !dir.getFileName().equals(Paths.get(".wit"))) {
+            dir = dir.getParent();
+        }
+        return dir;
     }
 
     public static Path getBlobsDir(Path witRoot) {
@@ -35,7 +40,7 @@ class WitPaths {
         return witRoot.resolve("commits");
     }
 
-    public static Path getSnaphotsDir(Path witRoot) {
+    public static Path getSnapshotsDir(Path witRoot) {
         return witRoot.resolve("snapshots");
     }
 
@@ -48,6 +53,10 @@ class WitPaths {
     }
 
     public static Path getBranchInfoFilePath(Path witRoot, String branchName) {
-        return witRoot.resolve("branches").resolve(branchName);
+        return getBranchesDirPath(witRoot).resolve(branchName);
+    }
+
+    public static Path getBranchesDirPath(Path witRoot) {
+        return witRoot.resolve("branches");
     }
 }

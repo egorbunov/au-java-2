@@ -4,9 +4,10 @@ import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
 import ru.spbau.mit.java.wit.model.Index;
 import ru.spbau.mit.java.wit.model.ShaId;
-import ru.spbau.mit.java.wit.storage.FileStorage;
-import ru.spbau.mit.java.wit.storage.IndexStorage;
+import ru.spbau.mit.java.wit.storage.pack.IndexStore;
+import ru.spbau.mit.java.wit.storage.WitPaths;
 import ru.spbau.mit.java.wit.storage.WitRepo;
+import ru.spbau.mit.java.wit.storage.io.StoreUtils;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -30,14 +31,15 @@ public class AddCmd implements Runnable {
 
     @Override
     public void run() {
+        Path baseDir = Paths.get(System.getProperty("user.dir"));
         // checking if repository is initialized
-        Path repoRoot = WitRepo.findRepositoryRoot();
-        if (repoRoot == null) {
+        Path witRoot = WitRepo.findRepositoryRoot(baseDir);
+        if (witRoot == null) {
             System.err.println("Error: You are not under WIT repository");
             return;
         }
 
-        // checking ig all files are existing
+        // checking if all files are existing
         List<Path> nonExisting = fileNames.stream().map(Paths::get).filter(Files::notExists)
                 .collect(Collectors.toList());
         if (nonExisting.size() != 0) {
@@ -47,7 +49,6 @@ public class AddCmd implements Runnable {
             return;
         }
 
-
         // collecting all files which user specified (walking dirs and stuff)
         Set<Path> filesForStage = new HashSet<>();
         for (String f : fileNames) {
@@ -56,52 +57,64 @@ public class AddCmd implements Runnable {
                 try {
                     Files.walk(p).forEach(filesForStage::add);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println("Error: Can't collect files for stage");
+                    return;
                 }
             } else if (Files.isRegularFile(p)) {
                 filesForStage.add(p);
             }
         }
 
-        // staging files; updating index
-        Index index = IndexStorage.readIndex();
+        // staging files; preparing new index
+        Index index;
+        try {
+            index = StoreUtils.read(WitPaths.getIndexFilePath(witRoot), IndexStore::unpack);
+        } catch (IOException e) {
+            System.err.println("Can't read index");
+            return;
+        }
         for (Path p : filesForStage) {
-            String name = p.relativize(repoRoot).toString();
-            Index.Entry entry = index.getEntry(name);
-
+            String name = p.relativize(witRoot).toString();
             File file = p.toFile();
+            long lastModified = file.lastModified();
 
-            if (entry == null) {
-                ShaId id = stageFile(file);
-                index.addEntry(new Index.Entry(id, file.lastModified(), name, ShaId.EmptyId));
+            if (index.contains(name) && lastModified <= index.getEntryByFile(name).lastModified) {
+                continue;
+            }
+
+            // trying to write file to storage
+            ShaId id;
+            try {
+                id = StoreUtils.writeSha(file, WitPaths.getBlobsDir(witRoot),
+                        StoreUtils::filePack);
+            } catch (IOException e) {
+                System.out.println("Error: Can't add file: " + file
+                        + "[ " + e.getMessage() + " ]");
+                e.printStackTrace();
+                continue;
+            }
+
+            // changing index
+            if (!index.contains(name)) {
+                index.add(new Index.Entry(
+                        id, lastModified, name, ShaId.EmptyId
+                ));
             } else {
-                long lastModified = file.lastModified();
-                if (lastModified < entry.lastModified) {
-                    ShaId id = stageFile(file);
-                    index.removeEntry(entry);
-                    index.addEntry(new Index.Entry(id, file.lastModified(), name,
-                            entry.lastCommitedBlobId));
-                }
+                Index.Entry entry = index.getEntryByFile(name);
+                index.remove(entry);
+                index.add(new Index.Entry(
+                        id, lastModified, name, entry.lastCommitedBlobId
+                ));
             }
         }
-    }
 
-    private ShaId stageFile(File file) {
-        InputStream is;
+        // updating index on disk
         try {
-            is = new BufferedInputStream(new FileInputStream(file));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("Error: file not exists OMG"); // can't be true
-        }
-
-        ShaId id = FileStorage.write(is);
-
-        try {
-            is.close();
+            StoreUtils.write(index, WitPaths.getIndexFilePath(witRoot), IndexStore::pack);
         } catch (IOException e) {
-            System.err.println("Error: can't close file " + file.getName());
+            System.out.println("Error: Can't write index "
+                    + "[ " + e.getMessage() + " ]");
+            e.printStackTrace();
         }
-
-        return id;
     }
 }

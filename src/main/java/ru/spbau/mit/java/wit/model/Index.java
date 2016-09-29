@@ -2,12 +2,13 @@ package ru.spbau.mit.java.wit.model;
 
 
 import java.util.*;
+import java.util.function.Consumer;
 
 
 /**
  * Represents current repository state
  */
-public class Index {
+public class Index extends AbstractCollection<Index.Entry> {
     public static class Entry {
         public final String fileName;
         public final ShaId lastCommitedBlobId;
@@ -42,7 +43,8 @@ public class Index {
     private Set<Entry> entries = new HashSet<>();
     private Map<String, Entry> entriesByFileName= new HashMap<>();
 
-    public boolean addEntry(Entry entry) {
+    @Override
+    public boolean add(Entry entry) {
         if (entries.contains(entry)) {
             return false;
         }
@@ -51,15 +53,38 @@ public class Index {
         return true;
     }
 
-    public boolean removeEntry(Entry entry) {
+    @Override
+    public boolean remove(Object entry) {
         return entries.remove(entry);
     }
 
-    public Collection<Entry> getEntries() {
-        return Collections.unmodifiableCollection(entries);
-    }
-
-    public Entry getEntry(String filename) {
+    public Entry getEntryByFile(String filename) {
         return entriesByFileName.get(filename);
     }
+
+    public boolean contains(String filename) {
+        return entriesByFileName.containsKey(filename);
+    }
+
+    // iterator stuff
+    @Override
+    public Iterator<Entry> iterator() {
+        return entries.iterator();
+    }
+
+    @Override
+    public int size() {
+        return entries.size();
+    }
+
+    @Override
+    public void forEach(Consumer<? super Entry> action) {
+        entries.forEach(action);
+    }
+
+    @Override
+    public Spliterator<Entry> spliterator() {
+        return entries.spliterator();
+    }
+
 }
