@@ -67,7 +67,7 @@ public class CommitCmd implements Runnable {
             return;
         }
 
-        // creating new commit and writing it
+        // reading current branch, cause we 
         Branch curBranch;
         try {
             String curBranchName = storage.readCurBranchName();
