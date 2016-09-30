@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.wit.storage.pack;
+package ru.spbau.mit.java.wit.repository.pack;
 
 import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessagePack;
@@ -15,15 +15,14 @@ import java.io.InputStream;
  * Date: 9/29/16
  * Email: egor-mailbox@ya.com
  */
-public class BranchStore {
-    private BranchStore() {}
+public class BranchPack {
+    private BranchPack() {}
 
     public static InputStream pack(Branch branch) throws IOException {
         MessageBufferPacker p = MessagePack.newDefaultBufferPacker();
 
         p.packString(branch.getName());
         p.packString(branch.getHeadCommitId().toString());
-        p.packString(branch.getCurCommitId().toString());
 
         return new ByteArrayInputStream(p.toByteArray());
 
@@ -36,7 +35,6 @@ public class BranchStore {
 
         b.setName(u.unpackString());
         b.setHeadCommitId(new ShaId(u.unpackString()));
-        b.setCurCommitId(new ShaId(u.unpackString()));
 
         return b;
     }

@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.wit.storage.io;
+package ru.spbau.mit.java.wit.repository.storage;
 
 import java.io.IOException;
 

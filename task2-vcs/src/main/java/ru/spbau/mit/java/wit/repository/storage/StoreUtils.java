@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.wit.storage.io;
+package ru.spbau.mit.java.wit.repository.storage;
 
 import org.apache.commons.codec.binary.Hex;
 import ru.spbau.mit.java.wit.model.id.ShaId;

@@ -2,8 +2,7 @@ package ru.spbau.mit.java.wit.command;
 
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
-import ru.spbau.mit.java.wit.WitCommand;
-import ru.spbau.mit.java.wit.storage.WitStorage;
+import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
 import java.nio.file.Path;
 
@@ -13,13 +12,13 @@ import java.nio.file.Path;
  * Email: egor-mailbox@ya.com
  */
 
-@Command(name = "merge", description = "MergeCmd some branch to currently active")
-public class MergeCmd implements WitCommand {
+@Command(name = "merge", description = "WitMerge some branch to currently active")
+public class WitMerge implements WitCommand {
     @Arguments(description = "Branch, which will be merged into active branch")
     String branch;
 
     @Override
-    public int run(Path baseDir, WitStorage storage) {
+    public int execute(Path workingDir, WitStorage storage) {
         System.out.println("IMPLEMENT MERGE =)");
 
         return 0;

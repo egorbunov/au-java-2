@@ -10,14 +10,22 @@ import ru.spbau.mit.java.wit.model.id.ShaId;
 public class Branch {
     private String name;
     private ShaId headCommitId;
-    private ShaId curCommitId;
 
     public Branch() {}
 
-    public Branch(String name, ShaId headCommitId, ShaId curCommitId) {
+    @Override
+    public boolean equals(Object obj) {
+        if (!Branch.class.isInstance(obj)) {
+            return false;
+        }
+        Branch b = (Branch) obj;
+        return b.name.equals(name) &&
+                b.headCommitId.equals(headCommitId);
+    }
+
+    public Branch(String name, ShaId headCommitId) {
         this.name = name;
         this.headCommitId = headCommitId;
-        this.curCommitId = curCommitId;
     }
 
 
@@ -35,13 +43,5 @@ public class Branch {
 
     public void setHeadCommitId(ShaId headCommitId) {
         this.headCommitId = headCommitId;
-    }
-
-    public ShaId getCurCommitId() {
-        return curCommitId;
-    }
-
-    public void setCurCommitId(ShaId curCommitId) {
-        this.curCommitId = curCommitId;
     }
 }

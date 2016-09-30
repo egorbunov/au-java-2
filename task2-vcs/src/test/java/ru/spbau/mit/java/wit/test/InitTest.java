@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import ru.spbau.mit.java.wit.storage.WitInit;
+import ru.spbau.mit.java.wit.command.WitInit;
 
 import java.nio.file.Path;
 
@@ -20,8 +20,8 @@ public class InitTest {
 
     @Test
     public void testInit() {
-        Path witRoot1 = WitInit.init(baseFolder.getRoot().toPath());
-        Path witRoot2 = WitInit.findRepositoryRoot(baseFolder.getRoot().toPath());
-        Assert.assertEquals(witRoot1, witRoot2);
+        Path baseDir = baseFolder.getRoot().toPath();
+        WitInit init = new WitInit();
+        init.execute(baseDir, null);
     }
 }

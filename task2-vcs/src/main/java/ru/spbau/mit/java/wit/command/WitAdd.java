@@ -1,12 +1,13 @@
 package ru.spbau.mit.java.wit.command;
 
+import com.sun.java.swing.plaf.windows.WindowsMenuItemUI;
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
-import ru.spbau.mit.java.wit.WitCommand;
+import ru.spbau.mit.java.wit.log.Logging;
 import ru.spbau.mit.java.wit.model.Index;
 import ru.spbau.mit.java.wit.model.id.ShaId;
-import ru.spbau.mit.java.wit.storage.WitStorage;
-import ru.spbau.mit.java.wit.storage.WitInit;
+import ru.spbau.mit.java.wit.repository.WitUtils;
+import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -24,15 +25,15 @@ import java.util.stream.Collectors;
  * Email: egor-mailbox@ya.com
  */
 
-@Command(name = "add", description = "AddCmd files to be managed by vcs")
-public class AddCmd implements WitCommand {
+@Command(name = "add", description = "WitAdd files to be managed by vcs")
+public class WitAdd implements WitCommand {
     @Arguments(description = "Directories and file names to be added")
     public List<String> fileNames;
 
-    Logger logger = Logger.getLogger(AddCmd.class.getName());
+    private Logger logger = Logging.getLogger(WitAdd.class.getName());
 
     @Override
-    public int run(Path baseDir, WitStorage storage) {
+    public int execute(Path workingDir, WitStorage storage) {
         // checking if all files are existing
         List<Path> nonExisting = fileNames.stream().map(Paths::get).filter(Files::notExists)
                 .collect(Collectors.toList());
@@ -43,6 +44,8 @@ public class AddCmd implements WitCommand {
             return -1;
         }
 
+        Path userRepositoryPath = WitUtils.stripWitStoragePath(storage.getWitRoot());
+
         // collecting all files which user specified (walking dirs and stuff)
         Set<Path> filesForStage = new HashSet<>();
         for (String f : fileNames) {
@@ -52,10 +55,15 @@ public class AddCmd implements WitCommand {
                 continue;
             }
             try {
-                Files.walk(p)
-                        .filter(it -> !it.startsWith(storage.getWitRoot()))
-                        .filter(Files::isRegularFile)
-                        .forEach(filesForStage::add);
+                WitUtils.walk(p, storage.getWitRoot())
+                        .forEach(fp -> {
+                            if (!fp.startsWith(userRepositoryPath)) {
+                                System.out.println("File " + p + " is outside repository; " +
+                                        "Omitting");
+                            } else {
+                                filesForStage.add(fp);
+                            }
+                        });
             } catch (IOException e) {
                 System.out.println("Error: Can't collect files for stage");
                 return -1;
@@ -66,12 +74,7 @@ public class AddCmd implements WitCommand {
         Index index;
         index = storage.readIndex();
         for (Path p : filesForStage) {
-            if (!p.startsWith(baseDir)) {
-                System.out.println("File " + p + " is outside repository; " +
-                        "Omitting");
-                continue;
-            }
-            String name = p.subpath(baseDir.getNameCount(), p.getNameCount()).toString();
+            String name = p.subpath(userRepositoryPath.getNameCount(), p.getNameCount()).toString();
 
             File file = p.toFile();
             long lastModified = file.lastModified();
@@ -90,15 +93,17 @@ public class AddCmd implements WitCommand {
             if (!index.contains(name)) {
                 logger.info("Adding new entry to index; " +
                         "(" + name + ", " + id.toString() + ", " + lastModified + ")");
+
                 index.add(new Index.Entry(
-                        id, lastModified, name, ShaId.EmptyId
+                        name, lastModified, id, ShaId.EmptyId
                 ));
             } else {
                 logger.info("Updating index entry, because file changed");
+
                 Index.Entry entry = index.getEntryByFile(name);
                 index.remove(entry);
                 index.add(new Index.Entry(
-                        id, lastModified, name, entry.lastCommitedBlobId
+                        name, lastModified, id, entry.lastCommitedBlobId
                 ));
             }
         }

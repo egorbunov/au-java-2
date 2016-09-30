@@ -11,16 +11,45 @@ import java.util.function.Consumer;
  * Represents current repository state
  */
 public class Index extends AbstractCollection<Index.Entry> {
+
+    /**
+     * Entry describes one file in working tree.
+     * {@code fileName}
+     * {@code lastCommit}
+     * {@code lastModified}
+     * {@code }
+     */
     public static class Entry {
+        /**
+         * Name of file in index; is always relative to root repo dir
+         */
         public final String fileName;
+
+        /**
+         * id of blob, which was written on most fresh commit, which included that file
+         * must not be null (for null use {@code ShaId.EmptyId}
+         */
         public final ShaId lastCommitedBlobId;
+
+        /**
+         * id of blob, which is either equal to {@code lastCommitedBlobId} if file is not staged
+         * for commit, but commited or it is not equal to {@code lastCommitedBlobId} meaning that
+         * file is staged for next commit;
+         *
+         * if this field is equal to {@code ShaId.EmptyId}, when file is treated as staged
+         * for deletion in next commit
+         */
         public final ShaId curBlobId;
+
+        /**
+         * modification timestamp for moment, when file was staged to commit
+         * (added by add command)
+         */
         public final long lastModified;
 
-        public Entry(ShaId blobId,
-                      long lastModified,
-                      String fileName,
-                      ShaId lastCommitedBlobId) {
+        public Entry(String fileName, long lastModified,
+                     ShaId blobId,
+                     ShaId lastCommitedBlobId) {
             this.curBlobId = blobId;
             this.lastModified = lastModified;
             this.fileName = fileName;

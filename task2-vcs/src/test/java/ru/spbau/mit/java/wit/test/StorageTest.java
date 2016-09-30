@@ -6,16 +6,18 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import ru.spbau.mit.java.wit.command.WitInit;
 import ru.spbau.mit.java.wit.model.*;
 import ru.spbau.mit.java.wit.model.id.ShaId;
-import ru.spbau.mit.java.wit.storage.WitInit;
-import ru.spbau.mit.java.wit.storage.WitStorage;
+import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -31,7 +33,9 @@ public class StorageTest {
     public static void setup() throws IOException {
         folder = new TemporaryFolder();
         folder.create();
-        Path witRoot = WitInit.init(folder.getRoot().toPath());
+        WitInit init = new WitInit();
+        init.execute(folder.getRoot().toPath(), null);
+        Path witRoot = WitInit.findRepositoryRoot(folder.getRoot().toPath());
         storage = new WitStorage(witRoot);
     }
 
@@ -42,12 +46,11 @@ public class StorageTest {
 
     @Test
     public void testWriteBranch() {
-        Branch b = new Branch("new_branch", new ShaId("x"), new ShaId("y"));
+        Branch b = new Branch("new_branch", new ShaId("y"));
         storage.writeBranch(b);
         Branch actualBranch = storage.readBranch(b.getName());
 
         Assert.assertEquals(b.getName(), actualBranch.getName());
-        Assert.assertEquals(b.getCurCommitId(), actualBranch.getCurCommitId());
         Assert.assertEquals(b.getHeadCommitId(), actualBranch.getHeadCommitId());
     }
 
@@ -59,8 +62,8 @@ public class StorageTest {
 
 
         index = new Index();
-        index.add(new Index.Entry(new ShaId("a"), 123456, "filetxt", new ShaId("b")));
-        index.add(new Index.Entry(new ShaId("c"), 654321, "txtfile", new ShaId("d")));
+        index.add(new Index.Entry("filetxt", 123456, new ShaId("a"), new ShaId("b")));
+        index.add(new Index.Entry("txtfile", 654321, new ShaId("c"), new ShaId("d")));
 
         storage.writeIndex(index);
         Index actual = storage.readIndex();
@@ -78,6 +81,7 @@ public class StorageTest {
         commit.setMsg("msg");
         commit.setParentCommitsIds(Arrays.asList(new ShaId("1"), new ShaId("2"), new ShaId("3")));
         commit.setSnapshotId(new ShaId("123sd12312"));
+        commit.setTimestamp(System.currentTimeMillis());
 
         ShaId id = storage.writeCommit(commit);
         Commit actual = storage.readCommit(id);
@@ -130,16 +134,16 @@ public class StorageTest {
     @Test
     public void testLogWrite() {
         String branchName = "branch";
-        Log log = new Log();
-        log.add(new Log.Entry(new ShaId("this_is_id0x35"), "wow; man; god"));
-        storage.writeLog(log, branchName);
+        List<ShaId> log = new ArrayList<>();
+        log.add(new ShaId("this_is_id0x35"));
+        storage.writeCommitLog(log, branchName);
 
-        Log actual = storage.readLog(branchName);
+        List<ShaId> actual = storage.readCommitLog(branchName);
 
         Assert.assertEquals(log.size(), actual.size());
         Assert.assertArrayEquals(
-                log.stream().collect(Collectors.toList()).toArray(),
-                actual.stream().collect(Collectors.toList()).toArray()
+                log.toArray(),
+                actual.toArray()
         );
     }
 }

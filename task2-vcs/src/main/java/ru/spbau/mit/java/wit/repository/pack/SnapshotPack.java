@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.wit.storage.pack;
+package ru.spbau.mit.java.wit.repository.pack;
 
 import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessagePack;
@@ -15,8 +15,8 @@ import java.io.InputStream;
  * Date: 9/29/16
  * Email: egor-mailbox@ya.com
  */
-public class SnapshotStore {
-    private SnapshotStore() {}
+public class SnapshotPack {
+    private SnapshotPack() {}
 
     public static InputStream pack(Snapshot snapshot) throws IOException {
         MessageBufferPacker p = MessagePack.newDefaultBufferPacker();

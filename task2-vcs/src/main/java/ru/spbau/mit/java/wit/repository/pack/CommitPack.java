@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.wit.storage.pack;
+package ru.spbau.mit.java.wit.repository.pack;
 
 import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessagePack;
@@ -17,8 +17,8 @@ import java.util.List;
  * Date: 9/29/16
  * Email: egor-mailbox@ya.com
  */
-public class CommitStore {
-    private CommitStore() {}
+public class CommitPack {
+    private CommitPack() {}
 
     public static InputStream pack(Commit commit) throws IOException {
         MessageBufferPacker p = MessagePack.newDefaultBufferPacker();
@@ -29,6 +29,7 @@ public class CommitStore {
         }
         p.packString(commit.getSnapshotId().toString());
         p.packString(commit.getMsg());
+        p.packLong(commit.getTimestamp());
 
         return new ByteArrayInputStream(p.toByteArray());
     }
@@ -46,6 +47,7 @@ public class CommitStore {
         commit.setParentCommitsIds(parentIds);
         commit.setSnapshotId(new ShaId(u.unpackString()));
         commit.setMsg(u.unpackString());
+        commit.setTimestamp(u.unpackLong());
 
         return commit;
     }

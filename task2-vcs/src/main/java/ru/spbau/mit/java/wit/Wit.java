@@ -1,11 +1,8 @@
 package ru.spbau.mit.java.wit;
 
 import io.airlift.airline.Cli;
-import io.airlift.airline.Help;
 import ru.spbau.mit.java.wit.command.*;
-import ru.spbau.mit.java.wit.storage.WitInit;
-import ru.spbau.mit.java.wit.storage.WitPaths;
-import ru.spbau.mit.java.wit.storage.WitStorage;
+import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,13 +20,13 @@ public class Wit {
                 .withDefaultCommand(WitHelp.class)
                 .withCommands(
                         WitHelp.class,
-                        AddCmd.class,
-                        CheckoutCmd.class,
-                        BranchCmd.class,
-                        CommitCmd.class,
-                        InitCmd.class,
-                        LogCmd.class,
-                        MergeCmd.class
+                        WitAdd.class,
+                        WitCheckout.class,
+                        WitBranch.class,
+                        WitCommit.class,
+                        WitInit.class,
+                        WitLog.class,
+                        WitMerge.class
                 );
         Cli<WitCommand> parser = builder.build();
         WitCommand cmd = parser.parse(args);
@@ -41,6 +38,10 @@ public class Wit {
             storage = new WitStorage(witRoot);
         }
 
-        cmd.run(baseDir, storage);
+        try {
+            cmd.execute(baseDir, storage);
+        } catch (WitStorage.StorageException e) {
+            System.err.println("FATAL: repository write/read failed!");
+        }
     }
 }

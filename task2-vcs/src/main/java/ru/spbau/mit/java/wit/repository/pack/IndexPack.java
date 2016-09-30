@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.wit.storage.pack;
+package ru.spbau.mit.java.wit.repository.pack;
 
 import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessagePack;
@@ -15,8 +15,8 @@ import java.io.InputStream;
  * Date: 9/29/16
  * Email: egor-mailbox@ya.com
  */
-public class IndexStore {
-    private IndexStore() {}
+public class IndexPack {
+    private IndexPack() {}
 
     public static InputStream pack(Index index) throws IOException {
         MessageBufferPacker p = MessagePack.newDefaultBufferPacker();
@@ -43,7 +43,7 @@ public class IndexStore {
             ShaId lid = new ShaId(u.unpackString());
             ShaId cid = new ShaId(u.unpackString());
             long lm = u.unpackLong();
-            index.add(new Index.Entry(cid, lm, f, lid));
+            index.add(new Index.Entry(f, lm, cid, lid));
         }
 
         return index;

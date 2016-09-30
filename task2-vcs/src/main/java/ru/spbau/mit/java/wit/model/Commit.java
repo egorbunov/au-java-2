@@ -2,6 +2,7 @@ package ru.spbau.mit.java.wit.model;
 
 import ru.spbau.mit.java.wit.model.id.ShaId;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -14,6 +15,19 @@ public class Commit {
     private List<ShaId> parentCommitsIds;
     private ShaId snapshotId;
     private String msg;
+    private long timestamp;
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!Commit.class.isInstance(obj)) {
+            return false;
+        }
+        Commit c = (Commit) obj;
+        return Arrays.equals(parentCommitsIds.toArray(), c.parentCommitsIds.toArray()) &&
+                snapshotId.equals(c.snapshotId) &&
+                msg.equals(c.msg) &&
+                timestamp == c.timestamp;
+    }
 
     public List<ShaId> getParentCommitsIds() {
         return parentCommitsIds;
@@ -37,5 +51,13 @@ public class Commit {
 
     public void setMsg(String msg) {
         this.msg = msg;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 }
