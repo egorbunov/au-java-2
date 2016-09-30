@@ -33,17 +33,16 @@ public class AddTest {
 
 
     @Before
-    public void setup() {
+    public void setup() throws IOException {
         WitInit init = new WitInit();
         baseDir = baseFolder.getRoot().toPath();
         init.execute(baseDir, null);
         Path witRoot = WitInit.findRepositoryRoot(baseDir);
         storage = new WitStorage(witRoot);
         addCmd = new WitAdd();
-        addCmd.fileNames = new ArrayList<>();
     }
 
-    private void checkStaged(List<File> files) {
+    private void checkStaged(List<File> files) throws IOException {
         Set<String> stagedFiles = new HashSet<>(
                 WitUtils.getStagedEntries(storage.readIndex())
                         .map(e -> e.fileName)
@@ -60,7 +59,7 @@ public class AddTest {
     }
 
     @Test
-    public void testAddNothing() {
+    public void testAddNothing() throws IOException {
         addCmd.execute(baseDir, storage);
         checkStaged(Collections.emptyList());
     }
@@ -68,7 +67,7 @@ public class AddTest {
     @Test
     public void testAddOneFile() throws IOException {
         File f = baseFolder.newFile();
-        addCmd.fileNames.add(f.toString());
+        addCmd.setFileNames(Collections.singletonList(f.toString()));
         addCmd.execute(baseDir, storage);
 
         checkStaged(Collections.singletonList(f));
@@ -77,7 +76,7 @@ public class AddTest {
     @Test
     public void testAddNTimes() throws IOException {
         File f = baseFolder.newFile();
-        addCmd.fileNames.add(f.toString());
+        addCmd.setFileNames(Collections.singletonList(f.toString()));
         addCmd.execute(baseDir, storage);
         addCmd.execute(baseDir, storage);
         addCmd.execute(baseDir, storage);
@@ -88,7 +87,7 @@ public class AddTest {
     @Test
     public void testAddNotInRepo() throws IOException {
         Path f = Files.createTempFile(null, null);
-        addCmd.fileNames.add(f.toString());
+        addCmd.setFileNames(Collections.singletonList(f.toString()));
         addCmd.execute(baseDir, storage);
 
         checkStaged(Collections.emptyList());
@@ -101,7 +100,7 @@ public class AddTest {
     @Test
     public void testAddUpdate() throws IOException, InterruptedException {
         File f = baseFolder.newFile();
-        addCmd.fileNames.add(f.toString());
+        addCmd.setFileNames(Collections.singletonList(f.toString()));
         addCmd.execute(baseDir, storage);
         FileUtils.writeLines(f, Collections.singletonList("int main() { return 0; }"));
         Thread.sleep(500);
@@ -118,7 +117,7 @@ public class AddTest {
                 Files.createFile(subFolder.resolve("file.txt")),
                 Files.createFile(subFolder.resolve("txt.file")));
 
-        addCmd.fileNames.add(baseDir.toString());
+        addCmd.setFileNames(files.stream().map(Path::toString).collect(Collectors.toList()));
         addCmd.execute(baseDir, storage);
 
         checkStaged(files.stream().map(Path::toFile).collect(Collectors.toList()));

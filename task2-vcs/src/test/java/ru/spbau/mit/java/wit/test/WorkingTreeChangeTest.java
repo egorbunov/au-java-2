@@ -50,7 +50,7 @@ public class WorkingTreeChangeTest {
                 baseFolder.newFile("3.txt")
         );
 
-        addCmd.fileNames = addedFiles.stream().map(File::toString).collect(Collectors.toList());
+        addCmd.setFileNames(addedFiles.stream().map(File::toString).collect(Collectors.toList()));
         addCmd.execute(userRepoDir, storage);
     }
 

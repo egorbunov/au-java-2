@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import ru.spbau.mit.java.wit.command.WitInit;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 /**
@@ -19,7 +20,7 @@ public class InitTest {
     public TemporaryFolder baseFolder = new TemporaryFolder();
 
     @Test
-    public void testInit() {
+    public void testInit() throws IOException {
         Path baseDir = baseFolder.getRoot().toPath();
         WitInit init = new WitInit();
         init.execute(baseDir, null);

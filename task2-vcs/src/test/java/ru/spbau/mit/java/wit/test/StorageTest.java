@@ -45,7 +45,7 @@ public class StorageTest {
     }
 
     @Test
-    public void testWriteBranch() {
+    public void testWriteBranch() throws IOException {
         Branch b = new Branch("new_branch", new ShaId("y"));
         storage.writeBranch(b);
         Branch actualBranch = storage.readBranch(b.getName());
@@ -55,7 +55,7 @@ public class StorageTest {
     }
 
     @Test
-    public void testWriteReadIndex() {
+    public void testWriteReadIndex() throws IOException {
         // empty index read must be ok
         Index index = storage.readIndex();
         Assert.assertEquals(index.size(), 0);
@@ -76,7 +76,7 @@ public class StorageTest {
     }
 
     @Test
-    public void testWriteCommit() {
+    public void testWriteCommit() throws IOException {
         Commit commit = new Commit();
         commit.setMsg("msg");
         commit.setParentCommitsIds(Arrays.asList(new ShaId("1"), new ShaId("2"), new ShaId("3")));
@@ -93,7 +93,7 @@ public class StorageTest {
     }
 
     @Test
-    public void testWriteSnapshot() {
+    public void testWriteSnapshot() throws IOException {
         Snapshot snapshot = new Snapshot();
         snapshot.add(new Snapshot.Entry(new ShaId("1"), "file"));
         snapshot.add(new Snapshot.Entry(new ShaId("2"), "file1"));
@@ -109,7 +109,7 @@ public class StorageTest {
     }
 
     @Test
-    public void testCurBranch() {
+    public void testCurBranch() throws IOException {
         final String b = "super";
         storage.writeCurBranchName(b);
         Assert.assertEquals(b, storage.readCurBranchName());
@@ -132,7 +132,7 @@ public class StorageTest {
     }
 
     @Test
-    public void testLogWrite() {
+    public void testLogWrite() throws IOException {
         String branchName = "branch";
         List<ShaId> log = new ArrayList<>();
         log.add(new ShaId("this_is_id0x35"));

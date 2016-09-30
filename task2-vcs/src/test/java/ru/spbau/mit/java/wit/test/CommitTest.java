@@ -33,25 +33,24 @@ public class CommitTest {
 
 
     @Before
-    public void setup() {
+    public void setup() throws IOException {
         WitInit init = new WitInit();
         baseDir = baseFolder.getRoot().toPath();
         init.execute(baseDir, null);
         Path witRoot = WitInit.findRepositoryRoot(baseDir);
         storage = new WitStorage(witRoot);
         addCmd = new WitAdd();
-        addCmd.fileNames = new ArrayList<>();
         commitCmd = new WitCommit();
-        commitCmd.msg = "HELLO";
+        commitCmd.setMsg("HELLO");
     }
 
-    private void checkNothingStagedForCommit() {
+    private void checkNothingStagedForCommit() throws IOException {
         Assert.assertEquals(0, WitUtils.getStagedEntries(storage.readIndex())
                 .map(e -> e.fileName).count());
     }
 
     @Test
-    public void testCommitNothing() {
+    public void testCommitNothing() throws IOException {
         commitCmd.execute(baseDir, storage);
         checkNothingStagedForCommit();
     }
@@ -59,7 +58,7 @@ public class CommitTest {
     @Test
     public void testCommitOneFile() throws IOException {
         File f = baseFolder.newFile();
-        addCmd.fileNames.add(f.toString());
+        addCmd.setFileNames(Collections.singletonList(f.toString()));
         addCmd.execute(baseDir, storage);
         commitCmd.execute(baseDir, storage);
 
@@ -74,7 +73,7 @@ public class CommitTest {
                 Files.createFile(subFolder.resolve("file.txt")),
                 Files.createFile(subFolder.resolve("txt.file"))
         );
-        addCmd.fileNames.add(baseDir.toString());
+        addCmd.setFileNames(Collections.singletonList(baseDir.toString()));
         addCmd.execute(baseDir, storage);
         commitCmd.execute(subFolder, storage);
 
