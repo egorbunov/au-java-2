@@ -4,6 +4,7 @@ import io.airlift.airline.Cli;
 import ru.spbau.mit.java.wit.command.*;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -32,7 +33,13 @@ public class Wit {
         WitCommand cmd = parser.parse(args);
 
         Path baseDir = Paths.get(System.getProperty("user.dir"));
-        Path witRoot = WitInit.findRepositoryRoot(baseDir);
+        Path witRoot;
+        try {
+            witRoot = WitInit.findRepositoryRoot(baseDir);
+        } catch (IOException e) {
+            System.err.println("FATAL: Can't scan for repository root");
+            return;
+        }
         WitStorage storage = null;
         if (witRoot != null) {
             storage = new WitStorage(witRoot);
@@ -40,7 +47,7 @@ public class Wit {
 
         try {
             cmd.execute(baseDir, storage);
-        } catch (WitStorage.StorageException e) {
+        } catch (IOException e) {
             System.err.println("FATAL: repository write/read failed!");
         }
     }

@@ -8,6 +8,7 @@ import ru.spbau.mit.java.wit.model.id.ShaId;
 import ru.spbau.mit.java.wit.repository.WitUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,10 +23,10 @@ import java.util.stream.Stream;
 @Command(name = "commit", description = "WitCommit snapshot to vcs")
 public class WitCommit implements WitCommand {
     @Option(name = "-m", description = "Inline message")
-    public String msg;
+    private String msg;
 
     @Override
-    public int execute(Path workingDir, WitStorage storage) {
+    public int execute(Path workingDir, WitStorage storage) throws IOException {
         if (msg.isEmpty()) {
             System.err.println("Error: Empty message");
             return -1;
@@ -78,17 +79,20 @@ public class WitCommit implements WitCommand {
         ShaId commitId;
         commitId = storage.writeCommit(commit);
 
-        // Updating branch
-        curBranch.setHeadCommitId(commitId);
-
-        // Storing changed index
-        storage.writeIndex(index);
-
         // Update log
         List<ShaId> log = storage.readCommitLog(curBranch.getName());
         log.add(commitId);
         storage.writeCommitLog(log, curBranch.getName());
 
+        // Updating branch
+        curBranch.setHeadCommitId(commitId);
+        storage.writeBranch(curBranch);
+
+        // Storing changed index
+        storage.writeIndex(index);
+
+
+        // providing info to user
         Path witRoot = storage.getWitRoot();
         Path userRepositoryPath = WitUtils.stripWitStoragePath(witRoot);
 
@@ -106,5 +110,9 @@ public class WitCommit implements WitCommand {
         }
 
         return 0;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 }

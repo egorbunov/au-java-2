@@ -15,12 +15,16 @@ import java.nio.file.Path;
 @Command(name = "merge", description = "WitMerge some branch to currently active")
 public class WitMerge implements WitCommand {
     @Arguments(description = "Branch, which will be merged into active branch")
-    String branch;
+    private String branch;
 
     @Override
     public int execute(Path workingDir, WitStorage storage) {
         System.out.println("IMPLEMENT MERGE =)");
 
         return 0;
+    }
+
+    public void setBranch(String branch) {
+        this.branch = branch;
     }
 }

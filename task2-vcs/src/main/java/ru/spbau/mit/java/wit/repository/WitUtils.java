@@ -38,7 +38,7 @@ public class WitUtils {
      * Commits are retrieved by traversing parent commits from head commit,
      * specified by {@code headCommitId}.
      */
-    public static Stream<IdCommit> getCommitHistory(ShaId headCommitId, WitStorage storage) {
+    public static Stream<IdCommit> getCommitHistory(ShaId headCommitId, WitStorage storage) throws IOException {
         return collectCommitHistoryStream(headCommitId, storage)
                 .distinct()
                 .sorted(Comparator.comparing(c -> c.commit.getTimestamp()));
@@ -168,7 +168,7 @@ public class WitUtils {
     /**
      * Helper function
      */
-    private static Stream<IdCommit> collectCommitHistoryStream(ShaId head, WitStorage storage) {
+    private static Stream<IdCommit> collectCommitHistoryStream(ShaId head, WitStorage storage) throws IOException {
         if (head.equals(ShaId.EmptyId)) {
             return Stream.empty();
         }

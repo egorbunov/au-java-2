@@ -6,6 +6,7 @@ import ru.spbau.mit.java.wit.model.Commit;
 import ru.spbau.mit.java.wit.model.id.ShaId;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
@@ -22,7 +23,7 @@ public class WitLog implements WitCommand {
     String branchName;
 
     @Override
-    public int execute(Path workingDir, WitStorage storage) {
+    public int execute(Path workingDir, WitStorage storage) throws IOException {
         if (branchName.isEmpty()) {
             branchName = storage.readCurBranchName();
         }

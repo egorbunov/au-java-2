@@ -2,6 +2,7 @@ package ru.spbau.mit.java.wit.command;
 
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 /**
@@ -17,5 +18,5 @@ public interface WitCommand {
      * @param storage repository storage, which takes version control care of files at {@code baseDir}
      * @return exit code: 0 for success and non-zero value to designate error
      */
-    int execute(Path workingDir, WitStorage storage);
+    int execute(Path workingDir, WitStorage storage) throws IOException;
 }

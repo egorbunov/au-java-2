@@ -28,12 +28,12 @@ import java.util.stream.Collectors;
 @Command(name = "add", description = "WitAdd files to be managed by vcs")
 public class WitAdd implements WitCommand {
     @Arguments(description = "Directories and file names to be added")
-    public List<String> fileNames;
+    private List<String> fileNames;
 
     private Logger logger = Logging.getLogger(WitAdd.class.getName());
 
     @Override
-    public int execute(Path workingDir, WitStorage storage) {
+    public int execute(Path workingDir, WitStorage storage) throws IOException {
         // checking if all files are existing
         List<Path> nonExisting = fileNames.stream().map(Paths::get).filter(Files::notExists)
                 .collect(Collectors.toList());
@@ -54,20 +54,15 @@ public class WitAdd implements WitCommand {
                 logger.info("Omitting files under repo storage dir: " + p);
                 continue;
             }
-            try {
-                WitUtils.walk(p, storage.getWitRoot())
-                        .forEach(fp -> {
-                            if (!fp.startsWith(userRepositoryPath)) {
-                                System.out.println("File " + p + " is outside repository; " +
-                                        "Omitting");
-                            } else {
-                                filesForStage.add(fp);
-                            }
-                        });
-            } catch (IOException e) {
-                System.out.println("Error: Can't collect files for stage");
-                return -1;
-            }
+            WitUtils.walk(p, storage.getWitRoot())
+                    .forEach(fp -> {
+                        if (!fp.startsWith(userRepositoryPath)) {
+                            System.out.println("File " + p + " is outside repository; " +
+                                    "Omitting");
+                        } else {
+                            filesForStage.add(fp);
+                        }
+                    });
         }
 
         // staging files; preparing new index
@@ -112,5 +107,9 @@ public class WitAdd implements WitCommand {
         storage.writeIndex(index);
 
         return 0;
+    }
+
+    public void setFileNames(List<String> fileNames) {
+        this.fileNames = fileNames;
     }
 }

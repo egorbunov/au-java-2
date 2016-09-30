@@ -2,6 +2,7 @@ package ru.spbau.mit.java.wit.command;
 
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
+import ru.spbau.mit.java.wit.log.Logging;
 import ru.spbau.mit.java.wit.model.Branch;
 import ru.spbau.mit.java.wit.model.Commit;
 import ru.spbau.mit.java.wit.model.Index;
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -24,19 +27,21 @@ import java.util.stream.Collectors;
 
 @Command(name = "checkout", description = "Switch to branch or revision")
 public class WitCheckout implements WitCommand {
+    private Logger logger = Logging.getLogger(WitCheckout.class.getName());
+
     @Arguments(description = "Name of branch or revision (commit) identifier")
-    String ref;
+    private String ref;
 
     @Override
-    public int execute(Path workingDir, WitStorage storage) {
+    public int execute(Path workingDir, WitStorage storage) throws IOException {
         Path userRepositoryPath = WitUtils.stripWitStoragePath(storage.getWitRoot());
 
         // resolving commit reference
         ShaId commitId;
-        Branch b = storage.readBranch(ref);
-        boolean checkoutDetach = false;
-        if (b != null) {
-            commitId = b.getHeadCommitId();
+        Branch checkOutBranch = storage.readBranch(ref);
+
+        if (checkOutBranch != null) {
+            commitId = checkOutBranch.getHeadCommitId();
         } else {
             List<ShaId> cmts = storage.resolveCommitIdsByPrefix(ref);
             if (cmts.size() > 1) {
@@ -48,8 +53,6 @@ public class WitCheckout implements WitCommand {
                 return -1;
             }
             commitId = cmts.get(0);
-
-            checkoutDetach = true;
         }
 
         // checking out and creating new index
@@ -63,7 +66,7 @@ public class WitCheckout implements WitCommand {
             String name = entry.fileName;
             Path pToCheckout = userRepositoryPath.resolve(name);
 
-            // TODO: do not copy if files are equal
+            // TODO: do not copy if files are equal if possible
             storage.checkoutBlob(entry.id, pToCheckout);
 
             // index update...
@@ -73,20 +76,19 @@ public class WitCheckout implements WitCommand {
         }
 
         // deleting files not existing in target revision
-        Index curIndex;
-        curIndex = storage.readIndex();
+        Index curIndex = storage.readIndex();
+        for (Index.Entry entry : curIndex) {
+            // deleting not in target revision && only if file is committed
+            if (snapshot.getBlobIdByFileName(entry.fileName) == null
+                    && entry.curBlobId.equals(entry.lastCommitedBlobId)) {
+                Path p = userRepositoryPath.resolve(entry.fileName);
+                Files.deleteIfExists(p);
 
-        for (Index.Entry e : curIndex) {
-            // deleting not in target revision && only if file is commited
-            if (snapshot.getBlobIdByFileName(e.fileName) == null &&
-                    e.curBlobId.equals(e.lastCommitedBlobId)) {
-
-                Path p = userRepositoryPath.resolve(e.fileName);
-                try {
-                    Files.deleteIfExists(p);
-                } catch (IOException e1) {
-                    System.err.println("Error: can't delete file " + p);
-                    return -1;
+                // erasing empty parent directories, because we can!
+                Path parent = p.getParent();
+                while (Files.list(parent).findFirst().equals(Optional.empty())) {
+                    Files.delete(parent);
+                    parent = parent.getParent();
                 }
             }
         }
@@ -94,10 +96,10 @@ public class WitCheckout implements WitCommand {
         // replacing index
         storage.writeIndex(newIndex);
 
-        if (checkoutDetach) {
+        if (checkOutBranch == null) {
+            logger.info("Creating detached branch");
             // checking out by commit ref => need to create new detached branch
             // and fill log properly for that branch
-
             Branch detachBranch = new Branch("detach_".concat(commitId.toString()), commitId);
             List<ShaId> log = WitUtils.getCommitHistory(commitId, storage).map(it -> it.id)
                     .collect(Collectors.toList());
@@ -105,7 +107,14 @@ public class WitCheckout implements WitCommand {
             storage.writeBranch(detachBranch);
             storage.writeCommitLog(log, detachBranch.getName());
             storage.writeCurBranchName(detachBranch.getName());
+        } else {
+            logger.info("Switching to branch " + checkOutBranch.getName());
+            storage.writeCurBranchName(checkOutBranch.getName());
         }
         return 0;
+    }
+
+    public void setRef(String ref) {
+        this.ref = ref;
     }
 }

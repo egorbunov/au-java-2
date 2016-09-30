@@ -1,5 +1,6 @@
 package ru.spbau.mit.java.wit.command;
 
+import com.sun.xml.internal.fastinfoset.algorithm.IEEE754FloatingPointEncodingAlgorithm;
 import io.airlift.airline.Command;
 import org.apache.commons.io.FileUtils;
 import ru.spbau.mit.java.wit.model.Branch;
@@ -33,7 +34,7 @@ public class WitInit implements WitCommand {
      * already exists in working dir or above, when nothing is done
      */
     @Override
-    public int execute(Path workingDir, WitStorage storage) {
+    public int execute(Path workingDir, WitStorage storage) throws IOException {
         // checking if repository is already initialized
         Path repoRoot = findRepositoryRoot(workingDir);
         if (repoRoot != null) {
@@ -51,7 +52,7 @@ public class WitInit implements WitCommand {
             storage.writeCurBranchName(initialBranch.getName());
             storage.writeCommitLog(initialBranchLog, initialBranch.getName());
             storage.writeIndex(initialIndex);
-        } catch (WitStorage.StorageException e) {
+        } catch (IOException e) {
             try {
                 FileUtils.deleteDirectory(storageRoot.toFile());
             } catch (IOException e1) {
@@ -72,7 +73,7 @@ public class WitInit implements WitCommand {
      * @param baseDir working directory
      * @return path to vcs root dir if found, {@code null} otherwise
      */
-    public static Path findRepositoryRoot(Path baseDir) {
+    public static Path findRepositoryRoot(Path baseDir) throws IOException {
         Path next = baseDir.toAbsolutePath();
 
         while (true) {

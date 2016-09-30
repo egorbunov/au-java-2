@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,24 +26,12 @@ import java.util.stream.Stream;
 /**
  * Class, which provides read/write methods
  * for every repository object/file.
- *
+ * <p>
  * It aimed to encapsulate all i/o with repository storage
- *
- * Every method may produce {@link StorageException}
- *
+ * <p>
  * TODO: generalize interfaces?
  */
 public class WitStorage {
-    /**
-     * IOException wrapper for every IO excpetion occurred during storage
-     * io operations
-     */
-    public static class StorageException extends IOError {
-        StorageException(Throwable cause) {
-            super(cause);
-        }
-    }
-
     /**
      * List of dirs and files, which designate wit repo storage folder
      */
@@ -73,21 +62,17 @@ public class WitStorage {
      * Creates directory and file structure, which needed for
      * work with repository storage;
      */
-    public void createStorageStructure() {
-        try {
-            Files.createDirectory(witRoot);
-            for (Path p : witStorageDirsSignature) {
-                if (Files.notExists(witRoot.resolve(p))) {
-                    Files.createDirectories(witRoot.resolve(p));
-                }
+    public void createStorageStructure() throws IOException {
+        Files.createDirectory(witRoot);
+        for (Path p : witStorageDirsSignature) {
+            if (Files.notExists(witRoot.resolve(p))) {
+                Files.createDirectories(witRoot.resolve(p));
             }
-            for (Path p : witStorageFilesSignature) {
-                if (Files.notExists(witRoot.resolve(p))) {
-                    Files.createFile(witRoot.resolve(p));
-                }
+        }
+        for (Path p : witStorageFilesSignature) {
+            if (Files.notExists(witRoot.resolve(p))) {
+                Files.createFile(witRoot.resolve(p));
             }
-        } catch (IOException e) {
-            throw new StorageException(e);
         }
     }
 
@@ -99,183 +84,120 @@ public class WitStorage {
     }
 
 
-
     public Path getWitRoot() {
         return witRoot;
     }
 
-    public void writeBranch(Branch b) {
-        try {
-            StoreUtils.write(
-                    b,
-                    WitStoragePaths.getBranchInfoFilePath(witRoot, b.getName()),
-                    BranchPack::pack
-            );
-        } catch (IOException e) {
-            throw new StorageException(e);
-        }
+    public void writeBranch(Branch b) throws IOException {
+        StoreUtils.write(
+                b,
+                WitStoragePaths.getBranchInfoFilePath(witRoot, b.getName()),
+                BranchPack::pack
+        );
     }
 
     /**
      * Returns Branch if exists, else null
      */
-    public Branch readBranch(String branchName) {
+    public Branch readBranch(String branchName) throws IOException {
         if (Files.notExists(WitStoragePaths.getBranchInfoFilePath(witRoot, branchName))) {
             return null;
         }
-        try {
-            return StoreUtils.read(
-                    WitStoragePaths.getBranchInfoFilePath(witRoot, branchName),
-                    BranchPack::unpack
-            );
-        } catch (IOException e) {
-            throw new StorageException(e);
-        }
+        return StoreUtils.read(
+                WitStoragePaths.getBranchInfoFilePath(witRoot, branchName),
+                BranchPack::unpack
+        );
     }
 
-    public String readCurBranchName() {
-        try {
-            return StoreUtils.read(WitStoragePaths.getCurBranchNameFilePath(witRoot),
-                    StoreUtils::stringUnpack);
-        } catch (IOException e) {
-            throw new StorageException(e);
-        }
+    public String readCurBranchName() throws IOException {
+        return StoreUtils.read(WitStoragePaths.getCurBranchNameFilePath(witRoot),
+                StoreUtils::stringUnpack);
     }
 
-    public void writeCurBranchName(String branchName) {
-        try {
-            StoreUtils.write(branchName, WitStoragePaths.getCurBranchNameFilePath(witRoot),
-                    StoreUtils::stringPack);
-        } catch (IOException e) {
-            throw new StorageException(e);
-        }
+    public void writeCurBranchName(String branchName) throws IOException {
+        StoreUtils.write(branchName, WitStoragePaths.getCurBranchNameFilePath(witRoot),
+                StoreUtils::stringPack);
     }
 
-    public List<Branch> readAllBranches() {
-        try {
-            return Files.walk(WitStoragePaths.getBranchesDirPath(witRoot))
-                    .map(p -> readBranch(p.getFileName().toString()))
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            throw new StorageException(e);
+    public List<Branch> readAllBranches() throws IOException {
+        ArrayList<Branch> branches = new ArrayList<>();
+        for (Path p : Files.list(WitStoragePaths.getBranchesDirPath(witRoot))
+                .collect(Collectors.toList())) {
+            branches.add(readBranch(p.toString()));
         }
+        return branches;
     }
 
-    public ShaId writeCommit(Commit c) {
-        try {
-            return StoreUtils.writeSha(c, WitStoragePaths.getCommitsDir(witRoot),
-                    CommitPack::pack);
-        } catch (IOException e) {
-            throw new StorageException(e);
-        }
+    public ShaId writeCommit(Commit c) throws IOException {
+        return StoreUtils.writeSha(c, WitStoragePaths.getCommitsDir(witRoot),
+                CommitPack::pack);
     }
 
     /**
      * Return commit is exists, else null
      */
-    public Commit readCommit(ShaId id) {
+    public Commit readCommit(ShaId id) throws IOException {
         if (Files.notExists(WitStoragePaths.getCommitsDir(witRoot).resolve(id.toString()))) {
             return null;
         }
-        try {
-            return StoreUtils.read(WitStoragePaths.getCommitsDir(witRoot).resolve(id.toString()),
-                    CommitPack::unpack);
-        } catch (IOException e) {
-            throw new StorageException(e);
-        }
+        return StoreUtils.read(WitStoragePaths.getCommitsDir(witRoot).resolve(id.toString()),
+                CommitPack::unpack);
     }
 
-    public List<ShaId> resolveCommitIdsByPrefix(String prefix) {
-        try {
-            return Files.list(WitStoragePaths.getCommitsDir(witRoot)).map(Path::getFileName)
-                    .map(Path::toString).filter(s -> s.startsWith(prefix))
-                    .map(ShaId::new)
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            throw new StorageException(e);
-        }
+    public List<ShaId> resolveCommitIdsByPrefix(String prefix) throws IOException {
+        return Files.list(WitStoragePaths.getCommitsDir(witRoot)).map(Path::getFileName)
+                .map(Path::toString).filter(s -> s.startsWith(prefix))
+                .map(ShaId::new)
+                .collect(Collectors.toList());
     }
 
-    public ShaId writeSnapshot(Snapshot s) {
-        try {
-            return StoreUtils.writeSha(s, WitStoragePaths.getSnapshotsDir(witRoot),
-                    SnapshotPack::pack);
-        } catch (IOException e) {
-            throw new StorageException(e);
-        }
+    public ShaId writeSnapshot(Snapshot s) throws IOException {
+        return StoreUtils.writeSha(s, WitStoragePaths.getSnapshotsDir(witRoot),
+                SnapshotPack::pack);
     }
 
-    public Snapshot readSnapshot(ShaId id) {
-        try {
-            return StoreUtils.read(WitStoragePaths.getSnapshotsDir(witRoot).resolve(id.toString()),
-                    SnapshotPack::unpack);
-        } catch (IOException e) {
-            throw new StorageException(e);
-        }
+    public Snapshot readSnapshot(ShaId id) throws IOException {
+        return StoreUtils.read(WitStoragePaths.getSnapshotsDir(witRoot).resolve(id.toString()),
+                SnapshotPack::unpack);
     }
 
-    public ShaId writeBlob(File f) {
-        try {
-            return StoreUtils.writeSha(f, WitStoragePaths.getBlobsDir(witRoot),
-                    StoreUtils::filePack);
-        } catch (IOException e) {
-            throw new StorageException(e);
-        }
+    public ShaId writeBlob(File f) throws IOException {
+        return StoreUtils.writeSha(f, WitStoragePaths.getBlobsDir(witRoot),
+                StoreUtils::filePack);
     }
 
     public Path getBlobFile(ShaId id) {
         return WitStoragePaths.getBlobsDir(witRoot).resolve(id.toString());
     }
 
-    public void checkoutBlob(ShaId blobId, Path pToCheckout) {
-        try {
-            Files.copy(getBlobFile(blobId), pToCheckout, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new StorageException(e);
-        }
+    public void checkoutBlob(ShaId blobId, Path pToCheckout) throws IOException {
+        Files.copy(getBlobFile(blobId), pToCheckout, StandardCopyOption.REPLACE_EXISTING);
     }
 
-    public void writeIndex(Index index) {
-        try {
-            StoreUtils.write(index, WitStoragePaths.getIndexFilePath(witRoot), IndexPack::pack);
-        } catch (IOException e) {
-            throw new StorageException(e);
-        }
+    public void writeIndex(Index index) throws IOException {
+        StoreUtils.write(index, WitStoragePaths.getIndexFilePath(witRoot), IndexPack::pack);
     }
 
-    public Index readIndex() {
-        try {
-            return StoreUtils.read(WitStoragePaths.getIndexFilePath(witRoot), IndexPack::unpack);
-        } catch (IOException e) {
-            throw new StorageException(e);
-        }
+    public Index readIndex() throws IOException {
+        return StoreUtils.read(WitStoragePaths.getIndexFilePath(witRoot), IndexPack::unpack);
     }
 
     /**
-     *
-     * @param log list of commit ids
+     * @param log    list of commit ids
      * @param branch branch name, which log is written
      */
-    public void writeCommitLog(List<ShaId> log, String branch) {
-        try {
-            StoreUtils.write(log, WitStoragePaths.getLogPath(witRoot, branch), IdListPack::pack);
-        } catch (IOException e) {
-            throw new StorageException(e);
-        }
+    public void writeCommitLog(List<ShaId> log, String branch) throws IOException {
+        StoreUtils.write(log, WitStoragePaths.getLogPath(witRoot, branch), IdListPack::pack);
     }
 
     /**
      * Reads commit list for given branch; Returns {@code null} if there is
      * not log file for given branch name
      */
-    public List<ShaId> readCommitLog(String branch) {
+    public List<ShaId> readCommitLog(String branch) throws IOException {
         if (Files.notExists(WitStoragePaths.getLogPath(witRoot, branch))) {
             return null;
         }
-        try {
-            return StoreUtils.read(WitStoragePaths.getLogPath(witRoot, branch), IdListPack::unpack);
-        } catch (IOException e) {
-            throw new StorageException(e);
-        }
+        return StoreUtils.read(WitStoragePaths.getLogPath(witRoot, branch), IdListPack::unpack);
     }
 }
