@@ -1,27 +1,27 @@
 package ru.spbau.mit.java.wit.command;
 
-import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
+import io.airlift.airline.Help;
 import ru.spbau.mit.java.wit.WitCommand;
 import ru.spbau.mit.java.wit.storage.WitStorage;
 
+import javax.inject.Inject;
 import java.nio.file.Path;
 
 /**
  * Created by: Egor Gorbunov
- * Date: 9/26/16
+ * Date: 9/30/16
  * Email: egor-mailbox@ya.com
  */
 
-@Command(name = "merge", description = "MergeCmd some branch to currently active")
-public class MergeCmd implements WitCommand {
-    @Arguments(description = "Branch, which will be merged into active branch")
-    String branch;
+@Command(name = "help", description = "Help")
+public class WitHelp implements WitCommand {
+    @Inject
+    private Help help;
 
     @Override
     public int run(Path baseDir, WitStorage storage) {
-        System.out.println("IMPLEMENT MERGE =)");
-
+        help.run();
         return 0;
     }
 }

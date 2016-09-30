@@ -2,6 +2,8 @@ package ru.spbau.mit.java.wit.storage;
 
 import org.apache.commons.io.FileUtils;
 import ru.spbau.mit.java.wit.model.Branch;
+import ru.spbau.mit.java.wit.model.Index;
+import ru.spbau.mit.java.wit.model.Log;
 import ru.spbau.mit.java.wit.model.id.ShaId;
 import ru.spbau.mit.java.wit.storage.io.StoreUtils;
 import ru.spbau.mit.java.wit.storage.pack.BranchStore;
@@ -19,8 +21,8 @@ import java.util.stream.Stream;
  * Date: 9/27/16
  * Email: egor-mailbox@ya.com
  */
-public class WitRepo {
-    private WitRepo() {}
+public class WitInit {
+    private WitInit() {}
 
     /**
      * List of dirs and files, which designate wit repo storage folder
@@ -29,7 +31,8 @@ public class WitRepo {
             WitPaths.getBlobsDir(Paths.get("")),
             WitPaths.getCommitsDir(Paths.get("")),
             WitPaths.getSnapshotsDir(Paths.get("")),
-            WitPaths.getBranchesDirPath(Paths.get(""))
+            WitPaths.getBranchesDirPath(Paths.get("")),
+            WitPaths.getLogDir(Paths.get(""))
     );
     private static List<Path> witStorageFilesSignature = Arrays.asList(
             WitPaths.getIndexFilePath(Paths.get("")),
@@ -38,6 +41,8 @@ public class WitRepo {
     );
     // initial branch state
     private static Branch initialBranch = new Branch("master", ShaId.EmptyId, ShaId.EmptyId);
+    private static Log initialBranchLog = new Log();
+    private static Index initialIndex = new Index();
 
     /**
      * Tries to initialize new repository; If no wit storage
@@ -55,7 +60,7 @@ public class WitRepo {
         }
 
         storageRoot = WitPaths.resolveStoragePath(baseDir);
-
+        WitStorage storage = new WitStorage(storageRoot);
         try {
             Files.createDirectory(storageRoot);
             for (Path p : witStorageDirsSignature) {
@@ -65,17 +70,11 @@ public class WitRepo {
                 Files.createFile(storageRoot.resolve(p));
             }
 
-            // writing initial branch data
-            StoreUtils.write(initialBranch,
-                    WitPaths.getBranchInfoFilePath(storageRoot, initialBranch.getName()),
-                    BranchStore::pack);
-
-            // writing current branch name
-            StoreUtils.write(initialBranch.getName(),
-                    WitPaths.getCurBranchNameFilePath(storageRoot),
-                    StoreUtils::stringPack);
-
-        } catch (IOException e) {
+            storage.writeBranch(initialBranch);
+            storage.writeCurBranchName(initialBranch.getName());
+            storage.writeLog(initialBranchLog, initialBranch.getName());
+            storage.writeIndex(initialIndex);
+        } catch (WitStorage.StorageException | IOException e) {
             try {
                 FileUtils.deleteDirectory(storageRoot.toFile());
             } catch (IOException e1) {
@@ -90,29 +89,31 @@ public class WitRepo {
 
     /**
      * Tries to find root repository data directory starting
-     * from current working directory
+     * from given directory
+     *
+     * @param baseDir working directory
      * @return path to vcs root dir if found, {@code null} otherwise
      */
     public static Path findRepositoryRoot(Path baseDir) {
-        baseDir = baseDir.toAbsolutePath();
-        Path candidate;
+        Path next = baseDir.toAbsolutePath();
 
         while (true) {
-            candidate = WitPaths.lookupStoragePath(baseDir);
-            baseDir = candidate;
-            if (candidate == null) {
+            baseDir = next;
+            if (baseDir == null) {
                 return null;
             }
-            boolean isOk = Stream.concat(
+            next = baseDir.getParent();
+
+            Path witRoot = WitPaths.resolveStoragePath(baseDir);
+            boolean isNotOk = Stream.concat(
                     witStorageDirsSignature.stream(),
                     witStorageFilesSignature.stream()
-            ).map(baseDir::resolve).anyMatch(Files::notExists);
+            ).map(witRoot::resolve).anyMatch(Files::notExists);
 
-            if (!isOk) {
+            if (isNotOk) {
                 continue;
             }
 
-            Path witRoot = WitPaths.resolveStoragePath(candidate);
             Branch master;
             try {
                 master = StoreUtils.read(
@@ -130,6 +131,7 @@ public class WitRepo {
 
             break;
         }
-        return candidate;
+
+        return WitPaths.resolveStoragePath(baseDir);
     }
 }

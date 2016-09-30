@@ -20,9 +20,18 @@ public class Log extends AbstractCollection<Log.Entry> {
             this.commitId = commitId;
             this.msg = msg;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!Entry.class.isInstance(obj)) {
+                return false;
+            }
+            Entry l = (Entry) obj;
+            return l.msg.equals(msg) && l.commitId.equals(commitId);
+        }
     }
 
-    private ArrayList<Entry> log;
+    private ArrayList<Entry> log = new ArrayList<>();
 
     @Override
     public boolean add(Entry entry) {

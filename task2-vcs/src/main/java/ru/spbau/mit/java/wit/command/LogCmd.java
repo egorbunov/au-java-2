@@ -2,8 +2,13 @@ package ru.spbau.mit.java.wit.command;
 
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
+import ru.spbau.mit.java.wit.WitCommand;
 import ru.spbau.mit.java.wit.model.Log;
-import ru.spbau.mit.java.wit.storage.WitRepo;
+import ru.spbau.mit.java.wit.storage.WitInit;
+import ru.spbau.mit.java.wit.storage.WitStorage;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Created by: Egor Gorbunov
@@ -12,25 +17,22 @@ import ru.spbau.mit.java.wit.storage.WitRepo;
  */
 
 @Command(name = "log", description = "List current branch commits")
-public class LogCmd implements Runnable {
+public class LogCmd implements WitCommand {
     @Arguments(description = "branch name")
     String branchName;
 
     @Override
-    public void run() {
-        if (WitRepo.findRepositoryRoot() == null) {
-            System.err.println("Error: You are not under WIT repository");
-            return;
-        }
-
+    public int run(Path baseDir, WitStorage storage) {
         if (branchName.isEmpty()) {
-            branchName = BranchStorage.readCurBranchName();
+            branchName = storage.readCurBranchName();
         }
 
-        Log log = LogStorage.readLog(branchName);
+        Log log = storage.readLog(branchName);
 
-        for (Log.Entry e : log.getEntries()) {
+        for (Log.Entry e : log) {
             System.out.println(e.commitId + " | " + e.msg);
         }
+
+        return 0;
     }
 }

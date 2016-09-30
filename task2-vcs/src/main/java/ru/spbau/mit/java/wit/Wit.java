@@ -3,6 +3,12 @@ package ru.spbau.mit.java.wit;
 import io.airlift.airline.Cli;
 import io.airlift.airline.Help;
 import ru.spbau.mit.java.wit.command.*;
+import ru.spbau.mit.java.wit.storage.WitInit;
+import ru.spbau.mit.java.wit.storage.WitPaths;
+import ru.spbau.mit.java.wit.storage.WitStorage;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Created by: Egor Gorbunov
@@ -12,11 +18,11 @@ import ru.spbau.mit.java.wit.command.*;
 public class Wit {
     public static void main(String[] args) {
         @SuppressWarnings("unchecked")
-        Cli.CliBuilder<Runnable> builder = Cli.<Runnable>builder("wit")
+        Cli.CliBuilder<WitCommand> builder = Cli.<WitCommand>builder("wit")
                 .withDescription("Dead simple VCS")
-                .withDefaultCommand(Help.class)
+                .withDefaultCommand(WitHelp.class)
                 .withCommands(
-                        Help.class,
+                        WitHelp.class,
                         AddCmd.class,
                         CheckoutCmd.class,
                         BranchCmd.class,
@@ -25,7 +31,16 @@ public class Wit {
                         LogCmd.class,
                         MergeCmd.class
                 );
-        Cli<Runnable> parser = builder.build();
-        parser.parse(args).run();
+        Cli<WitCommand> parser = builder.build();
+        WitCommand cmd = parser.parse(args);
+
+        Path baseDir = Paths.get(System.getProperty("user.dir"));
+        Path witRoot = WitInit.findRepositoryRoot(baseDir);
+        WitStorage storage = null;
+        if (witRoot != null) {
+            storage = new WitStorage(witRoot);
+        }
+
+        cmd.run(baseDir, storage);
     }
 }

@@ -6,6 +6,15 @@ package ru.spbau.mit.java.wit.model.id;
  * Email: egor-mailbox@ya.com
  */
 public class ShaId {
+    @Override
+    public boolean equals(Object obj) {
+        if (!ShaId.class.isInstance(obj)) {
+            return false;
+        }
+        ShaId id = (ShaId) obj;
+        return id.toString().equals(toString());
+    }
+
     // Use it as null id
     public static ShaId EmptyId = new ShaId("");
 

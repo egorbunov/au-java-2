@@ -1,6 +1,6 @@
 package ru.spbau.mit.java.wit.storage.io;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
+import org.apache.commons.codec.binary.Hex;
 import ru.spbau.mit.java.wit.model.id.ShaId;
 
 import java.io.*;
@@ -32,7 +32,7 @@ public class StoreUtils {
 
     public static InputStream stringPack(String str) throws IOException {
         byte[] bytes = str.getBytes();
-        return new ByteInputStream(bytes, bytes.length);
+        return new ByteArrayInputStream(bytes, 0, bytes.length);
     }
 
     public static String stringUnpack(InputStream is) throws IOException {
@@ -80,7 +80,7 @@ public class StoreUtils {
             }
         }
 
-        ShaId id = new ShaId(new String(md.digest()));
+        ShaId id = new ShaId(Hex.encodeHexString(md.digest()));
         File newFile = dirName.resolve(id.toString()).toFile();
 
         if (!tmpFile.renameTo(newFile)) {

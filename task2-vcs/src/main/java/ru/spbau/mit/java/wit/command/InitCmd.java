@@ -1,7 +1,9 @@
 package ru.spbau.mit.java.wit.command;
 
 import io.airlift.airline.Command;
-import ru.spbau.mit.java.wit.storage.WitRepo;
+import ru.spbau.mit.java.wit.WitCommand;
+import ru.spbau.mit.java.wit.storage.WitInit;
+import ru.spbau.mit.java.wit.storage.WitStorage;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,24 +15,24 @@ import java.nio.file.Paths;
  */
 
 @Command(name = "init", description = "initializes empty wit repository")
-public class InitCmd implements Runnable {
+public class InitCmd implements WitCommand {
     @Override
-    public void run() {
-        Path baseDir = Paths.get(System.getProperty("user.dir"));
-
+    public int run(Path baseDir, WitStorage storage) {
         // checking if repository is already initialized
-        Path repoRoot = WitRepo.findRepositoryRoot(baseDir);
+        Path repoRoot = WitInit.findRepositoryRoot(baseDir);
         if (repoRoot != null) {
             System.out.println("Wit Repository is already initialized under" +
                     repoRoot.toString());
-            return;
+            return -1;
         }
-
         // initializing new repository
         try {
-            WitRepo.init(baseDir);
+            WitInit.init(baseDir);
         } catch (Exception e) { // TODO: change exception
+            e.printStackTrace();
             System.err.println("ERROR: Can't initialize repository");
         }
+
+        return 0;
     }
 }

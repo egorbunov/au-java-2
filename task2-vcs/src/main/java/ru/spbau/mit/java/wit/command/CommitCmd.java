@@ -3,13 +3,15 @@ package ru.spbau.mit.java.wit.command;
 import com.google.common.collect.Lists;
 import io.airlift.airline.Command;
 import io.airlift.airline.Option;
+import ru.spbau.mit.java.wit.WitCommand;
 import ru.spbau.mit.java.wit.model.*;
 import ru.spbau.mit.java.wit.model.id.ShaId;
 import ru.spbau.mit.java.wit.storage.*;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by: Egor Gorbunov
@@ -18,34 +20,28 @@ import java.nio.file.Paths;
  */
 
 @Command(name = "commit", description = "CommitCmd snapshot to vcs")
-public class CommitCmd implements Runnable {
+public class CommitCmd implements WitCommand {
     @Option(name = "-m", description = "Inline message")
-    String msg;
+    public String msg;
 
     @Override
-    public void run() {
-        Path baseDir = Paths.get(System.getProperty("user.dir"));
-        Path witRoot = WitRepo.findRepositoryRoot(baseDir);
-        if (witRoot == null) {
-            System.err.println("Error: You are not under WIT repository");
-            return;
-        }
-
-        WitStorage storage = new WitStorage(witRoot);
-
+    public int run(Path baseDir, WitStorage storage) {
         if (msg.isEmpty()) {
             System.err.println("Error: Empty message");
-            return;
+            return -1;
         }
 
         // Creating new Snapshot tree and new Index
         Index index;
-        try {
-            index = storage.readIndex();
-        } catch (IOException e) {
-            System.err.println("Can't read index");
-            e.printStackTrace();
-            return;
+        index = storage.readIndex();
+
+        // if there was no files staged, there is no reason to commit!
+        List<String> changedFiles = index.stream()
+                .filter(e -> !e.curBlobId.equals(e.lastCommitedBlobId))
+                .map(e -> e.fileName).collect(Collectors.toList());
+        if (changedFiles.isEmpty()) {
+            System.out.println("Noting to commit...");
+            return 0;
         }
 
         Index newIndex = new Index();
@@ -59,24 +55,12 @@ public class CommitCmd implements Runnable {
 
         // Storing new snapshot
         ShaId treeId;
-        try {
-            treeId = storage.writeSnapshot(newSnapshot);
-        } catch (IOException e) {
-            System.err.println("Error: Can't write snapshot!");
-            e.printStackTrace();
-            return;
-        }
+        treeId = storage.writeSnapshot(newSnapshot);
 
         // reading current branch, cause we 
         Branch curBranch;
-        try {
-            String curBranchName = storage.readCurBranchName();
-            curBranch = storage.readBranch(curBranchName);
-        } catch (IOException e) {
-            System.err.println("Error: can't read cur branch");
-            e.printStackTrace();
-            return;
-        }
+        String curBranchName = storage.readCurBranchName();
+        curBranch = storage.readBranch(curBranchName);
 
         Commit commit = new Commit();
         commit.setMsg(msg);
@@ -85,16 +69,11 @@ public class CommitCmd implements Runnable {
 
 
         ShaId commitId;
-        try {
-            commitId = storage.writeCommit(commit);
-        } catch (IOException e) {
-            System.err.println("Error: can't write new commit");
-            e.printStackTrace();
-            return;
-        }
+        commitId = storage.writeCommit(commit);
 
         // Updating branch
         Branch updBranch = new Branch();
+        updBranch.setName(curBranchName);
         if (!curBranch.getHeadCommitId().equals(curBranch.getCurCommitId())) {
             // creating new branch if needed
             String brName = "detach_" + curBranch.getCurCommitId();
@@ -104,35 +83,23 @@ public class CommitCmd implements Runnable {
         updBranch.setHeadCommitId(commitId);
 
         // updating branches data
-        try {
-            storage.writeBranch(updBranch);
-            // update branch if needed
-            if (!updBranch.getName().equals(curBranch.getName())) {
-                storage.writeCurBranchName(updBranch.getName());
-            }
-        } catch (IOException e) {
-            System.err.println("Error: can't update branch data");
-            e.printStackTrace();
-            return;
+        storage.writeBranch(updBranch);
+        // update branch if needed
+        if (!updBranch.getName().equals(curBranch.getName())) {
+            storage.writeCurBranchName(updBranch.getName());
         }
 
         // Storing new Index
-        try {
-            storage.writeIndex(newIndex);
-        } catch (IOException e) {
-            System.err.println("Error: can't write new index");
-            e.printStackTrace();
-            return;
-        }
+        storage.writeIndex(newIndex);
 
         // Update log
-        try {
-            Log log = storage.readLog(updBranch.getName());
-            log.add(new Log.Entry(commitId, msg));
-            storage.writeLog(log, updBranch.getName());
-        } catch (IOException e) {
-            System.err.println("Error: can't update log");
-            e.printStackTrace();
-        }
+        Log log = storage.readLog(updBranch.getName());
+        log.add(new Log.Entry(commitId, msg));
+        storage.writeLog(log, updBranch.getName());
+
+        // Writing to user =)
+        System.out.println("On branch [ " + updBranch.getName() + " ]");
+        System.out.println("    " + changedFiles.size() + " files changed");
+        return 0;
     }
 }

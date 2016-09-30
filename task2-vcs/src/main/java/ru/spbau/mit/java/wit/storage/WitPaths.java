@@ -20,18 +20,6 @@ public class WitPaths {
         return baseDir.resolve(".wit");
     }
 
-    /**
-     * Find wit storage root directory as parent of given base directory
-     * @return null if no such directory found or path to that dir
-     */
-    public static Path lookupStoragePath(Path baseDir) {
-        Path dir = baseDir;
-        while (dir != null && !dir.getFileName().equals(Paths.get(".wit"))) {
-            dir = dir.getParent();
-        }
-        return dir;
-    }
-
     public static Path getBlobsDir(Path witRoot) {
         return witRoot.resolve("objects");
     }
@@ -60,7 +48,11 @@ public class WitPaths {
         return witRoot.resolve("branches");
     }
 
+    public static Path getLogDir(Path witRoot) {
+        return witRoot.resolve("log");
+    }
+
     public static Path getLogPath(Path witRoot, String branch) {
-        return witRoot.resolve("log").resolve(branch);
+        return getLogDir(witRoot).resolve(branch);
     }
 }
