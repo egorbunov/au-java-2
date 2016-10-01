@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by: Egor Gorbunov
@@ -34,7 +33,7 @@ public class WitStatus implements WitCommand {
                 .collect(Collectors.toList());
         List<Path> notStagedModified = WitUtils.getTreeModifiedFiles(userRepositoryPath, index)
                 .collect(Collectors.toList());
-        List<Path> untrackedFiles = WitUtils.getTreeNewFiles(userRepositoryPath, index)
+        List<Path> untrackedFiles = WitUtils.getTreeNewPaths(userRepositoryPath, index)
                 .collect(Collectors.toList());
 
         System.out.println("On branch [ " + curBranch + " ]");

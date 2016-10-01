@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -67,7 +66,7 @@ public class WorkingTreeChangeTest {
     public void testNotTrackedRecognized() throws IOException {
         File f = baseFolder.newFile("not_tracked_yet");
         List<Path> notTracked =
-                WitUtils.getTreeNewFiles(userRepoDir, storage.readIndex()).collect(Collectors.toList());
+                WitUtils.getTreeNewPaths(userRepoDir, storage.readIndex()).collect(Collectors.toList());
         Assert.assertEquals(1, notTracked.size());
         Assert.assertEquals(f.toPath(), notTracked.get(0));
     }

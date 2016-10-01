@@ -48,13 +48,15 @@ public class WitAdd implements WitCommand {
         // collecting all files which user specified (walking dirs and stuff)
         Set<Path> filesForStage = new HashSet<>();
         for (String f : fileNames) {
-            Path p = Paths.get(f).toAbsolutePath();
+            Path p = Paths.get(f).normalize().toAbsolutePath();
             if (p.startsWith(storage.getWitRoot())) {
                 logger.info("Omitting files under repo storage dir: " + p);
                 continue;
             }
             WitUtils.walk(p, storage.getWitRoot())
+                    .filter(Files::isRegularFile)
                     .forEach(fp -> {
+                        assert !fp.startsWith(storage.getWitRoot());
                         if (!fp.startsWith(userRepositoryPath)) {
                             System.out.println("File " + p + " is outside repository; " +
                                     "Omitting");

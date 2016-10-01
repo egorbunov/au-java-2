@@ -100,7 +100,7 @@ public class WitUtils {
         return Stream.of(
                 getTreeDeletedFiles(userRepoRoot, index),
                 getTreeModifiedFiles(userRepoRoot, index),
-                getTreeNewFiles(userRepoRoot, index)
+                getTreeNewPaths(userRepoRoot, index)
         ).flatMap(Function.identity());
     }
 
@@ -138,17 +138,19 @@ public class WitUtils {
     }
 
     /**
-     * Return files, which are newly added to working tree and not staged
+     * Return regular files paths, which are newly added to working tree and not staged
      *
      * @param userRepoRoot base repository dir
      */
-    public static Stream<Path> getTreeNewFiles(Path userRepoRoot, Index index) throws IOException {
+    public static Stream<Path> getTreeNewPaths(Path userRepoRoot, Index index) throws IOException {
         Set<Path> treeFiles = walk(userRepoRoot, resolveStoragePath(userRepoRoot))
+                .filter(p -> Files.isRegularFile(p))
                 .collect(Collectors.toSet());
         Set<Path> indexedFiles = index.stream().map(it -> userRepoRoot.resolve(it.fileName))
                 .collect(Collectors.toSet());
 
         treeFiles.removeAll(indexedFiles);
+
         return treeFiles.stream();
     }
 
@@ -170,7 +172,8 @@ public class WitUtils {
     }
 
     /**
-     * Returns stream of regular file paths such that service wit paths are not included
+     * Returns stream of file ABSOLUTE paths such that
+     * service wit (.wit/...) paths are not included
      *
      * @param repositoryRoot path to some directory
      * @param witRoot path to storage repository root
@@ -182,8 +185,8 @@ public class WitUtils {
             servicePrefix = servicePrefix.getParent();
         }
         Path leastServicePrefix = servicePrefix;
-        return Files.walk(repositoryRoot).filter(p -> !p.startsWith(leastServicePrefix))
-                .filter(Files::isRegularFile);
+        return Files.walk(repositoryRoot)
+                .filter(p -> !p.startsWith(leastServicePrefix));
     }
 
     /**
