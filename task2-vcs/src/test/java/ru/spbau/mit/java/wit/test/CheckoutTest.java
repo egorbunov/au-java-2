@@ -32,8 +32,10 @@ public class CheckoutTest {
     public final TemporaryFolder expectedFolder = new TemporaryFolder();
 
 
+    private WitTestUtil witUtil;
     private WitStorage storage;
     private Path userRepoDir;
+
 
     @Before
     public void setup() throws IOException {
@@ -42,29 +44,7 @@ public class CheckoutTest {
         init.execute(userRepoDir, null);
         Path witRoot = WitInit.findRepositoryRoot(userRepoDir);
         storage = new WitStorage(witRoot);
-    }
-
-    private Path writeFile(String file, String content) throws IOException {
-        Path p = userRepoDir.resolve(file);
-        Files.createDirectories(p.getParent());
-        FileUtils.writeLines(p.toFile(), Collections.singletonList(content));
-        return p;
-    }
-
-    private void commitFile(String file, String content) throws IOException {
-        Path p = writeFile(file, content);
-        WitAdd addCmd = new WitAdd();
-        addCmd.setFileNames(Collections.singletonList(p.toString()));
-        addCmd.execute(userRepoDir, storage);
-        WitCommit commitCmd = new WitCommit();
-        commitCmd.setMsg(content + "_" + UUID.randomUUID().toString());
-        commitCmd.execute(userRepoDir, storage);
-    }
-
-    private void createBranch(String name) throws IOException {
-        WitBranch bCmd = new WitBranch();
-        bCmd.setBranchName(name);
-        bCmd.execute(userRepoDir, storage);
+        witUtil = new WitTestUtil(userRepoDir, storage);
     }
 
     private void copyRepoToFolder(Path p) throws IOException {
@@ -116,16 +96,15 @@ public class CheckoutTest {
 
     @Test
     public void testCheckoutBranchSimple() throws IOException {
-        String branchName = "new_branch";
-        commitFile("1.txt", "hello");
-        commitFile("fold/2.txt", "xxx");
-        createBranch(branchName);
+        witUtil.commitFile("1.txt");
+        witUtil.commitFile("fold/2.txt");
+        String branchName = witUtil.createBranch();
 
         copyRepoToFolder(expectedFolder.getRoot().toPath());
         String initBranch = storage.readCurBranchName();
 
         checkoutRef(branchName);
-        commitFile("2.txt", "hi");
+        witUtil.commitFile("2.txt");
 
         checkoutRef(initBranch);
 
@@ -137,17 +116,16 @@ public class CheckoutTest {
     @Test
     public void testCheckoutBackAfterCommits() throws IOException {
         String masterBranch = storage.readCurBranchName();
-        String branchName = "new";
-        commitFile("1.txt", "HELLO");
-        createBranch(branchName);
+        witUtil.commitFile("1.txt");
+        String branchName = witUtil.createBranch();
 
         checkoutRef(branchName);
         copyRepoToFolder(expectedFolder.getRoot().toPath());
         checkoutRef(masterBranch);
 
-        commitFile("2.txt", "");
-        commitFile("fold/3.txt", "stuff");
-        commitFile("xxx/xxx/xxx.avi", "blocked_in_your_country");
+        witUtil.commitFile("2.txt");
+        witUtil.commitFile("fold/3.txt");
+        witUtil.commitFile("xxx/xxx/xxx.avi");
 
         checkoutRef(branchName);
         copyRepoToFolder(actualFolder.getRoot().toPath());
@@ -159,16 +137,16 @@ public class CheckoutTest {
     public void testCheckoutRevision() throws IOException {
         String masterBranch = storage.readCurBranchName();
 
-        commitFile("1.txt", "1");
-        commitFile("fold/2.txt", "2");
-        commitFile("fold/fold/3.txt", "3");
+        witUtil.commitFile("1.txt");
+        witUtil.commitFile("fold/2.txt");
+        witUtil.commitFile("fold/fold/3.txt");
 
         String ref = storage.readBranch(masterBranch).getHeadCommitId().toString();
         copyRepoToFolder(expectedFolder.getRoot().toPath());
 
-        commitFile("4.txt", "4");
-        commitFile("fold1/5.txt", "5");
-        commitFile("fold/fold/6.txt", "6");
+        witUtil.commitFile("4.txt");
+        witUtil.commitFile("fold1/5.txt");
+        witUtil.commitFile("fold/fold/6.txt");
 
         checkoutRef(ref);
         copyRepoToFolder(actualFolder.getRoot().toPath());

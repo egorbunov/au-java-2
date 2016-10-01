@@ -1,21 +1,17 @@
 package ru.spbau.mit.java.wit.test;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import ru.spbau.mit.java.wit.command.*;
-import ru.spbau.mit.java.wit.model.id.ShaId;
+import ru.spbau.mit.java.wit.command.WitCheckout;
+import ru.spbau.mit.java.wit.command.WitInit;
+import ru.spbau.mit.java.wit.command.WitMerge;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Created by: Egor Gorbunov
@@ -28,6 +24,7 @@ public class MergeTest {
 
     private WitStorage storage;
     private Path userRepoDir;
+    private WitTestUtil witUtil;
 
     @Before
     public void setup() throws IOException {
@@ -36,12 +33,13 @@ public class MergeTest {
         init.execute(userRepoDir, null);
         Path witRoot = WitInit.findRepositoryRoot(userRepoDir);
         storage = new WitStorage(witRoot);
+        witUtil = new WitTestUtil(userRepoDir, storage);
     }
 
     @Test
     public void testMerge() throws IOException {
         String master = storage.readCurBranchName();
-        commitFile("x.txt", Arrays.asList(
+        witUtil.commitFile("x.txt", Arrays.asList(
                 "int main()",
                 "{",
                 "    return 0;",
@@ -50,9 +48,9 @@ public class MergeTest {
                 "oh my god",
                 ";}"));
 
-        String branch = createBranch();
+        String branch = witUtil.createBranch();
         checkoutRef(branch);
-        commitFile("x.txt", Arrays.asList(
+        witUtil.commitFile("x.txt", Arrays.asList(
                 "int main()",
                 "",
                 "{",
@@ -60,32 +58,6 @@ public class MergeTest {
                 "asdasda", ";}"));
         checkoutRef(master);
         merge(branch);
-    }
-
-    private Path writeFile(String file, List<String> content) throws IOException {
-        Path p = userRepoDir.resolve(file);
-        Files.createDirectories(p.getParent());
-        FileUtils.writeLines(p.toFile(), content);
-        return p;
-    }
-
-    private ShaId commitFile(String file, List<String> content) throws IOException {
-        Path p = writeFile(file, content);
-        WitAdd addCmd = new WitAdd();
-        addCmd.setFileNames(Collections.singletonList(p.toString()));
-        addCmd.execute(userRepoDir, storage);
-        WitCommit commitCmd = new WitCommit();
-        commitCmd.setMsg(content + "_" + UUID.randomUUID().toString());
-        commitCmd.execute(userRepoDir, storage);
-        return storage.readBranch(storage.readCurBranchName()).getHeadCommitId();
-    }
-
-    private String createBranch() throws IOException {
-        String name = UUID.randomUUID().toString();
-        WitBranch bCmd = new WitBranch();
-        bCmd.setBranchName(name);
-        bCmd.execute(userRepoDir, storage);
-        return name;
     }
 
     private void checkoutRef(String br) throws IOException {
