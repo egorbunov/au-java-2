@@ -28,10 +28,12 @@ public class Wit {
                         WitCommit.class,
                         WitInit.class,
                         WitLog.class,
-                        WitMerge.class
+                        WitMerge.class,
+                        WitStatus.class
                 );
         Cli<WitCommand> parser = builder.build();
 
+        // parsing command
         WitCommand cmd;
         try {
             cmd = parser.parse(args);
@@ -40,6 +42,7 @@ public class Wit {
             return;
         }
 
+        // trying to find already initialized repository
         Path baseDir = Paths.get(System.getProperty("user.dir"));
         Path witRoot;
         try {
@@ -48,11 +51,15 @@ public class Wit {
             System.err.println("FATAL: Can't scan for repository root");
             return;
         }
+
         WitStorage storage = null;
         if (witRoot != null) {
             storage = new WitStorage(witRoot);
         }
-        if (storage == null && !(cmd instanceof WitInit)) {
+
+        // in case repository not found and command is not useful without it
+        // print error
+        if (storage == null && !(cmd instanceof WitInit) && !(cmd instanceof WitHelp)) {
             System.err.println("Error: can't find wit repository near " + baseDir);
             return;
         }
