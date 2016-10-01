@@ -1,6 +1,5 @@
 package ru.spbau.mit.java.wit.test;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -17,7 +16,7 @@ import java.nio.file.Path;
 
 public class InitTest {
     @Rule
-    public TemporaryFolder baseFolder = new TemporaryFolder();
+    public final TemporaryFolder baseFolder = new TemporaryFolder();
 
     @Test
     public void testInit() throws IOException {

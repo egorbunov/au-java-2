@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Command(name = "checkout", description = "Switch to branch or revision")
 public class WitCheckout implements WitCommand {
-    private Logger logger = Logging.getLogger(WitCheckout.class.getName());
+    private final Logger logger = Logging.getLogger(WitCheckout.class.getName());
 
     @Arguments(description = "Name of branch or revision (commit) identifier")
     private String ref;
@@ -43,44 +43,52 @@ public class WitCheckout implements WitCommand {
         if (checkOutBranch != null) {
             commitId = checkOutBranch.getHeadCommitId();
         } else {
-            List<ShaId> cmts = storage.resolveCommitIdsByPrefix(ref);
-            if (cmts.size() > 1) {
+            List<ShaId> ids = storage.resolveCommitIdsByPrefix(ref);
+            if (ids.size() > 1) {
                 System.err.println("Error: can't resolve commit, " +
                         "too short prefix: " + ref);
                 return -1;
-            } else if (cmts.isEmpty()) {
+            } else if (ids.isEmpty()) {
                 System.err.println("Error: can't find commit or branch!");
                 return -1;
             }
-            commitId = cmts.get(0);
+            commitId = ids.get(0);
         }
 
-        // checking out and creating new index
+        if (storage.readMergeFlag() != null) {
+            System.err.println("Error: finish merging before checkout");
+            return -1;
+        }
+
+        Index curIndex = storage.readIndex();
+        if (!WitUtils.getStagedEntries(curIndex).findAny().equals(Optional.empty())) {
+            System.err.println("Error: you have staged changes in your repository, " +
+                    "commit them before checking out.");
+            return -1;
+        }
+
         Index newIndex = new Index();
 
         Snapshot snapshot;
         Commit commit = storage.readCommit(commitId);
         snapshot = storage.readSnapshot(commit.getSnapshotId());
 
+        // checking out and filling index
         for (Snapshot.Entry entry : snapshot) {
             String name = entry.fileName;
             Path pToCheckout = userRepositoryPath.resolve(name);
 
-            // TODO: do not copy if files are equal if possible
             storage.checkoutBlob(entry.id, pToCheckout);
 
-            // index update...
             newIndex.add(new Index.Entry(
                     name, pToCheckout.toFile().lastModified(), entry.id,
                     entry.id));
         }
 
         // deleting files not existing in target revision
-        Index curIndex = storage.readIndex();
         for (Index.Entry entry : curIndex) {
-            // deleting not in target revision && only if file is committed
-            if (snapshot.getBlobIdByFileName(entry.fileName) == null
-                    && entry.curBlobId.equals(entry.lastCommitedBlobId)) {
+            // delete if file is not in target revision
+            if (snapshot.getBlobIdByFileName(entry.fileName) == null) {
                 Path p = userRepositoryPath.resolve(entry.fileName);
                 Files.deleteIfExists(p);
 
@@ -107,9 +115,13 @@ public class WitCheckout implements WitCommand {
             storage.writeBranch(detachBranch);
             storage.writeCommitLog(log, detachBranch.getName());
             storage.writeCurBranchName(detachBranch.getName());
+
+            System.out.println("Switched to revision " + ref);
         } else {
             logger.info("Switching to branch " + checkOutBranch.getName());
             storage.writeCurBranchName(checkOutBranch.getName());
+
+            System.out.println("Switched to branch " + ref);
         }
         return 0;
     }

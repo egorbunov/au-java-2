@@ -34,8 +34,8 @@ public class Snapshot extends AbstractCollection<Snapshot.Entry> {
         }
     }
 
-    private Set<Entry> records = new HashSet<>();
-    private Map<String, Entry> recordsByFile = new HashMap<>();
+    private final Set<Entry> records = new HashSet<>();
+    private final Map<String, Entry> recordsByFile = new HashMap<>();
 
     public ShaId getBlobIdByFileName(String fileName) {
         if (!recordsByFile.containsKey(fileName)) {

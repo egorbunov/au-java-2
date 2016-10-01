@@ -4,6 +4,7 @@ import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
 import ru.spbau.mit.java.wit.model.Branch;
 import ru.spbau.mit.java.wit.model.id.ShaId;
+import ru.spbau.mit.java.wit.repository.WitUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
 import java.io.IOException;
@@ -21,16 +22,28 @@ public class WitBranch implements WitCommand {
     @Arguments(description = "Name of branch to be created")
     private String branchName;
 
-
     @Override
     public int execute(Path workingDir, WitStorage storage) throws IOException {
+        String curBranchName = storage.readCurBranchName();
+
+        if (branchName == null || branchName.isEmpty()) {
+            List<Branch> branches = storage.readAllBranches();
+            for (Branch b : branches) {
+                if (b.getName().equals(curBranchName)) {
+                    System.out.println("* " + b.getName());
+                } else {
+                    System.out.println("  " + b.getName());
+                }
+            }
+            return 0;
+        }
+
         if (storage.readBranch(branchName) != null) {
             System.err.println("Error: Branch with name " + branchName + " already exists");
             return -1;
         }
 
         Branch curBranch;
-        String curBranchName = storage.readCurBranchName();
         curBranch = storage.readBranch(curBranchName);
 
         if (curBranch.getHeadCommitId().equals(ShaId.EmptyId)) {

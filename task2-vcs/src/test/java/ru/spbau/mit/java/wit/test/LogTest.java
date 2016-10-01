@@ -26,9 +26,9 @@ import java.util.UUID;
  * Date: 9/30/16
  * Email: egor-mailbox@ya.com
  */
-public class TestLog {
+public class LogTest {
     @Rule
-    public TemporaryFolder baseFolder = new TemporaryFolder();
+    public final TemporaryFolder baseFolder = new TemporaryFolder();
 
     private WitStorage storage;
     private Path userRepoDir;

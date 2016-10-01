@@ -16,7 +16,7 @@ public class Index extends AbstractCollection<Index.Entry> {
      * Entry describes one file in working tree.
      * {@code fileName}
      * {@code lastCommit}
-     * {@code lastModified}
+     * {@code modified}
      * {@code }
      */
     public static class Entry {
@@ -29,11 +29,11 @@ public class Index extends AbstractCollection<Index.Entry> {
          * id of blob, which was written on most fresh commit, which included that file
          * must not be null (for null use {@code ShaId.EmptyId}
          */
-        public final ShaId lastCommitedBlobId;
+        public final ShaId lastCommittedBlobId;
 
         /**
-         * id of blob, which is either equal to {@code lastCommitedBlobId} if file is not staged
-         * for commit, but commited or it is not equal to {@code lastCommitedBlobId} meaning that
+         * id of blob, which is either equal to {@code lastCommittedBlobId} if file is not staged
+         * for commit, but committed or it is not equal to {@code lastCommittedBlobId} meaning that
          * file is staged for next commit;
          *
          * if this field is equal to {@code ShaId.EmptyId}, when file is treated as staged
@@ -45,15 +45,15 @@ public class Index extends AbstractCollection<Index.Entry> {
          * modification timestamp for moment, when file was staged to commit
          * (added by add command)
          */
-        public final long lastModified;
+        public final long modified;
 
-        public Entry(String fileName, long lastModified,
+        public Entry(String fileName, long modified,
                      ShaId blobId,
-                     ShaId lastCommitedBlobId) {
+                     ShaId lastCommittedBlobId) {
             this.curBlobId = blobId;
-            this.lastModified = lastModified;
+            this.modified = modified;
             this.fileName = fileName;
-            this.lastCommitedBlobId = lastCommitedBlobId;
+            this.lastCommittedBlobId = lastCommittedBlobId;
         }
 
         @Override
@@ -71,8 +71,12 @@ public class Index extends AbstractCollection<Index.Entry> {
         }
     }
 
-    private Set<Entry> entries = new HashSet<>();
-    private Map<String, Entry> entriesByFileName= new HashMap<>();
+    private final Set<Entry> entries = new HashSet<>();
+    private final Map<String, Entry> entriesByFileName= new HashMap<>();
+
+    public static boolean isCommitedAndNotChanged(Entry entry) {
+        return entry.curBlobId.equals(entry.lastCommittedBlobId);
+    }
 
     @Override
     public boolean add(Entry entry) {
@@ -117,5 +121,6 @@ public class Index extends AbstractCollection<Index.Entry> {
     public Spliterator<Entry> spliterator() {
         return entries.spliterator();
     }
+
 
 }

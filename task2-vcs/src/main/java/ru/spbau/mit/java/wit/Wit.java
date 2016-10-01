@@ -1,6 +1,7 @@
 package ru.spbau.mit.java.wit;
 
 import io.airlift.airline.Cli;
+import io.airlift.airline.ParseException;
 import ru.spbau.mit.java.wit.command.*;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
@@ -30,7 +31,14 @@ public class Wit {
                         WitMerge.class
                 );
         Cli<WitCommand> parser = builder.build();
-        WitCommand cmd = parser.parse(args);
+
+        WitCommand cmd;
+        try {
+            cmd = parser.parse(args);
+        } catch (ParseException e) {
+            System.out.println("Error: " + e.getMessage());
+            return;
+        }
 
         Path baseDir = Paths.get(System.getProperty("user.dir"));
         Path witRoot;
@@ -44,7 +52,12 @@ public class Wit {
         if (witRoot != null) {
             storage = new WitStorage(witRoot);
         }
+        if (storage == null && !(cmd instanceof WitInit)) {
+            System.err.println("Error: can't find wit repository near " + baseDir);
+            return;
+        }
 
+        // executing command
         try {
             cmd.execute(baseDir, storage);
         } catch (IOException e) {

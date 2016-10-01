@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  */
 public class WorkingTreeChangeTest {
     @Rule
-    public TemporaryFolder baseFolder = new TemporaryFolder();
+    public final TemporaryFolder baseFolder = new TemporaryFolder();
 
     private WitStorage storage;
     private WitAdd addCmd;
@@ -58,7 +58,7 @@ public class WorkingTreeChangeTest {
     public void testDeleteRecognized() throws IOException {
         Files.delete(addedFiles.get(0).toPath());
         List<Path> treeDeletedFiles =
-                new ArrayList<>(WitUtils.getTreeDeletedFiles(userRepoDir, storage.readIndex()));
+                WitUtils.getTreeDeletedFiles(userRepoDir, storage.readIndex()).collect(Collectors.toList());
         Assert.assertEquals(1, treeDeletedFiles.size());
         Assert.assertEquals(addedFiles.get(0).toPath(), treeDeletedFiles.get(0));
     }
@@ -67,7 +67,7 @@ public class WorkingTreeChangeTest {
     public void testNotTrackedRecognized() throws IOException {
         File f = baseFolder.newFile("not_tracked_yet");
         List<Path> notTracked =
-                new ArrayList<>(WitUtils.getTreeNewFiles(userRepoDir, storage.readIndex()));
+                WitUtils.getTreeNewFiles(userRepoDir, storage.readIndex()).collect(Collectors.toList());
         Assert.assertEquals(1, notTracked.size());
         Assert.assertEquals(f.toPath(), notTracked.get(0));
     }
@@ -78,7 +78,7 @@ public class WorkingTreeChangeTest {
         Thread.sleep(100);
         FileUtils.writeLines(f, Arrays.asList("1", "2"));
         List<Path> modified =
-                new ArrayList<>(WitUtils.getTreeModifiedFiles(userRepoDir, storage.readIndex()));
+                WitUtils.getTreeModifiedFiles(userRepoDir, storage.readIndex()).collect(Collectors.toList());
         // TODO: strange stuff again. Last modified field not changed for File.
         // Assert.assertEquals(1, modified.size());
         // Assert.assertEquals(f.toPath(), modified.get(0));

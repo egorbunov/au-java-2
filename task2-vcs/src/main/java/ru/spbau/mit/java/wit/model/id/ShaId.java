@@ -16,7 +16,7 @@ public class ShaId {
     }
 
     // Use it as null id
-    public static ShaId EmptyId = new ShaId("");
+    public static final ShaId EmptyId = new ShaId("");
 
     private final String sha;
 

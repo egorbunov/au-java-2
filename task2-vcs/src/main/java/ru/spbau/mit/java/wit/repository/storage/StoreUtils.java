@@ -26,11 +26,11 @@ public class StoreUtils {
         return new BufferedInputStream(new FileInputStream(f));
     }
 
-    public static InputStream idPack(InputStream is) throws IOException {
+    public static InputStream idPack(InputStream is) {
         return is;
     }
 
-    public static InputStream stringPack(String str) throws IOException {
+    public static InputStream stringPack(String str) {
         byte[] bytes = str.getBytes();
         return new ByteArrayInputStream(bytes, 0, bytes.length);
     }

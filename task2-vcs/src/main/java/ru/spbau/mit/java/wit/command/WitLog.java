@@ -24,8 +24,13 @@ public class WitLog implements WitCommand {
 
     @Override
     public int execute(Path workingDir, WitStorage storage) throws IOException {
-        if (branchName.isEmpty()) {
+        if (branchName == null || branchName.isEmpty()) {
             branchName = storage.readCurBranchName();
+        }
+
+        if (storage.readBranch(branchName) == null) {
+            System.err.println("Error: no such branch [ " + branchName + " ]");
+            return -1;
         }
 
         List<ShaId> log = storage.readCommitLog(branchName);

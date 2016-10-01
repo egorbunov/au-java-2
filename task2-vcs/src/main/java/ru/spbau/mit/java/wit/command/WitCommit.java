@@ -10,6 +10,7 @@ import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -52,7 +53,7 @@ public class WitCommit implements WitCommand {
         Stream.concat(modified.stream(), added.stream())
                 .forEach(it -> index.add(new Index.Entry(
                         it.fileName,
-                        it.lastModified,
+                        it.modified,
                         it.curBlobId,
                         it.curBlobId)));
 
@@ -69,19 +70,34 @@ public class WitCommit implements WitCommand {
         String curBranchName = storage.readCurBranchName();
         curBranch = storage.readBranch(curBranchName);
 
+
         Commit commit = new Commit();
         commit.setMsg(msg);
-        commit.setParentCommitsIds(Lists.newArrayList(curBranch.getHeadCommitId()));
         commit.setSnapshotId(treeId);
         commit.setTimestamp(System.currentTimeMillis());
 
+        List<ShaId> parents = new ArrayList<>();
+        parents.add(curBranch.getHeadCommitId());
+        // if merging stage --> need to set more parent commits
+        String mergingBranch = storage.readMergeFlag();
+        if (mergingBranch != null) {
+            parents.add(storage.readBranch(mergingBranch).getHeadCommitId());
+        }
+        commit.setParentCommitsIds(parents);
 
+        // write commit
         ShaId commitId;
         commitId = storage.writeCommit(commit);
 
         // Update log
-        List<ShaId> log = storage.readCommitLog(curBranch.getName());
-        log.add(commitId);
+        List<ShaId> log;
+        if (mergingBranch == null) {
+            log = storage.readCommitLog(curBranch.getName());
+            log.add(commitId);
+        } else {
+            // need to merge logs in case merge was performed
+            log = WitUtils.getCommitHistory(commitId, storage).map(it -> it.id).collect(Collectors.toList());
+        }
         storage.writeCommitLog(log, curBranch.getName());
 
         // Updating branch
@@ -90,6 +106,12 @@ public class WitCommit implements WitCommand {
 
         // Storing changed index
         storage.writeIndex(index);
+
+        // Finish merging if needed
+        if (mergingBranch != null) {
+            storage.writeMergeFlag(null);
+            System.out.println("Merge Finished");
+        }
 
 
         // providing info to user

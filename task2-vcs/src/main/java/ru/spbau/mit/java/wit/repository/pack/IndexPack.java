@@ -24,9 +24,9 @@ public class IndexPack {
         p.packArrayHeader(index.size());
         for (Index.Entry e : index) {
             p.packString(e.fileName);
-            p.packString(e.lastCommitedBlobId.toString());
+            p.packString(e.lastCommittedBlobId.toString());
             p.packString(e.curBlobId.toString());
-            p.packLong(e.lastModified);
+            p.packLong(e.modified);
         }
 
         return new ByteArrayInputStream(p.toByteArray());

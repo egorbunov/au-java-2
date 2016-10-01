@@ -5,7 +5,6 @@ import ru.spbau.mit.java.wit.model.id.ShaId;
 import ru.spbau.mit.java.wit.repository.pack.*;
 
 import java.io.File;
-import java.io.IOError;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,7 +26,7 @@ import java.util.stream.Stream;
  * Class, which provides read/write methods
  * for every repository object/file.
  * <p>
- * It aimed to encapsulate all i/o with repository storage
+ * It aimed to encapsulate all i/o operations with repository storage
  * <p>
  * TODO: generalize interfaces?
  */
@@ -35,14 +34,14 @@ public class WitStorage {
     /**
      * List of dirs and files, which designate wit repo storage folder
      */
-    private static List<Path> witStorageDirsSignature = Arrays.asList(
+    private static final List<Path> witStorageDirsSignature = Arrays.asList(
             WitStoragePaths.getBlobsDir(Paths.get("")),
             WitStoragePaths.getCommitsDir(Paths.get("")),
             WitStoragePaths.getSnapshotsDir(Paths.get("")),
             WitStoragePaths.getBranchesDirPath(Paths.get("")),
             WitStoragePaths.getLogDir(Paths.get(""))
     );
-    private static List<Path> witStorageFilesSignature = Arrays.asList(
+    private static final List<Path> witStorageFilesSignature = Arrays.asList(
             WitStoragePaths.getIndexFilePath(Paths.get("")),
             WitStoragePaths.getCurBranchNameFilePath(Paths.get("")),
             WitStoragePaths.getBranchInfoFilePath(Paths.get(""), "master")
@@ -161,6 +160,9 @@ public class WitStorage {
                 SnapshotPack::unpack);
     }
 
+    /**
+     * Writes blob to storage; Data is read from specified file
+     */
     public ShaId writeBlob(File f) throws IOException {
         return StoreUtils.writeSha(f, WitStoragePaths.getBlobsDir(witRoot),
                 StoreUtils::filePack);
@@ -199,5 +201,23 @@ public class WitStorage {
             return null;
         }
         return StoreUtils.read(WitStoragePaths.getLogPath(witRoot, branch), IdListPack::unpack);
+    }
+
+    /**
+     * Merge flag specifies merge stage
+     */
+    public void writeMergeFlag(String branch) throws IOException {
+        if (branch == null) {
+            Files.deleteIfExists(WitStoragePaths.getMergeFlagPath(witRoot));
+            return;
+        }
+        StoreUtils.write(branch, WitStoragePaths.getMergeFlagPath(witRoot), StoreUtils::stringPack);
+    }
+
+    public String readMergeFlag() throws IOException {
+        if (Files.notExists(WitStoragePaths.getMergeFlagPath(witRoot))) {
+            return null;
+        }
+        return StoreUtils.read(WitStoragePaths.getMergeFlagPath(witRoot), StoreUtils::stringUnpack);
     }
 }

@@ -31,6 +31,15 @@ public class WitUtils {
             this.id = id;
             this.commit = commit;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!IdCommit.class.isInstance(obj)) {
+                return false;
+            }
+            IdCommit idc = (IdCommit) obj;
+            return idc.id.equals(id);
+        }
     }
 
     /**
@@ -40,6 +49,7 @@ public class WitUtils {
      */
     public static Stream<IdCommit> getCommitHistory(ShaId headCommitId, WitStorage storage) throws IOException {
         return collectCommitHistoryStream(headCommitId, storage)
+                .sorted(Comparator.comparing(c -> c.id.toString()))
                 .distinct()
                 .sorted(Comparator.comparing(c -> c.commit.getTimestamp()));
     }
@@ -61,8 +71,8 @@ public class WitUtils {
      */
     public static Stream<Index.Entry> getStagedModified(Index index) {
         return index.stream()
-                .filter(e -> !e.curBlobId.equals(e.lastCommitedBlobId)
-                        && !e.lastCommitedBlobId.equals(ShaId.EmptyId));
+                .filter(e -> !e.curBlobId.equals(e.lastCommittedBlobId)
+                        && !e.lastCommittedBlobId.equals(ShaId.EmptyId));
     }
 
     /**
@@ -79,21 +89,32 @@ public class WitUtils {
     public static Stream<Index.Entry> getStagedNew(Index index) {
         return index.stream()
                 .filter(e -> !e.curBlobId.equals(ShaId.EmptyId)
-                        && e.lastCommitedBlobId.equals(ShaId.EmptyId));
+                        && e.lastCommittedBlobId.equals(ShaId.EmptyId));
     }
 
     /**
-     * Returns files, which are deleted from repository tree, but stil
+     * returns all changes in the working tree (new files, modified files, deleted files)
+     * accordingly to repo index
+     */
+    public static Stream<Path> getTreeChangedFiles(Path userRepoRoot, Index index) throws IOException {
+        return Stream.of(
+                getTreeDeletedFiles(userRepoRoot, index),
+                getTreeModifiedFiles(userRepoRoot, index),
+                getTreeNewFiles(userRepoRoot, index)
+        ).flatMap(Function.identity());
+    }
+
+    /**
+     * Returns files, which are deleted from repository tree, but still
      * in index
      *
      * @param userRepoRoot base user repository dir
      * @return list of ABSOLUTE paths
      */
-    public static Collection<Path> getTreeDeletedFiles(Path userRepoRoot, Index index) {
+    public static Stream<Path> getTreeDeletedFiles(Path userRepoRoot, Index index) {
         return index.stream()
                 .map(e -> userRepoRoot.resolve(e.fileName))
-                .filter(Files::notExists)
-                .collect(Collectors.toList());
+                .filter(Files::notExists);
     }
 
     /**
@@ -102,18 +123,18 @@ public class WitUtils {
      *
      * @param userRepoRoot base repository dir
      */
-    public static Collection<Path> getTreeModifiedFiles(Path userRepoRoot, Index index) {
+    public static Stream<Path> getTreeModifiedFiles(Path userRepoRoot, Index index) {
         List<Path> files = new ArrayList<>();
         for (Index.Entry e : index) {
             Path p = userRepoRoot.resolve(e.fileName);
             if (Files.notExists(p)) {
                 continue;
             }
-            if (p.toFile().lastModified() > e.lastModified) {
+            if (p.toFile().lastModified() > e.modified) {
                 files.add(p);
             }
         }
-        return files;
+        return files.stream();
     }
 
     /**
@@ -121,14 +142,14 @@ public class WitUtils {
      *
      * @param userRepoRoot base repository dir
      */
-    public static Collection<Path> getTreeNewFiles(Path userRepoRoot, Index index) throws IOException {
+    public static Stream<Path> getTreeNewFiles(Path userRepoRoot, Index index) throws IOException {
         Set<Path> treeFiles = walk(userRepoRoot, resolveStoragePath(userRepoRoot))
                 .collect(Collectors.toSet());
         Set<Path> indexedFiles = index.stream().map(it -> userRepoRoot.resolve(it.fileName))
                 .collect(Collectors.toSet());
 
         treeFiles.removeAll(indexedFiles);
-        return treeFiles;
+        return treeFiles.stream();
     }
 
     /**

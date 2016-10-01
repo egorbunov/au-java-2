@@ -23,13 +23,13 @@ import java.util.stream.Collectors;
  */
 public class CheckoutTest {
     @Rule
-    public TemporaryFolder baseFolder = new TemporaryFolder();
+    public final TemporaryFolder baseFolder = new TemporaryFolder();
 
     @Rule
-    public TemporaryFolder actualFolder = new TemporaryFolder();
+    public final TemporaryFolder actualFolder = new TemporaryFolder();
 
     @Rule
-    public TemporaryFolder expectedFolder = new TemporaryFolder();
+    public final TemporaryFolder expectedFolder = new TemporaryFolder();
 
 
     private WitStorage storage;

@@ -1,6 +1,5 @@
 package ru.spbau.mit.java.wit.command;
 
-import com.sun.xml.internal.fastinfoset.algorithm.IEEE754FloatingPointEncodingAlgorithm;
 import io.airlift.airline.Command;
 import org.apache.commons.io.FileUtils;
 import ru.spbau.mit.java.wit.model.Branch;
@@ -23,9 +22,9 @@ import java.util.List;
 @Command(name = "init", description = "initializes empty wit repository")
 public class WitInit implements WitCommand {
     // initial branch state
-    private static Branch initialBranch = new Branch("master", ShaId.EmptyId);
-    private static List<ShaId> initialBranchLog = new ArrayList<>();
-    private static Index initialIndex = new Index();
+    private static final Branch initialBranch = new Branch("master", ShaId.EmptyId);
+    private static final List<ShaId> initialBranchLog = new ArrayList<>();
+    private static final Index initialIndex = new Index();
 
     /**
      * Tries to initialize new repository; If no wit storage
@@ -38,7 +37,7 @@ public class WitInit implements WitCommand {
         // checking if repository is already initialized
         Path repoRoot = findRepositoryRoot(workingDir);
         if (repoRoot != null) {
-            System.out.println("Wit Repository is already initialized under" +
+            System.out.println("Wit Repository is already initialized under " +
                     repoRoot.toString());
             return -1;
         }
@@ -63,6 +62,7 @@ public class WitInit implements WitCommand {
             return -1;
         }
 
+        System.out.println("Initialized wit repository at: " + storageRoot);
         return 0;
     }
 
@@ -81,7 +81,6 @@ public class WitInit implements WitCommand {
             if (baseDir == null) {
                 return null;
             }
-
             next = baseDir.getParent();
 
             Path witRoot = WitUtils.resolveStoragePath(baseDir);
@@ -90,7 +89,8 @@ public class WitInit implements WitCommand {
                 continue;
             }
             Branch master = storage.readBranch(initialBranch.getName());
-            if (master == null || !master.equals(initialBranch)) {
+            if (master == null || !master.getName().equals(initialBranch.getName())
+                    || master.getHeadCommitId() == null) {
                 continue;
             }
             break;

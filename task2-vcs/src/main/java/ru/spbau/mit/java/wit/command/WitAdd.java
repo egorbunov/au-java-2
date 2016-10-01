@@ -1,6 +1,5 @@
 package ru.spbau.mit.java.wit.command;
 
-import com.sun.java.swing.plaf.windows.WindowsMenuItemUI;
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
 import ru.spbau.mit.java.wit.log.Logging;
@@ -30,7 +29,7 @@ public class WitAdd implements WitCommand {
     @Arguments(description = "Directories and file names to be added")
     private List<String> fileNames;
 
-    private Logger logger = Logging.getLogger(WitAdd.class.getName());
+    private final Logger logger = Logging.getLogger(WitAdd.class.getName());
 
     @Override
     public int execute(Path workingDir, WitStorage storage) throws IOException {
@@ -68,6 +67,7 @@ public class WitAdd implements WitCommand {
         // staging files; preparing new index
         Index index;
         index = storage.readIndex();
+
         for (Path p : filesForStage) {
             String name = p.subpath(userRepositoryPath.getNameCount(), p.getNameCount()).toString();
 
@@ -75,8 +75,12 @@ public class WitAdd implements WitCommand {
             long lastModified = file.lastModified();
             logger.info(name + " | last modified = " + lastModified);
 
-            if (index.contains(name) && lastModified == index.getEntryByFile(name).lastModified) {
-                System.out.println("File is already staged: [ " + name + " ]");
+            if (index.contains(name) && lastModified == index.getEntryByFile(name).modified) {
+                if (Index.isCommitedAndNotChanged(index.getEntryByFile(name))) {
+                    System.out.println("File is already up to date: [ " + name + " ]");
+                } else {
+                    System.out.println("File is already staged: [ " + name + " ]");
+                }
                 continue;
             }
 
@@ -98,7 +102,7 @@ public class WitAdd implements WitCommand {
                 Index.Entry entry = index.getEntryByFile(name);
                 index.remove(entry);
                 index.add(new Index.Entry(
-                        name, lastModified, id, entry.lastCommitedBlobId
+                        name, lastModified, id, entry.lastCommittedBlobId
                 ));
             }
         }

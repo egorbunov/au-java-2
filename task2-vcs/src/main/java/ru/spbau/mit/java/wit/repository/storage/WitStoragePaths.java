@@ -45,4 +45,8 @@ class WitStoragePaths {
     static Path getLogPath(Path witRoot, String branch) {
         return getLogDir(witRoot).resolve(branch);
     }
+
+    static Path getMergeFlagPath(Path witRoot) {
+        return witRoot.resolve("MERGE");
+    }
 }

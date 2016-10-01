@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  */
 public class AddTest {
     @Rule
-    public TemporaryFolder baseFolder = new TemporaryFolder();
+    public final TemporaryFolder baseFolder = new TemporaryFolder();
 
     private WitStorage storage;
     private WitAdd addCmd;
@@ -60,6 +60,7 @@ public class AddTest {
 
     @Test
     public void testAddNothing() throws IOException {
+        addCmd.setFileNames(Collections.emptyList());
         addCmd.execute(baseDir, storage);
         checkStaged(Collections.emptyList());
     }

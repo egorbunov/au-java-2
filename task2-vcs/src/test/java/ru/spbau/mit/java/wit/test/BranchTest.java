@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  */
 public class BranchTest {
     @Rule
-    public TemporaryFolder baseFolder = new TemporaryFolder();
+    public final TemporaryFolder baseFolder = new TemporaryFolder();
 
     private WitStorage storage;
     private Path userRepoDir;

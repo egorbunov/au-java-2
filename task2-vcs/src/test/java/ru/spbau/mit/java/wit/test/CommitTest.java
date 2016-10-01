@@ -24,7 +24,7 @@ import java.util.*;
  */
 public class CommitTest {
     @Rule
-    public TemporaryFolder baseFolder = new TemporaryFolder();
+    public final TemporaryFolder baseFolder = new TemporaryFolder();
 
     private WitStorage storage;
     private WitAdd addCmd;
