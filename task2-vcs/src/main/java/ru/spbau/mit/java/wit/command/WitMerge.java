@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * Email: egor-mailbox@ya.com
  */
 
-@Command(name = "merge", description = "WitMerge some branch to currently active")
+@Command(name = "merge", description = "Merge some branch to currently active")
 public class WitMerge implements WitCommand {
     @Arguments(description = "Branch, which will be merged into active branch")
     private String branch;
