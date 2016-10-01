@@ -34,19 +34,20 @@ public class WitStatus implements WitCommand {
                 .collect(Collectors.toList());
         List<Path> notStagedModified = WitUtils.getTreeModifiedFiles(userRepositoryPath, index)
                 .collect(Collectors.toList());
-        List<Path> notStagedNew = WitUtils.getTreeNewFiles(userRepositoryPath, index)
+        List<Path> untrackedFiles = WitUtils.getTreeNewFiles(userRepositoryPath, index)
                 .collect(Collectors.toList());
-
-        if (stagedDeleted.size() == 0 && stagedModified.size() == 0 && stagedNew.size() == 0 &&
-                notStagedDeleted.size() == 0 && notStagedModified.size() == 0 && notStagedNew.size() == 0) {
-            System.out.println("Everything is up to date.");
-            return 0;
-        }
 
         System.out.println("On branch [ " + curBranch + " ]");
         if (mergeBranch != null) {
             System.out.println("MERGING with branch: " + mergeBranch);
         }
+
+        if (stagedDeleted.size() == 0 && stagedModified.size() == 0 && stagedNew.size() == 0 &&
+                notStagedDeleted.size() == 0 && notStagedModified.size() == 0 && untrackedFiles.size() == 0) {
+            System.out.println("Everything is up to date.");
+            return 0;
+        }
+
 
         // listing staged files if exist
         if (stagedDeleted.size() != 0 || stagedModified.size() != 0 || stagedNew.size() != 0) {
@@ -79,9 +80,9 @@ public class WitStatus implements WitCommand {
         }
 
         // listing new files in tree if exist
-        if (notStagedNew.size() != 0) {
+        if (untrackedFiles.size() != 0) {
             System.out.println("Not tracked files:");
-            notStagedNew.forEach(p -> {
+            untrackedFiles.forEach(p -> {
                 System.out.println("               " + workingDir.relativize(p));
             });
         }
