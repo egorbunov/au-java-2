@@ -30,7 +30,9 @@ public class Wit {
                         WitLog.class,
                         WitMerge.class,
                         WitStatus.class,
-                        WitClean.class
+                        WitClean.class,
+                        WitReset.class,
+                        WitRm.class
                 );
         Cli<WitCommand> parser = builder.build();
 
