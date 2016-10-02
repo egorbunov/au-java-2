@@ -7,10 +7,8 @@ import ru.spbau.mit.java.wit.repository.WitUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -30,28 +28,14 @@ public class WitReset implements WitCommand {
     @Override
     public int execute(Path workingDir, WitStorage storage) throws IOException {
         Path userRepositoryPath = WitUtils.stripWitStoragePath(storage.getWitRoot());
-        Path witStorageRoot = storage.getWitRoot();
 
-        // checking if all fileNames are existing and in repo
-        List<String> toReset = new ArrayList<>();
-        for (String s : fileNames) {
-            Path p = Paths.get(s);
-            if (Files.notExists(p)) {
-                System.err.println("Error: file [ " + p.toString() + " ] does not exists");
-                return -1;
-            }
-            p = p.toAbsolutePath();
-            if (WitUtils.isWitServicePath(p, witStorageRoot)) {
-                System.err.println("Error: file [ " + p.toString() + " ] outside repository");
-                return -1;
-            }
-            toReset.add(p.toAbsolutePath().subpath(userRepositoryPath.getNameCount(),
-                    p.getNameCount()).toString());
-        }
+        HashSet<Path> toReset = new HashSet<>();
+        WitUtils.collectFiles(fileNames, storage.getWitRoot(), toReset);
 
         Index index = storage.readIndex();
 
-        for (String file : toReset) {
+        for (Path p : toReset) {
+            String file = p.subpath(userRepositoryPath.getNameCount(), p.getNameCount()).toString();
             Index.Entry e = index.getEntryByFile(file);
             if (e == null) {
                 System.out.println("File: " + file + " is not in index, omitting...");

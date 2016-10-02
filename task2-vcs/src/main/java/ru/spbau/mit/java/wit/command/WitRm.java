@@ -10,8 +10,7 @@ import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -31,28 +30,14 @@ public class WitRm implements WitCommand {
     @Override
     public int execute(Path workingDir, WitStorage storage) throws IOException {
         Path userRepositoryPath = WitUtils.stripWitStoragePath(storage.getWitRoot());
-        Path witStorageRoot = storage.getWitRoot();
 
-        // checking if all fileNames are existing and in repo
-        List<String> toRemove = new ArrayList<>();
-        for (String s : fileNames) {
-            Path p = Paths.get(s);
-            if (Files.notExists(p)) {
-                System.err.println("Error: file [ " + p.toString() + " ] does not exists");
-                return -1;
-            }
-            p = p.toAbsolutePath();
-            if (WitUtils.isWitServicePath(p, witStorageRoot)) {
-                System.err.println("Error: file [ " + p.toString() + " ] outside repository");
-                return -1;
-            }
-            toRemove.add(p.toAbsolutePath().subpath(userRepositoryPath.getNameCount(),
-                    p.getNameCount()).toString());
-        }
+        HashSet<Path> toRemove = new HashSet<>();
+        WitUtils.collectFiles(fileNames, storage.getWitRoot(), toRemove);
 
         Index index = storage.readIndex();
 
-        for (String file : toRemove) {
+        for (Path p : toRemove) {
+            String file = p.subpath(userRepositoryPath.getNameCount(), p.getNameCount()).toString();
             Index.Entry e = index.getEntryByFile(file);
             if (e == null) {
                 System.out.println("File: " + file + " is not tracked. Omitting...");
@@ -60,6 +45,7 @@ public class WitRm implements WitCommand {
                 System.out.println("File: " + file + " is staged for commit! " +
                         "Use reset to unstage it! Omitting...");
             } else {
+                Files.delete(userRepositoryPath.resolve(file));
                 index.remove(e);
                 index.add(new Index.Entry(e.fileName, e.modified, ShaId.EmptyId, e.lastCommittedBlobId));
             }

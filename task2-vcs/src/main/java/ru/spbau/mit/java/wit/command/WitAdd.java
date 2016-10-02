@@ -33,47 +33,17 @@ public class WitAdd implements WitCommand {
 
     @Override
     public int execute(Path workingDir, WitStorage storage) throws IOException {
-        // checking if all files are existing
-        List<Path> nonExisting = fileNames.stream().map(Paths::get).filter(Files::notExists)
-                .collect(Collectors.toList());
-        if (nonExisting.size() != 0) {
-            System.out.println("Error:");
-            nonExisting.forEach(p -> System.err.println(
-                    "   File: [ " + p.toString() + " ] does not exists")
-            );
-            return -1;
-        }
-
-        Path userRepositoryPath = WitUtils.stripWitStoragePath(storage.getWitRoot());
-
-        // collecting all files which user specified (walking dirs and stuff)
-        Set<Path> filesForStage = new HashSet<>();
-        for (String f : fileNames) {
-            Path p = Paths.get(f).normalize().toAbsolutePath();
-            if (p.startsWith(storage.getWitRoot())) {
-                logger.info("Omitting files under repo storage dir: " + p);
-                continue;
-            }
-            WitUtils.walk(p, storage.getWitRoot())
-                    .filter(Files::isRegularFile)
-                    .forEach(fp -> {
-                        assert !fp.startsWith(storage.getWitRoot());
-                        if (!fp.startsWith(userRepositoryPath)) {
-                            System.out.println("File " + p + " is outside repository; " +
-                                    "Omitting");
-                        } else {
-                            filesForStage.add(fp);
-                        }
-                    });
-        }
+        // reading arguments
+        HashSet<Path> filesForStage = new HashSet<>();
+        WitUtils.collectFiles(fileNames, storage.getWitRoot(), filesForStage);
 
         // staging files; preparing new index
         Index index;
         index = storage.readIndex();
+        Path userRepositoryPath = WitUtils.stripWitStoragePath(storage.getWitRoot());
 
         for (Path p : filesForStage) {
             String name = p.subpath(userRepositoryPath.getNameCount(), p.getNameCount()).toString();
-
             File file = p.toFile();
             long lastModified = file.lastModified();
             logger.info(name + " | last modified = " + lastModified);

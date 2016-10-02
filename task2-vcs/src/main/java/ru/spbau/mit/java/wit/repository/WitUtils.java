@@ -3,6 +3,9 @@ package ru.spbau.mit.java.wit.repository;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -56,5 +59,45 @@ public class WitUtils {
         Path leastServicePrefix = getWitLeastServicePrefix(witRoot);
         return Files.walk(repositoryRoot)
                 .filter(p -> !p.startsWith(leastServicePrefix));
+    }
+
+    /**
+     * Walks through all files specified recursively; Filters non-existing files and files,
+     * which are under wit service directories
+     * @param fileNames list of file names to walk through
+     * @param witRoot root of wit storage path
+     * @param outFiles output parameter, it is valid is return is null
+     * @return error message if occurred
+     */
+    public static String collectFiles(List<String> fileNames,
+                                      Path witRoot,
+                                      Set<Path> outFiles) throws IOException {
+        // checking if all files are existing
+        Path userRepositoryPath = WitUtils.stripWitStoragePath(witRoot);
+
+        List<Path> pathToTraverse = new ArrayList<>();
+        for (String s : fileNames) {
+            Path p = Paths.get(s);
+            if (Files.notExists(p)) {
+                return "file [ " + p.toString() + " ] does not exists";
+            }
+            p = p.toAbsolutePath().normalize();
+            if (WitUtils.isWitServicePath(p, witRoot)) {
+                return "file [ " + p.toString() + " ] is service repository path";
+            }
+            if (!p.startsWith(userRepositoryPath)) {
+                return "file [ " + p.toString() + " ] is outside repository";
+            }
+            pathToTraverse.add(p);
+        }
+
+        // collecting files
+        for (Path p : pathToTraverse) {
+            WitUtils.walk(p, witRoot)
+                    .filter(Files::isRegularFile)
+                    .forEach(fp -> outFiles.add(fp));
+        }
+
+        return null;
     }
 }
