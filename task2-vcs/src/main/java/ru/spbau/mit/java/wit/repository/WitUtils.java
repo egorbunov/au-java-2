@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -61,43 +63,51 @@ public class WitUtils {
                 .filter(p -> !p.startsWith(leastServicePrefix));
     }
 
+    public static class CollectedPaths {
+        public Set<Path> existingPaths;
+        public Set<Path> nonExistingPaths;
+        public Set<Path> prohibitedPaths;
+    }
+
     /**
      * Walks through all files specified recursively; Filters non-existing files and files,
      * which are under wit service directories
      * @param fileNames list of file names to walk through
      * @param witRoot root of wit storage path
-     * @param outFiles output parameter, it is valid is return is null
-     * @return error message if occurred
+     * @return collected paths with non-existing, prohibited (service or outside repo) and existing
      */
-    public static String collectFiles(List<String> fileNames,
-                                      Path witRoot,
-                                      Set<Path> outFiles) throws IOException {
+    public static CollectedPaths collectExistingFiles(List<String> fileNames,
+                                              Path witRoot) throws IOException {
         // checking if all files are existing
         Path userRepositoryPath = WitUtils.stripWitStoragePath(witRoot);
+
+        CollectedPaths res = new CollectedPaths();
+        res.existingPaths = new HashSet<>();
+        res.nonExistingPaths = new HashSet<>();
+        res.prohibitedPaths = new HashSet<>();
 
         List<Path> pathToTraverse = new ArrayList<>();
         for (String s : fileNames) {
             Path p = Paths.get(s);
             if (Files.notExists(p)) {
-                return "file [ " + p.toString() + " ] does not exists";
+                res.nonExistingPaths.add(p);
+            } else {
+                p = p.toAbsolutePath().normalize();
+                if (WitUtils.isWitServicePath(p, witRoot) || !p.startsWith(userRepositoryPath)) {
+                    res.prohibitedPaths.add(p);
+                } else {
+                    pathToTraverse.add(p);
+                }
             }
-            p = p.toAbsolutePath().normalize();
-            if (WitUtils.isWitServicePath(p, witRoot)) {
-                return "file [ " + p.toString() + " ] is service repository path";
-            }
-            if (!p.startsWith(userRepositoryPath)) {
-                return "file [ " + p.toString() + " ] is outside repository";
-            }
-            pathToTraverse.add(p);
         }
 
         // collecting files
         for (Path p : pathToTraverse) {
             WitUtils.walk(p, witRoot)
                     .filter(Files::isRegularFile)
-                    .forEach(fp -> outFiles.add(fp));
+                    .forEach(fp -> res.existingPaths.add(fp));
         }
 
-        return null;
+        return res;
     }
 }

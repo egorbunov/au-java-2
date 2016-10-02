@@ -9,14 +9,11 @@ import ru.spbau.mit.java.wit.repository.WitUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Created by: Egor Gorbunov
@@ -34,8 +31,21 @@ public class WitAdd implements WitCommand {
     @Override
     public int execute(Path workingDir, WitStorage storage) throws IOException {
         // reading arguments
-        HashSet<Path> filesForStage = new HashSet<>();
-        WitUtils.collectFiles(fileNames, storage.getWitRoot(), filesForStage);
+        WitUtils.CollectedPaths collectedPaths
+                = WitUtils.collectExistingFiles(fileNames, storage.getWitRoot());
+        if (collectedPaths.prohibitedPaths.size() != 0) {
+            System.out.println("Error: file "
+                    + collectedPaths.prohibitedPaths.iterator().next() +
+                    " is prohibited! (service or outside repo)");
+            return -1;
+        }
+        if (collectedPaths.nonExistingPaths.size() != 0) {
+            System.out.println("Error: file "
+                    + collectedPaths.nonExistingPaths.iterator().next() +
+                    " not exists!");
+            return -1;
+        }
+        Set<Path> filesForStage = collectedPaths.existingPaths;
 
         // staging files; preparing new index
         Index index;

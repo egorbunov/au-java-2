@@ -64,14 +64,15 @@ public class WitStatusUtils {
     }
 
     /**
-     * Returns files, which are deleted from repository tree, but still
-     * in index
+     * Returns files, which are deleted from repository tree, but not
+     * staged for delete
      *
      * @param userRepoRoot base user repository dir
      * @return list of ABSOLUTE paths
      */
     public static Stream<Path> getTreeDeletedFiles(Path userRepoRoot, Index index) {
         return index.stream()
+                .filter(e -> !e.isStagedForDelete())
                 .map(e -> userRepoRoot.resolve(e.fileName))
                 .filter(Files::notExists);
     }

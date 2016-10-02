@@ -72,6 +72,7 @@ public class Wit {
             cmd.execute(baseDir, storage);
         } catch (IOException e) {
             System.err.println("FATAL: repository write/read failed!");
+            e.printStackTrace();
         }
     }
 }
