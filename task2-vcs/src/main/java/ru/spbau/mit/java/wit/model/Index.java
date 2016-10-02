@@ -69,22 +69,38 @@ public class Index extends AbstractCollection<Index.Entry> {
             Entry e = (Entry) obj;
             return e.fileName.equals(fileName);
         }
+
+        public boolean isStagedForDelete() {
+            return curBlobId.equals(ShaId.EmptyId)
+                    && !lastCommittedBlobId.equals(ShaId.EmptyId);
+        }
+
+        public boolean isStagedForCreate() {
+            return lastCommittedBlobId.equals(ShaId.EmptyId)
+                    && !curBlobId.equals(ShaId.EmptyId);
+        }
+
+        public boolean isStagedForUpdate() {
+            return !lastCommittedBlobId.equals(curBlobId)
+                    && !curBlobId.equals(ShaId.EmptyId)
+                    && !lastCommittedBlobId.equals(ShaId.EmptyId);
+        }
+
+        public boolean isStaged() {
+            return isStagedForDelete() || isStagedForUpdate() || isStagedForCreate();
+        }
+
+        /**
+         * Designates that such entry must not be in index
+         */
+        public boolean isInvalid() {
+            return curBlobId.equals(ShaId.EmptyId) && lastCommittedBlobId.equals(ShaId.EmptyId);
+        }
+
     }
 
     private final Set<Entry> entries = new HashSet<>();
     private final Map<String, Entry> entriesByFileName= new HashMap<>();
-
-    /**
-     * @return true, if file, specified by entry, is already committed
-     *         to repo and also not staged for next commit
-     */
-    public static boolean isCommittedAndNotStaged(Entry entry) {
-        return entry.curBlobId.equals(entry.lastCommittedBlobId);
-    }
-
-    public static boolean isStagedForDelete(Entry entry) {
-        return entry.curBlobId.equals(ShaId.EmptyId);
-    }
 
     @Override
     public boolean add(Entry entry) {

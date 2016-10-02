@@ -1,7 +1,6 @@
 package ru.spbau.mit.java.wit.repository;
 
 import ru.spbau.mit.java.wit.model.Index;
-import ru.spbau.mit.java.wit.model.id.ShaId;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,25 +34,21 @@ public class WitStatusUtils {
      * Returns staged modified files  (newly added staged files not included)
      */
     public static Stream<Index.Entry> getStagedModified(Index index) {
-        return index.stream()
-                .filter(e -> !e.curBlobId.equals(e.lastCommittedBlobId)
-                        && !e.lastCommittedBlobId.equals(ShaId.EmptyId));
+        return index.stream().filter(Index.Entry::isStagedForUpdate);
     }
 
     /**
      * Returns files, which are staged and going to be deleted on next commit
      */
     public static Stream<Index.Entry> getStagedDeleted(Index index) {
-        return index.stream().filter(Index::isStagedForDelete);
+        return index.stream().filter(Index.Entry::isStagedForDelete);
     }
 
     /**
      * Returns files, which are newly created and staged
      */
     public static Stream<Index.Entry> getStagedNew(Index index) {
-        return index.stream()
-                .filter(e -> !e.curBlobId.equals(ShaId.EmptyId)
-                        && e.lastCommittedBlobId.equals(ShaId.EmptyId));
+        return index.stream().filter(Index.Entry::isStagedForCreate);
     }
 
     /**

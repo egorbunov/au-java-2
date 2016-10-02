@@ -37,8 +37,9 @@ public class WitAdd implements WitCommand {
         List<Path> nonExisting = fileNames.stream().map(Paths::get).filter(Files::notExists)
                 .collect(Collectors.toList());
         if (nonExisting.size() != 0) {
+            System.out.println("Error:");
             nonExisting.forEach(p -> System.err.println(
-                    "File: [ " + p.toString() + " ] does not exists")
+                    "   File: [ " + p.toString() + " ] does not exists")
             );
             return -1;
         }
@@ -78,7 +79,7 @@ public class WitAdd implements WitCommand {
             logger.info(name + " | last modified = " + lastModified);
 
             if (index.contains(name) && lastModified == index.getEntryByFile(name).modified) {
-                if (Index.isCommittedAndNotStaged(index.getEntryByFile(name))) {
+                if (!index.getEntryByFile(name).isStaged()) {
                     System.out.println("File is already up to date: [ " + name + " ]");
                 } else {
                     System.out.println("File is already staged: [ " + name + " ]");

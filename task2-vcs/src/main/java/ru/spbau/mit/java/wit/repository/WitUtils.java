@@ -29,6 +29,22 @@ public class WitUtils {
         return witStoragePath.getParent();
     }
 
+    private static Path getWitLeastServicePrefix(Path witRoot) {
+        Path servicePrefix = witRoot;
+        while (!servicePrefix.getParent().equals(stripWitStoragePath(witRoot))) {
+            // that is done because service path may be not just root/.wit, but root/.what/.wit
+            servicePrefix = servicePrefix.getParent();
+        }
+        return servicePrefix;
+    }
+
+    /**
+     * Checks if given path is under wit service storage directory
+     */
+    public static boolean isWitServicePath(Path path, Path witRoot) {
+        return path.startsWith(getWitLeastServicePrefix(witRoot));
+    }
+
     /**
      * Returns stream of file ABSOLUTE paths such that
      * service wit (.wit/...) paths are not included
@@ -37,12 +53,7 @@ public class WitUtils {
      * @param witRoot path to storage repository root
      */
     public static Stream<Path> walk(Path repositoryRoot, Path witRoot) throws IOException {
-        Path servicePrefix = witRoot;
-        while (!servicePrefix.getParent().equals(stripWitStoragePath(witRoot))) {
-            // that is done because service path may be not just root/.wit, but root/.what/.wit
-            servicePrefix = servicePrefix.getParent();
-        }
-        Path leastServicePrefix = servicePrefix;
+        Path leastServicePrefix = getWitLeastServicePrefix(witRoot);
         return Files.walk(repositoryRoot)
                 .filter(p -> !p.startsWith(leastServicePrefix));
     }
