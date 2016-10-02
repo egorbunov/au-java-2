@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,7 +55,7 @@ public class BranchTest {
     public void testBranchNoCommits() throws IOException {
         String branchName = "NEW_BRANCH";
         WitBranch branchCmd = new WitBranch();
-        branchCmd.setBranchName(branchName);
+        branchCmd.setNewBranchNames(Collections.singletonList(branchName));
         branchCmd.execute(userRepoDir, storage);
         Assert.assertNull(storage.readBranch(branchName));
     }
@@ -67,7 +68,7 @@ public class BranchTest {
 
         String branchName = "NEW_BRANCH";
         WitBranch branchCmd = new WitBranch();
-        branchCmd.setBranchName(branchName);
+        branchCmd.setNewBranchNames(Collections.singletonList(branchName));
         branchCmd.execute(userRepoDir, storage);
 
         Branch master = storage.readBranch(storage.readCurBranchName());

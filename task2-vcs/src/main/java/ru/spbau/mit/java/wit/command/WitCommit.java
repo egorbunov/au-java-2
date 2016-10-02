@@ -1,10 +1,11 @@
 package ru.spbau.mit.java.wit.command;
 
-import com.google.common.collect.Lists;
 import io.airlift.airline.Command;
 import io.airlift.airline.Option;
 import ru.spbau.mit.java.wit.model.*;
 import ru.spbau.mit.java.wit.model.id.ShaId;
+import ru.spbau.mit.java.wit.repository.WitLogUtils;
+import ru.spbau.mit.java.wit.repository.WitStatusUtils;
 import ru.spbau.mit.java.wit.repository.WitUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
@@ -37,9 +38,9 @@ public class WitCommit implements WitCommand {
         Index index;
         index = storage.readIndex();
 
-        List<Index.Entry> deleted = WitUtils.getStagedDeleted(index).collect(Collectors.toList());
-        List<Index.Entry> modified = WitUtils.getStagedModified(index).collect(Collectors.toList());
-        List<Index.Entry> added = WitUtils.getStagedNew(index).collect(Collectors.toList());
+        List<Index.Entry> deleted = WitStatusUtils.getStagedDeleted(index).collect(Collectors.toList());
+        List<Index.Entry> modified = WitStatusUtils.getStagedModified(index).collect(Collectors.toList());
+        List<Index.Entry> added = WitStatusUtils.getStagedNew(index).collect(Collectors.toList());
         if (deleted.isEmpty() && modified.isEmpty() && added.isEmpty()) {
             // if there was no files staged, there is no reason to commit!
             System.out.println("Noting to commit...");
@@ -96,7 +97,7 @@ public class WitCommit implements WitCommand {
             log.add(commitId);
         } else {
             // need to merge logs in case merge was performed
-            log = WitUtils.getCommitHistory(commitId, storage).map(it -> it.id).collect(Collectors.toList());
+            log = WitLogUtils.readCommitHistory(commitId, storage).map(it -> it.id).collect(Collectors.toList());
         }
         storage.writeCommitLog(log, curBranch.getName());
 

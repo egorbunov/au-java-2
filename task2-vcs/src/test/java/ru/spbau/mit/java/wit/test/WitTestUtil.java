@@ -62,7 +62,7 @@ public class WitTestUtil {
     public String createBranch() throws IOException {
         String name = UUID.randomUUID().toString();
         WitBranch bCmd = new WitBranch();
-        bCmd.setBranchName(name);
+        bCmd.setNewBranchNames(Collections.singletonList(name));
         bCmd.execute(userRepoDir, storage);
         return name;
     }

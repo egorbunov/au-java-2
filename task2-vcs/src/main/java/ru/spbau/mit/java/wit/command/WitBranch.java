@@ -19,17 +19,18 @@ import java.util.List;
 
 @Command(name = "branch", description = "Create new branch starting and current commit")
 public class WitBranch implements WitCommand {
-    @Arguments(description = "Name of branch to be created")
-    private String branchName;
+    @Arguments(description = "Name of branches to be created")
+    private List<String> branchNames;
 
     @Override
     public int execute(Path workingDir, WitStorage storage) throws IOException {
         String curBranchName = storage.readCurBranchName();
+        Branch curBranch = storage.readBranch(curBranchName);
 
-        if (branchName == null || branchName.isEmpty()) {
+        if (branchNames == null || branchNames.isEmpty()) {
             List<Branch> branches = storage.readAllBranches();
             for (Branch b : branches) {
-                if (b.getName().equals(curBranchName)) {
+                if (b.getName().equals(curBranch.getName())) {
                     System.out.println("* " + b.getName());
                 } else {
                     System.out.println("  " + b.getName());
@@ -38,30 +39,32 @@ public class WitBranch implements WitCommand {
             return 0;
         }
 
-        if (storage.readBranch(branchName) != null) {
-            System.err.println("Error: Branch with name " + branchName + " already exists");
-            return -1;
+        for (String branchName : branchNames) {
+            if (storage.readBranch(branchName) != null) {
+                System.err.println("Error: Branch with name " + branchName + " already exists");
+                continue;
+            }
+
+            if (curBranch.getHeadCommitId().equals(ShaId.EmptyId)) {
+                System.out.println("FATAL: can't branch, no commit to base branch on;");
+                return -1;
+            }
+
+            createOneBranch(branchName, curBranch, storage);
         }
-
-        Branch curBranch;
-        curBranch = storage.readBranch(curBranchName);
-
-        if (curBranch.getHeadCommitId().equals(ShaId.EmptyId)) {
-            System.out.println("FATAL: can't branch, no commit to base branch on;");
-            return -1;
-        }
-
-        // creating log file, for newly created branch
-        // it is equal to current branch log, always
-        List<ShaId> commitLog = storage.readCommitLog(curBranchName);
-        storage.writeCommitLog(commitLog, branchName);
-
-        storage.writeBranch(new Branch(branchName, curBranch.getHeadCommitId()));
 
         return 0;
     }
 
-    public void setBranchName(String branchName) {
-        this.branchName = branchName;
+    private static void createOneBranch(String branchName, Branch curBranch, WitStorage storage) throws IOException {
+        // creating log file, for newly created branch
+        // it is equal to current branch log, always
+        List<ShaId> commitLog = storage.readCommitLog(curBranch.getName());
+        storage.writeCommitLog(commitLog, branchName);
+        storage.writeBranch(new Branch(branchName, curBranch.getHeadCommitId()));
+    }
+
+    public void setNewBranchNames(List<String> branchNames) {
+        this.branchNames = branchNames;
     }
 }

@@ -8,6 +8,8 @@ import ru.spbau.mit.java.wit.model.Commit;
 import ru.spbau.mit.java.wit.model.Index;
 import ru.spbau.mit.java.wit.model.Snapshot;
 import ru.spbau.mit.java.wit.model.id.ShaId;
+import ru.spbau.mit.java.wit.repository.WitLogUtils;
+import ru.spbau.mit.java.wit.repository.WitStatusUtils;
 import ru.spbau.mit.java.wit.repository.WitUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
@@ -61,7 +63,7 @@ public class WitCheckout implements WitCommand {
         }
 
         Index curIndex = storage.readIndex();
-        if (!WitUtils.getStagedEntries(curIndex).findAny().equals(Optional.empty())) {
+        if (!WitStatusUtils.getStagedEntries(curIndex).findAny().equals(Optional.empty())) {
             System.err.println("Error: you have staged changes in your repository, " +
                     "commit them before checking out.");
             return -1;
@@ -109,7 +111,7 @@ public class WitCheckout implements WitCommand {
             // checking out by commit ref => need to create new detached branch
             // and fill log properly for that branch
             Branch detachBranch = new Branch("detach_".concat(commitId.toString()), commitId);
-            List<ShaId> log = WitUtils.getCommitHistory(commitId, storage).map(it -> it.id)
+            List<ShaId> log = WitLogUtils.readCommitHistory(commitId, storage).map(it -> it.id)
                     .collect(Collectors.toList());
 
             storage.writeBranch(detachBranch);

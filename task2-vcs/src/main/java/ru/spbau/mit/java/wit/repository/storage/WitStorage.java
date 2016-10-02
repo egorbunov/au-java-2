@@ -48,20 +48,10 @@ public class WitStorage {
     );
 
     /**
-     * Root of the storage - directory, which resides at root user
-     * working directory; It keeps all service data and history
-     */
-    private final Path witRoot;
-
-    public WitStorage(Path witRoot) {
-        this.witRoot = witRoot;
-    }
-
-    /**
      * Creates directory and file structure, which needed for
      * work with repository storage;
      */
-    public void createStorageStructure() throws IOException {
+    public static void createStorageStructure(Path witRoot) throws IOException {
         Files.createDirectory(witRoot);
         for (Path p : witStorageDirsSignature) {
             if (Files.notExists(witRoot.resolve(p))) {
@@ -75,13 +65,22 @@ public class WitStorage {
         }
     }
 
-    public boolean isValidStorageStructure() {
+    public static boolean isValidStorageStructure(Path witRoot) {
         return Stream.concat(
                 witStorageDirsSignature.stream(),
                 witStorageFilesSignature.stream()
         ).map(witRoot::resolve).allMatch(Files::exists);
     }
 
+    /**
+     * Root of the storage - directory, which resides at root user
+     * working directory; It keeps all service data and history
+     */
+    private final Path witRoot;
+
+    public WitStorage(Path witRoot) {
+        this.witRoot = witRoot;
+    }
 
     public Path getWitRoot() {
         return witRoot;
@@ -133,7 +132,7 @@ public class WitStorage {
     }
 
     /**
-     * Return commit is exists, else null
+     * @return null if there is no commit with given id, else commit object is returned
      */
     public Commit readCommit(ShaId id) throws IOException {
         if (Files.notExists(WitStoragePaths.getCommitsDir(witRoot).resolve(id.toString()))) {

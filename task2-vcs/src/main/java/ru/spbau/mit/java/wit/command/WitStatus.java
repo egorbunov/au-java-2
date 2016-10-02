@@ -2,6 +2,7 @@ package ru.spbau.mit.java.wit.command;
 
 import io.airlift.airline.Command;
 import ru.spbau.mit.java.wit.model.Index;
+import ru.spbau.mit.java.wit.repository.WitStatusUtils;
 import ru.spbau.mit.java.wit.repository.WitUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
@@ -25,15 +26,15 @@ public class WitStatus implements WitCommand {
         String curBranch = storage.readCurBranchName();
         String mergeBranch = storage.readMergeFlag();
 
-        List<Index.Entry> stagedDeleted = WitUtils.getStagedDeleted(index).collect(Collectors.toList());
-        List<Index.Entry> stagedModified = WitUtils.getStagedModified(index).collect(Collectors.toList());
-        List<Index.Entry> stagedNew = WitUtils.getStagedNew(index).collect(Collectors.toList());
+        List<Index.Entry> stagedDeleted = WitStatusUtils.getStagedDeleted(index).collect(Collectors.toList());
+        List<Index.Entry> stagedModified = WitStatusUtils.getStagedModified(index).collect(Collectors.toList());
+        List<Index.Entry> stagedNew = WitStatusUtils.getStagedNew(index).collect(Collectors.toList());
 
-        List<Path> notStagedDeleted = WitUtils.getTreeDeletedFiles(userRepositoryPath, index)
+        List<Path> notStagedDeleted = WitStatusUtils.getTreeDeletedFiles(userRepositoryPath, index)
                 .collect(Collectors.toList());
-        List<Path> notStagedModified = WitUtils.getTreeModifiedFiles(userRepositoryPath, index)
+        List<Path> notStagedModified = WitStatusUtils.getTreeModifiedFiles(userRepositoryPath, index)
                 .collect(Collectors.toList());
-        List<Path> untrackedFiles = WitUtils.getTreeNewPaths(userRepositoryPath, index)
+        List<Path> untrackedFiles = WitStatusUtils.getTreeNewPaths(userRepositoryPath, index)
                 .collect(Collectors.toList());
 
         System.out.println("On branch [ " + curBranch + " ]");

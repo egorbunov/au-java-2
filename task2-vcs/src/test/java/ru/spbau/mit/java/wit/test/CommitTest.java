@@ -8,7 +8,7 @@ import org.junit.rules.TemporaryFolder;
 import ru.spbau.mit.java.wit.command.WitAdd;
 import ru.spbau.mit.java.wit.command.WitCommit;
 import ru.spbau.mit.java.wit.command.WitInit;
-import ru.spbau.mit.java.wit.repository.WitUtils;
+import ru.spbau.mit.java.wit.repository.WitStatusUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
 import java.io.File;
@@ -45,7 +45,7 @@ public class CommitTest {
     }
 
     private void checkNothingStagedForCommit() throws IOException {
-        Assert.assertEquals(0, WitUtils.getStagedEntries(storage.readIndex())
+        Assert.assertEquals(0, WitStatusUtils.getStagedEntries(storage.readIndex())
                 .map(e -> e.fileName).count());
     }
 

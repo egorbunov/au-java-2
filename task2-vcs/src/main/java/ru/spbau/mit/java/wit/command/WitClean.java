@@ -2,8 +2,8 @@ package ru.spbau.mit.java.wit.command;
 
 import io.airlift.airline.Command;
 import io.airlift.airline.Option;
-import org.apache.commons.io.FileUtils;
 import ru.spbau.mit.java.wit.model.Index;
+import ru.spbau.mit.java.wit.repository.WitStatusUtils;
 import ru.spbau.mit.java.wit.repository.WitUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by: Egor Gorbunov
@@ -30,7 +29,7 @@ public class WitClean implements WitCommand {
         Index index = storage.readIndex();
         Path userRepositoryPath = WitUtils.stripWitStoragePath(storage.getWitRoot());
 
-        List<Path> untrackedFiles = WitUtils.getTreeNewPaths(userRepositoryPath, index)
+        List<Path> untrackedFiles = WitStatusUtils.getTreeNewPaths(userRepositoryPath, index)
                 .collect(Collectors.toList());
 
         for (Path p : untrackedFiles) {

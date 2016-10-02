@@ -74,8 +74,16 @@ public class Index extends AbstractCollection<Index.Entry> {
     private final Set<Entry> entries = new HashSet<>();
     private final Map<String, Entry> entriesByFileName= new HashMap<>();
 
-    public static boolean isCommitedAndNotChanged(Entry entry) {
+    /**
+     * @return true, if file, specified by entry, is already committed
+     *         to repo and also not staged for next commit
+     */
+    public static boolean isCommittedAndNotStaged(Entry entry) {
         return entry.curBlobId.equals(entry.lastCommittedBlobId);
+    }
+
+    public static boolean isStagedForDelete(Entry entry) {
+        return entry.curBlobId.equals(ShaId.EmptyId);
     }
 
     @Override

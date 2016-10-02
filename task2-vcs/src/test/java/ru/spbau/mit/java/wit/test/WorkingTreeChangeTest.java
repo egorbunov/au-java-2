@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import ru.spbau.mit.java.wit.command.WitAdd;
 import ru.spbau.mit.java.wit.command.WitInit;
-import ru.spbau.mit.java.wit.repository.WitUtils;
+import ru.spbau.mit.java.wit.repository.WitStatusUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
 import java.io.File;
@@ -57,7 +57,7 @@ public class WorkingTreeChangeTest {
     public void testDeleteRecognized() throws IOException {
         Files.delete(addedFiles.get(0).toPath());
         List<Path> treeDeletedFiles =
-                WitUtils.getTreeDeletedFiles(userRepoDir, storage.readIndex()).collect(Collectors.toList());
+                WitStatusUtils.getTreeDeletedFiles(userRepoDir, storage.readIndex()).collect(Collectors.toList());
         Assert.assertEquals(1, treeDeletedFiles.size());
         Assert.assertEquals(addedFiles.get(0).toPath(), treeDeletedFiles.get(0));
     }
@@ -66,7 +66,7 @@ public class WorkingTreeChangeTest {
     public void testNotTrackedRecognized() throws IOException {
         File f = baseFolder.newFile("not_tracked_yet");
         List<Path> notTracked =
-                WitUtils.getTreeNewPaths(userRepoDir, storage.readIndex()).collect(Collectors.toList());
+                WitStatusUtils.getTreeNewPaths(userRepoDir, storage.readIndex()).collect(Collectors.toList());
         Assert.assertEquals(1, notTracked.size());
         Assert.assertEquals(f.toPath(), notTracked.get(0));
     }
@@ -77,7 +77,7 @@ public class WorkingTreeChangeTest {
         Thread.sleep(100);
         FileUtils.writeLines(f, Arrays.asList("1", "2"));
         List<Path> modified =
-                WitUtils.getTreeModifiedFiles(userRepoDir, storage.readIndex()).collect(Collectors.toList());
+                WitStatusUtils.getTreeModifiedFiles(userRepoDir, storage.readIndex()).collect(Collectors.toList());
         // TODO: strange stuff again. Last modified field not changed for File.
         // Assert.assertEquals(1, modified.size());
         // Assert.assertEquals(f.toPath(), modified.get(0));

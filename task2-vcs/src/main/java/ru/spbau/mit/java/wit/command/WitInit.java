@@ -44,9 +44,9 @@ public class WitInit implements WitCommand {
 
         // initializing new repository
         Path storageRoot = WitUtils.resolveStoragePath(workingDir);
-        storage = new WitStorage(storageRoot);
         try {
-            storage.createStorageStructure();
+            WitStorage.createStorageStructure(storageRoot);
+            storage = new WitStorage(storageRoot);
             storage.writeBranch(initialBranch);
             storage.writeCurBranchName(initialBranch.getName());
             storage.writeCommitLog(initialBranchLog, initialBranch.getName());
@@ -84,10 +84,10 @@ public class WitInit implements WitCommand {
             next = baseDir.getParent();
 
             Path witRoot = WitUtils.resolveStoragePath(baseDir);
-            WitStorage storage = new WitStorage(witRoot);
-            if (!storage.isValidStorageStructure()) {
+            if (!WitStorage.isValidStorageStructure(witRoot)) {
                 continue;
             }
+            WitStorage storage = new WitStorage(witRoot);
             Branch master = storage.readBranch(initialBranch.getName());
             if (master == null || !master.getName().equals(initialBranch.getName())
                     || master.getHeadCommitId() == null) {

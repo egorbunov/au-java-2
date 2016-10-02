@@ -7,6 +7,7 @@ import ru.spbau.mit.java.wit.model.Branch;
 import ru.spbau.mit.java.wit.model.Index;
 import ru.spbau.mit.java.wit.model.Snapshot;
 import ru.spbau.mit.java.wit.model.id.ShaId;
+import ru.spbau.mit.java.wit.repository.WitStatusUtils;
 import ru.spbau.mit.java.wit.repository.WitUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 import ru.spbau.mit.java.wit.utils.MergeUtils;
@@ -18,7 +19,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Created by: Egor Gorbunov
@@ -72,7 +72,7 @@ public class WitMerge implements WitCommand {
 
         // current index, which will be transformed to proper after-merged state
         Index index = storage.readIndex();
-        if (!WitUtils.getStagedEntries(index).findAny().equals(Optional.empty())) {
+        if (!WitStatusUtils.getStagedEntries(index).findAny().equals(Optional.empty())) {
             System.err.println("Error: you have staged changes in your repository, " +
                     "commit them before merging.");
             return -1;

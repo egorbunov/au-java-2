@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import ru.spbau.mit.java.wit.command.WitAdd;
 import ru.spbau.mit.java.wit.command.WitInit;
-import ru.spbau.mit.java.wit.repository.WitUtils;
+import ru.spbau.mit.java.wit.repository.WitStatusUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
 import java.io.File;
@@ -44,7 +44,7 @@ public class AddTest {
 
     private void checkStaged(List<File> files) throws IOException {
         Set<String> stagedFiles = new HashSet<>(
-                WitUtils.getStagedEntries(storage.readIndex())
+                WitStatusUtils.getStagedEntries(storage.readIndex())
                         .map(e -> e.fileName)
                         .collect(Collectors.toList())
         );

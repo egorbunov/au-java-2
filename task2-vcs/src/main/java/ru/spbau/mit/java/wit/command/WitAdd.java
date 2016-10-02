@@ -78,7 +78,7 @@ public class WitAdd implements WitCommand {
             logger.info(name + " | last modified = " + lastModified);
 
             if (index.contains(name) && lastModified == index.getEntryByFile(name).modified) {
-                if (Index.isCommitedAndNotChanged(index.getEntryByFile(name))) {
+                if (Index.isCommittedAndNotStaged(index.getEntryByFile(name))) {
                     System.out.println("File is already up to date: [ " + name + " ]");
                 } else {
                     System.out.println("File is already staged: [ " + name + " ]");
