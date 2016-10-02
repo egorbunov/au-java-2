@@ -14,6 +14,7 @@ import ru.spbau.mit.java.wit.utils.MergeUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.MalformedInputException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -117,13 +118,18 @@ public class WitMerge implements WitCommand {
 
         // calculating diff between conflicting files and writing them
         for (MergePair mp : toMerge) {
-            System.out.println("    " + mp.fileName);
-            List<String> linesA = Files.readAllLines(storage.getBlobFile(mp.blobTo));
-            List<String> linesB = Files.readAllLines(storage.getBlobFile(mp.blobFrom));
-            List<String> merge = MergeUtils.merge(linesA, linesB, curBranchName, mergingBranch.getName());
+            try {
+                System.out.println("    " + mp.fileName);
+                List<String> linesA = Files.readAllLines(storage.getBlobFile(mp.blobTo));
+                List<String> linesB = Files.readAllLines(storage.getBlobFile(mp.blobFrom));
+                List<String> merge = MergeUtils.merge(linesA, linesB, curBranchName, mergingBranch.getName());
 
-            File fileToWrite = userRepositoryPath.resolve(mp.fileName).toFile();
-            FileUtils.writeLines(fileToWrite, merge);
+                File fileToWrite = userRepositoryPath.resolve(mp.fileName).toFile();
+                FileUtils.writeLines(fileToWrite, merge);
+            } catch (MalformedInputException e) {
+                System.err.println("Can't merge non-text file. Current master file version is " +
+                        "remained.");
+            }
         }
 
         // staging merged files
