@@ -56,7 +56,7 @@ public class WitAdd implements WitCommand {
         return 0;
     }
 
-    public Set<Path> resolveFilesToAdd(Path witRoot) throws IOException {
+    private Set<Path> resolveFilesToAdd(Path witRoot) throws IOException {
         WitUtils.CollectedPaths collectedPaths
                 = WitUtils.collectExistingFiles(fileNames, witRoot);
         if (collectedPaths.prohibitedPaths.size() != 0) {
