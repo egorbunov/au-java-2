@@ -42,10 +42,10 @@ public class CommitPack {
         int size = u.unpackArrayHeader();
         List<ShaId> parentIds = new ArrayList<>(size);
         for (int i = 0; i < size; ++i) {
-            parentIds.add(new ShaId(u.unpackString()));
+            parentIds.add(ShaId.create(u.unpackString()));
         }
         commit.setParentCommitsIds(parentIds);
-        commit.setSnapshotId(new ShaId(u.unpackString()));
+        commit.setSnapshotId(ShaId.create(u.unpackString()));
         commit.setMsg(u.unpackString());
         commit.setTimestamp(u.unpackLong());
 

@@ -80,7 +80,7 @@ public class StoreUtils {
             }
         }
 
-        ShaId id = new ShaId(Hex.encodeHexString(md.digest()));
+        ShaId id = ShaId.create(Hex.encodeHexString(md.digest()));
         File newFile = dirName.resolve(id.toString()).toFile();
 
         if (!tmpFile.renameTo(newFile)) {

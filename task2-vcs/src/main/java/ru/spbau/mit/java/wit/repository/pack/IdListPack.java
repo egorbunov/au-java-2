@@ -37,7 +37,7 @@ public class IdListPack {
 
         int size = u.unpackArrayHeader();
         for (int i = 0; i < size; ++i) {
-            log.add(new ShaId(u.unpackString()));
+            log.add(ShaId.create(u.unpackString()));
         }
 
         return log;

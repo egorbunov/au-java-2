@@ -2,18 +2,16 @@ package ru.spbau.mit.java.wit.command;
 
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
-import ru.spbau.mit.java.wit.log.Logging;
 import ru.spbau.mit.java.wit.model.Index;
 import ru.spbau.mit.java.wit.model.id.ShaId;
 import ru.spbau.mit.java.wit.repository.WitUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * Created by: Egor Gorbunov
@@ -26,37 +24,20 @@ public class WitAdd implements WitCommand {
     @Arguments(description = "Directories and file names to be added")
     private List<String> fileNames;
 
-    private final Logger logger = Logging.getLogger(WitAdd.class.getName());
-
     @Override
     public int execute(Path workingDir, WitStorage storage) throws IOException {
-        // reading arguments
-        WitUtils.CollectedPaths collectedPaths
-                = WitUtils.collectExistingFiles(fileNames, storage.getWitRoot());
-        if (collectedPaths.prohibitedPaths.size() != 0) {
-            System.out.println("Error: file "
-                    + collectedPaths.prohibitedPaths.iterator().next() +
-                    " is prohibited! (service or outside repo)");
+        Path witRoot = storage.getWitRoot();
+        Set<Path> filesForStage = resolveFilesToAdd(witRoot);
+        if (filesForStage == null) {
             return -1;
         }
-        if (collectedPaths.nonExistingPaths.size() != 0) {
-            System.out.println("Error: file "
-                    + collectedPaths.nonExistingPaths.iterator().next() +
-                    " not exists!");
-            return -1;
-        }
-        Set<Path> filesForStage = collectedPaths.existingPaths;
 
-        // staging files; preparing new index
-        Index index;
-        index = storage.readIndex();
-        Path userRepositoryPath = WitUtils.stripWitStoragePath(storage.getWitRoot());
-
+        Index index = storage.readIndex();
+        Path userRepositoryPath = WitUtils.stripWitStoragePath(witRoot);
         for (Path p : filesForStage) {
             String name = p.subpath(userRepositoryPath.getNameCount(), p.getNameCount()).toString();
             File file = p.toFile();
             long lastModified = file.lastModified();
-            logger.info(name + " | last modified = " + lastModified);
 
             if (index.contains(name) && lastModified == index.getEntryByFile(name).modified) {
                 if (!index.getEntryByFile(name).isStaged()) {
@@ -67,33 +48,30 @@ public class WitAdd implements WitCommand {
                 continue;
             }
 
-            // trying to write file to storage
-            ShaId id;
-            id = storage.writeBlob(file);
-
-            // changing index
-            if (!index.contains(name)) {
-                logger.info("Adding new entry to index; " +
-                        "(" + name + ", " + id.toString() + ", " + lastModified + ")");
-
-                index.add(new Index.Entry(
-                        name, lastModified, id, ShaId.EmptyId
-                ));
-            } else {
-                logger.info("Updating index entry, because file changed");
-
-                Index.Entry entry = index.getEntryByFile(name);
-                index.remove(entry);
-                index.add(new Index.Entry(
-                        name, lastModified, id, entry.lastCommittedBlobId
-                ));
-            }
+            ShaId id = storage.writeBlob(file);
+            index.addUpdate(name, lastModified, id);
         }
 
-        // updating index on disk
         storage.writeIndex(index);
-
         return 0;
+    }
+
+    public Set<Path> resolveFilesToAdd(Path witRoot) throws IOException {
+        WitUtils.CollectedPaths collectedPaths
+                = WitUtils.collectExistingFiles(fileNames, witRoot);
+        if (collectedPaths.prohibitedPaths.size() != 0) {
+            System.out.println("Error: file "
+                    + collectedPaths.prohibitedPaths.iterator().next() +
+                    " is prohibited! (service or outside repo)");
+            return null;
+        }
+        if (collectedPaths.nonExistingPaths.size() != 0) {
+            System.out.println("Error: file "
+                    + collectedPaths.nonExistingPaths.iterator().next() +
+                    " not exists!");
+            return null;
+        }
+        return collectedPaths.existingPaths;
     }
 
     public void setFileNames(List<String> fileNames) {

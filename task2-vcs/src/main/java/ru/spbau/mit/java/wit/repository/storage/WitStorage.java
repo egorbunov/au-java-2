@@ -145,7 +145,7 @@ public class WitStorage {
     public List<ShaId> resolveCommitIdsByPrefix(String prefix) throws IOException {
         return Files.list(WitStoragePaths.getCommitsDir(witRoot)).map(Path::getFileName)
                 .map(Path::toString).filter(s -> s.startsWith(prefix))
-                .map(ShaId::new)
+                .map(ShaId::create)
                 .collect(Collectors.toList());
     }
 

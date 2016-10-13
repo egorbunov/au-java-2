@@ -56,6 +56,14 @@ public class Index extends AbstractCollection<Index.Entry> {
             this.lastCommittedBlobId = lastCommittedBlobId;
         }
 
+        public Entry(String fileName, long modified,
+                     ShaId blobId) {
+            this.curBlobId = blobId;
+            this.modified = modified;
+            this.fileName = fileName;
+            this.lastCommittedBlobId = ShaId.EmptyId;
+        }
+
         @Override
         public int hashCode() {
             return fileName.hashCode();
@@ -110,6 +118,23 @@ public class Index extends AbstractCollection<Index.Entry> {
         entries.add(entry);
         entriesByFileName.put(entry.fileName, entry);
         return true;
+    }
+
+    /**
+     * Adds new entry to index or updates the old one
+     */
+    public void addUpdate(String name, long modified, ShaId id) {
+        if (!contains(name)) {
+            add(new Index.Entry(
+                    name, modified, id, ShaId.EmptyId
+            ));
+        } else {
+            Index.Entry entry = getEntryByFile(name);
+            remove(entry);
+            add(new Index.Entry(
+                    name, modified, id, entry.lastCommittedBlobId
+            ));
+        }
     }
 
     @Override

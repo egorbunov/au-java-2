@@ -64,9 +64,9 @@ public class WitUtils {
     }
 
     public static class CollectedPaths {
-        public Set<Path> existingPaths;
-        public Set<Path> nonExistingPaths;
-        public Set<Path> prohibitedPaths;
+        public final Set<Path> existingPaths = new HashSet<>();
+        public final Set<Path> nonExistingPaths = new HashSet<>();
+        public final Set<Path> prohibitedPaths = new HashSet<>();
     }
 
     /**
@@ -82,9 +82,6 @@ public class WitUtils {
         Path userRepositoryPath = WitUtils.stripWitStoragePath(witRoot);
 
         CollectedPaths res = new CollectedPaths();
-        res.existingPaths = new HashSet<>();
-        res.nonExistingPaths = new HashSet<>();
-        res.prohibitedPaths = new HashSet<>();
 
         List<Path> pathToTraverse = new ArrayList<>();
         for (String s : fileNames) {

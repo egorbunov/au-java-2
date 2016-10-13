@@ -33,90 +33,57 @@ public class WitCommit implements WitCommand {
             System.err.println("Error: Empty message");
             return -1;
         }
-
-        // Creating new Snapshot tree and new Index
-        Index index;
-        index = storage.readIndex();
-
+        Index index = storage.readIndex();
         List<Index.Entry> deleted = WitStatusUtils.getStagedDeleted(index).collect(Collectors.toList());
         List<Index.Entry> modified = WitStatusUtils.getStagedModified(index).collect(Collectors.toList());
         List<Index.Entry> added = WitStatusUtils.getStagedNew(index).collect(Collectors.toList());
         if (deleted.isEmpty() && modified.isEmpty() && added.isEmpty()) {
-            // if there was no files staged, there is no reason to commit!
             System.out.println("Noting to commit...");
             return 0;
         }
-
-        deleted.forEach(index::remove);
-        Stream.concat(modified.stream(), added.stream())
-                .forEach(index::remove);
-        // due to commit we updating last commit blob id field
-        Stream.concat(modified.stream(), added.stream())
-                .forEach(it -> index.add(new Index.Entry(
-                        it.fileName,
-                        it.modified,
-                        it.curBlobId,
-                        it.curBlobId)));
+        updateIndex(index, deleted, modified, added);
 
         Snapshot newSnapshot = index.stream()
                 .map(e -> new Snapshot.Entry(e.curBlobId, e.fileName))
                 .collect(Collectors.toCollection(Snapshot::new));
 
-        // Storing new snapshot
-        ShaId treeId;
-        treeId = storage.writeSnapshot(newSnapshot);
+        ShaId treeId = storage.writeSnapshot(newSnapshot);
+        Branch curBranch = storage.readBranch(storage.readCurBranchName());
+        Commit commit = prepareCommit(treeId, storage, curBranch);
+        ShaId commitId = storage.writeCommit(commit);
 
-        // reading current branch, cause we 
-        Branch curBranch;
-        String curBranchName = storage.readCurBranchName();
-        curBranch = storage.readBranch(curBranchName);
+        List<ShaId> log = prepareLog(storage, curBranch, commit, commitId);
+        storage.writeCommitLog(log, curBranch.getName());
 
+        // Updating branch
+        curBranch.setHeadCommitId(commitId);
+        storage.writeBranch(curBranch);
+        storage.writeIndex(index);
 
-        Commit commit = new Commit();
-        commit.setMsg(msg);
-        commit.setSnapshotId(treeId);
-        commit.setTimestamp(System.currentTimeMillis());
-
-        List<ShaId> parents = new ArrayList<>();
-        parents.add(curBranch.getHeadCommitId());
-        // if merging stage --> need to set more parent commits
-        String mergingBranch = storage.readMergeFlag();
-        if (mergingBranch != null) {
-            parents.add(storage.readBranch(mergingBranch).getHeadCommitId());
+        if (commit.getParentCommitsIds().size() > 1) {
+            storage.writeMergeFlag(null);
+            System.out.println("Merge Finished");
         }
-        commit.setParentCommitsIds(parents);
 
-        // write commit
-        ShaId commitId;
-        commitId = storage.writeCommit(commit);
+        // providing info to user
+        Path witRoot = storage.getWitRoot();
+        printCommitInfo(witRoot, workingDir, curBranch, deleted, modified, added);
+        return 0;
+    }
 
-        // Update log
+    private List<ShaId> prepareLog(WitStorage storage, Branch curBranch, Commit commit, ShaId commitId) throws IOException {
         List<ShaId> log;
-        if (mergingBranch == null) {
+        if (commit.getParentCommitsIds().size() > 1) {
             log = storage.readCommitLog(curBranch.getName());
             log.add(commitId);
         } else {
             // need to merge logs in case merge was performed
             log = WitLogUtils.readCommitHistory(commitId, storage).map(it -> it.id).collect(Collectors.toList());
         }
-        storage.writeCommitLog(log, curBranch.getName());
+        return log;
+    }
 
-        // Updating branch
-        curBranch.setHeadCommitId(commitId);
-        storage.writeBranch(curBranch);
-
-        // Storing changed index
-        storage.writeIndex(index);
-
-        // Finish merging if needed
-        if (mergingBranch != null) {
-            storage.writeMergeFlag(null);
-            System.out.println("Merge Finished");
-        }
-
-
-        // providing info to user
-        Path witRoot = storage.getWitRoot();
+    private void printCommitInfo(Path witRoot, Path workingDir, Branch curBranch, List<Index.Entry> deleted, List<Index.Entry> modified, List<Index.Entry> added) {
         Path userRepositoryPath = WitUtils.stripWitStoragePath(witRoot);
 
         System.out.println("On branch [ " + curBranch.getName() + " ]");
@@ -131,8 +98,34 @@ public class WitCommit implements WitCommand {
             System.out.println("    add    " +
                     workingDir.relativize(userRepositoryPath.resolve(e.fileName)));
         }
+    }
 
-        return 0;
+    private Commit prepareCommit(ShaId snapshotId, WitStorage storage, Branch curBranch) throws IOException {
+        Commit commit = new Commit(msg, snapshotId, System.currentTimeMillis());
+        List<ShaId> parents = new ArrayList<>();
+        parents.add(curBranch.getHeadCommitId());
+        // if merging stage --> need to set more parent commits
+        String mergingBranch = storage.readMergeFlag();
+        if (mergingBranch != null) {
+            parents.add(storage.readBranch(mergingBranch).getHeadCommitId());
+        }
+        commit.setParentCommitsIds(parents);
+        return commit;
+    }
+
+    private static void updateIndex(Index index,
+                                    List<Index.Entry> deleted,
+                                    List<Index.Entry> modified,
+                                    List<Index.Entry> added) {
+        deleted.forEach(index::remove);
+        Stream.concat(modified.stream(), added.stream())
+                .forEach(index::remove);
+        Stream.concat(modified.stream(), added.stream())
+                .forEach(it -> index.add(new Index.Entry(
+                        it.fileName,
+                        it.modified,
+                        it.curBlobId,
+                        it.curBlobId)));
     }
 
     public void setMsg(String msg) {

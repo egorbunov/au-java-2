@@ -90,7 +90,6 @@ public class AddTest {
         Path f = Files.createTempFile(null, null);
         addCmd.setFileNames(Collections.singletonList(f.toString()));
         addCmd.execute(baseDir, storage);
-
         checkStaged(Collections.emptyList());
     }
 

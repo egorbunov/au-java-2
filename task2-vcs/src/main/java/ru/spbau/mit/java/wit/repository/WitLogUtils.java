@@ -44,13 +44,26 @@ public class WitLogUtils {
                 .collect(Collectors.toList());
     }
 
+    public static Stream<IdCommit> mergeCommitHistories(List<ShaId> commits, WitStorage storage)
+            throws IOException {
+        Stream<IdCommit> commitStream = Stream.empty();
+        for (ShaId id : commits) {
+            commitStream = Stream.concat(commitStream, collectCommitHistoryStream(id, storage));
+        }
+        return sortedHistoryStream(commitStream);
+    }
+
     /**
      * Returns list of commits, sorted accordingly to their time stamp
      * Commits are retrieved by traversing parent commits from head commit,
      * specified by {@code headCommitId}.
      */
     public static Stream<IdCommit> readCommitHistory(ShaId headCommitId, WitStorage storage) throws IOException {
-        return collectCommitHistoryStream(headCommitId, storage)
+        return sortedHistoryStream(collectCommitHistoryStream(headCommitId, storage));
+    }
+
+    private static Stream<IdCommit> sortedHistoryStream(Stream<IdCommit> stream) {
+        return stream
                 .collect(Collectors.toSet())
                 .stream()
                 .sorted(Comparator.comparing(c -> c.commit.getTimestamp()));

@@ -1,5 +1,6 @@
 package ru.spbau.mit.java.wit.test;
 
+import org.apache.commons.codec.digest.Sha2Crypt;
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -46,7 +47,7 @@ public class StorageTest {
 
     @Test
     public void testWriteBranch() throws IOException {
-        Branch b = new Branch("new_branch", new ShaId("y"));
+        Branch b = new Branch("new_branch", ShaId.create("y"));
         storage.writeBranch(b);
         Branch actualBranch = storage.readBranch(b.getName());
 
@@ -62,8 +63,8 @@ public class StorageTest {
 
 
         index = new Index();
-        index.add(new Index.Entry("filetxt", 123456, new ShaId("a"), new ShaId("b")));
-        index.add(new Index.Entry("txtfile", 654321, new ShaId("c"), new ShaId("d")));
+        index.add(new Index.Entry("filetxt", 123456, ShaId.create("a"), ShaId.create("b")));
+        index.add(new Index.Entry("txtfile", 654321, ShaId.create("c"), ShaId.create("d")));
 
         storage.writeIndex(index);
         Index actual = storage.readIndex();
@@ -79,8 +80,8 @@ public class StorageTest {
     public void testWriteCommit() throws IOException {
         Commit commit = new Commit();
         commit.setMsg("msg");
-        commit.setParentCommitsIds(Arrays.asList(new ShaId("1"), new ShaId("2"), new ShaId("3")));
-        commit.setSnapshotId(new ShaId("123sd12312"));
+        commit.setParentCommitsIds(Arrays.asList(ShaId.create("1"), ShaId.create("2"), ShaId.create("3")));
+        commit.setSnapshotId(ShaId.create("123sd12312"));
         commit.setTimestamp(System.currentTimeMillis());
 
         ShaId id = storage.writeCommit(commit);
@@ -95,8 +96,8 @@ public class StorageTest {
     @Test
     public void testWriteSnapshot() throws IOException {
         Snapshot snapshot = new Snapshot();
-        snapshot.add(new Snapshot.Entry(new ShaId("1"), "file"));
-        snapshot.add(new Snapshot.Entry(new ShaId("2"), "file1"));
+        snapshot.add(new Snapshot.Entry(ShaId.create("1"), "file"));
+        snapshot.add(new Snapshot.Entry(ShaId.create("2"), "file1"));
 
         ShaId id = storage.writeSnapshot(snapshot);
         Snapshot actual = storage.readSnapshot(id);
@@ -135,7 +136,7 @@ public class StorageTest {
     public void testLogWrite() throws IOException {
         String branchName = "branch";
         List<ShaId> log = new ArrayList<>();
-        log.add(new ShaId("this_is_id0x35"));
+        log.add(ShaId.create("this_is_id0x35"));
         storage.writeCommitLog(log, branchName);
 
         List<ShaId> actual = storage.readCommitLog(branchName);

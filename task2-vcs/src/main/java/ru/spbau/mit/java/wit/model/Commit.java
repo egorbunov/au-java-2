@@ -17,6 +17,14 @@ public class Commit {
     private String msg;
     private long timestamp;
 
+    public Commit() {}
+
+    public Commit(String msg, ShaId snapshotId, long timestamp) {
+        this.msg = msg;
+        this.snapshotId = snapshotId;
+        this.timestamp = timestamp;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!Commit.class.isInstance(obj)) {

@@ -40,8 +40,8 @@ public class IndexPack {
         int size = u.unpackArrayHeader();
         for (int i = 0; i < size; ++i) {
             String f = u.unpackString();
-            ShaId lid = new ShaId(u.unpackString());
-            ShaId cid = new ShaId(u.unpackString());
+            ShaId lid = ShaId.create(u.unpackString());
+            ShaId cid = ShaId.create(u.unpackString());
             long lm = u.unpackLong();
             index.add(new Index.Entry(f, lm, cid, lid));
         }

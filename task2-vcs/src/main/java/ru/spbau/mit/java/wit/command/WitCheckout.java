@@ -37,31 +37,17 @@ public class WitCheckout implements WitCommand {
     @Override
     public int execute(Path workingDir, WitStorage storage) throws IOException {
         Path userRepositoryPath = WitUtils.stripWitStoragePath(storage.getWitRoot());
-
         // resolving commit reference
         ShaId commitId;
         Branch checkOutBranch = storage.readBranch(ref);
-
-        if (checkOutBranch != null) {
-            commitId = checkOutBranch.getHeadCommitId();
-        } else {
-            List<ShaId> ids = storage.resolveCommitIdsByPrefix(ref);
-            if (ids.size() > 1) {
-                System.err.println("Error: can't resolve commit, " +
-                        "too short prefix: " + ref);
-                return -1;
-            } else if (ids.isEmpty()) {
-                System.err.println("Error: can't find commit or branch!");
-                return -1;
-            }
-            commitId = ids.get(0);
+        commitId = getCommitId(storage, checkOutBranch);
+        if (commitId == null) {
+            return -1;
         }
-
         if (storage.readMergeFlag() != null) {
             System.err.println("Error: finish merging before checkout");
             return -1;
         }
-
         Index curIndex = storage.readIndex();
         if (!WitStatusUtils.getStagedEntries(curIndex).findAny().equals(Optional.empty())) {
             System.err.println("Error: you have staged changes in your repository, " +
@@ -69,28 +55,75 @@ public class WitCheckout implements WitCommand {
             return -1;
         }
 
-        Index newIndex = new Index();
-
-        Snapshot snapshot;
         Commit commit = storage.readCommit(commitId);
-        snapshot = storage.readSnapshot(commit.getSnapshotId());
+        Snapshot snapshot = storage.readSnapshot(commit.getSnapshotId());
+        Index newIndex = checkoutSnapshotFiles(storage, userRepositoryPath, snapshot);
+        deleteFilesNotInRevision(userRepositoryPath, curIndex, snapshot);
 
-        // checking out and filling index
+        // replacing index
+        storage.writeIndex(newIndex);
+        if (checkOutBranch == null) {
+            detachBranch(storage, commitId);
+            System.out.println("Switched to revision " + ref);
+        } else {
+            logger.info("Switching to branch " + checkOutBranch.getName());
+            storage.writeCurBranchName(checkOutBranch.getName());
+            System.out.println("Switched to branch " + ref);
+        }
+        return 0;
+    }
+
+    private Index checkoutSnapshotFiles(WitStorage storage, Path userRepositoryPath, Snapshot snapshot) throws IOException {
+        Index newIndex = new Index();
         for (Snapshot.Entry entry : snapshot) {
             String name = entry.fileName;
             Path pToCheckout = userRepositoryPath.resolve(name);
-
             storage.checkoutBlob(entry.id, pToCheckout);
-
             newIndex.add(new Index.Entry(
                     name, pToCheckout.toFile().lastModified(), entry.id,
                     entry.id));
         }
+        return newIndex;
+    }
 
-        // deleting files not existing in target revision
+    private void detachBranch(WitStorage storage, ShaId commitId) throws IOException {
+        logger.info("Creating detached branch");
+        // checking out by commit ref => need to create new detached branch
+        // and fill log properly for that branch
+        Branch detachBranch = new Branch("detach_".concat(commitId.toString()), commitId);
+        List<ShaId> log = WitLogUtils.readCommitHistory(commitId, storage).map(it -> it.id)
+                .collect(Collectors.toList());
+
+        storage.writeBranch(detachBranch);
+        storage.writeCommitLog(log, detachBranch.getName());
+        storage.writeCurBranchName(detachBranch.getName());
+    }
+
+    private ShaId getCommitId(WitStorage storage, Branch checkOutBranch) throws IOException {
+        ShaId commitId;
+        if (checkOutBranch != null) {
+            commitId = checkOutBranch.getHeadCommitId();
+        } else {
+            List<ShaId> ids = storage.resolveCommitIdsByPrefix(ref);
+            if (ids.size() > 1) {
+                System.err.println("Error: can't resolve commit, " +
+                        "too short prefix: " + ref);
+                return null;
+            } else if (ids.isEmpty()) {
+                System.err.println("Error: can't find commit or branch!");
+                return null;
+            }
+            commitId = ids.get(0);
+        }
+        return commitId;
+    }
+
+    private void deleteFilesNotInRevision(Path userRepositoryPath,
+                                          Index curIndex,
+                                          Snapshot targetRevision) throws IOException {
         for (Index.Entry entry : curIndex) {
             // delete if file is not in target revision
-            if (snapshot.getBlobIdByFileName(entry.fileName) == null) {
+            if (targetRevision.getBlobIdByFileName(entry.fileName) == null) {
                 Path p = userRepositoryPath.resolve(entry.fileName);
                 Files.deleteIfExists(p);
 
@@ -102,30 +135,6 @@ public class WitCheckout implements WitCommand {
                 }
             }
         }
-
-        // replacing index
-        storage.writeIndex(newIndex);
-
-        if (checkOutBranch == null) {
-            logger.info("Creating detached branch");
-            // checking out by commit ref => need to create new detached branch
-            // and fill log properly for that branch
-            Branch detachBranch = new Branch("detach_".concat(commitId.toString()), commitId);
-            List<ShaId> log = WitLogUtils.readCommitHistory(commitId, storage).map(it -> it.id)
-                    .collect(Collectors.toList());
-
-            storage.writeBranch(detachBranch);
-            storage.writeCommitLog(log, detachBranch.getName());
-            storage.writeCurBranchName(detachBranch.getName());
-
-            System.out.println("Switched to revision " + ref);
-        } else {
-            logger.info("Switching to branch " + checkOutBranch.getName());
-            storage.writeCurBranchName(checkOutBranch.getName());
-
-            System.out.println("Switched to branch " + ref);
-        }
-        return 0;
     }
 
     public void setRef(String ref) {

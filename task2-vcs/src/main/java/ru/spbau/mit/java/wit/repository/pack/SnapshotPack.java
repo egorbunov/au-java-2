@@ -37,7 +37,7 @@ public class SnapshotPack {
 
         int size = u.unpackArrayHeader();
         for (int i = 0; i < size; ++i) {
-            ShaId id = new ShaId(u.unpackString());
+            ShaId id = ShaId.create(u.unpackString());
             String f = u.unpackString();
             snapshot.add(new Snapshot.Entry(id, f));
         }

@@ -4,7 +4,6 @@ import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
 import ru.spbau.mit.java.wit.model.Branch;
 import ru.spbau.mit.java.wit.model.id.ShaId;
-import ru.spbau.mit.java.wit.repository.WitUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
 import java.io.IOException;
@@ -24,36 +23,39 @@ public class WitBranch implements WitCommand {
 
     @Override
     public int execute(Path workingDir, WitStorage storage) throws IOException {
-        String curBranchName = storage.readCurBranchName();
-        Branch curBranch = storage.readBranch(curBranchName);
-
         if (branchNames == null || branchNames.isEmpty()) {
-            List<Branch> branches = storage.readAllBranches();
-            for (Branch b : branches) {
-                if (b.getName().equals(curBranch.getName())) {
-                    System.out.println("* " + b.getName());
-                } else {
-                    System.out.println("  " + b.getName());
-                }
-            }
+            printBranches(storage);
             return 0;
         }
 
+        String curBranchName = storage.readCurBranchName();
+        Branch curBranch = storage.readBranch(curBranchName);
         for (String branchName : branchNames) {
             if (storage.readBranch(branchName) != null) {
                 System.err.println("Error: Branch with name " + branchName + " already exists");
                 continue;
             }
-
             if (curBranch.getHeadCommitId().equals(ShaId.EmptyId)) {
                 System.out.println("FATAL: can't branch, no commit to base branch on;");
                 return -1;
             }
-
             createOneBranch(branchName, curBranch, storage);
         }
 
         return 0;
+    }
+
+    private static void printBranches(WitStorage storage) throws IOException {
+        String curBranchName = storage.readCurBranchName();
+        Branch curBranch = storage.readBranch(curBranchName);
+        List<Branch> branches = storage.readAllBranches();
+        for (Branch b : branches) {
+            if (b.getName().equals(curBranch.getName())) {
+                System.out.println("* " + b.getName());
+            } else {
+                System.out.println("  " + b.getName());
+            }
+        }
     }
 
     private static void createOneBranch(String branchName, Branch curBranch, WitStorage storage) throws IOException {

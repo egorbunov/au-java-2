@@ -34,7 +34,7 @@ public class BranchPack {
         Branch b = new Branch();
 
         b.setName(u.unpackString());
-        b.setHeadCommitId(new ShaId(u.unpackString()));
+        b.setHeadCommitId(ShaId.create(u.unpackString()));
 
         return b;
     }
