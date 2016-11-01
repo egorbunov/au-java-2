@@ -15,11 +15,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Created by: Egor Gorbunov
- * Date: 10/2/16
- * Email: egor-mailbox@ya.com
- */
 @Command(name = "reset", description = "Remove fileNames from stage (undo add command)")
 public class WitReset implements WitCommand {
     public void setFileNames(List<String> fileNames) {
@@ -32,31 +27,19 @@ public class WitReset implements WitCommand {
     @Override
     public int execute(Path workingDir, WitStorage storage) throws IOException {
         Path userRepositoryPath = WitUtils.stripWitStoragePath(storage.getWitRoot());
-
-        WitUtils.CollectedPaths collectedPaths
-                = WitUtils.collectExistingFiles(fileNames, storage.getWitRoot());
-        if (collectedPaths.prohibitedPaths.size() != 0) {
-            throw new FileIsProhibitedForControl(
-                    collectedPaths.prohibitedPaths.iterator().next().toString());
-        }
-        Set<Path> toReset = collectedPaths.existingPaths;
-
+        Path witRoot = storage.getWitRoot();
         Index index = storage.readIndex();
-        // also adding files, which are in index and deleted from tree,
-        // if specified, because there may be committed files, which were deleted from tree
-        Set<Path> nonExisting = collectedPaths.nonExistingPaths.stream()
-                .map(it -> workingDir.resolve(it).normalize()).collect(Collectors.toSet());
-        Set<Path> treeDeleted = WitStatusUtils.getTreeDeletedFiles(userRepositoryPath, index)
-                .collect(Collectors.toSet());
-        for (Path p : nonExisting) {
-            if (treeDeleted.contains(p)) {
-                toReset.add(p);
-            } else {
-                throw new FileNotFoundException(p.toString());
-            }
-        }
 
+        Set<Path> toReset = getFilesToReset(workingDir, userRepositoryPath, witRoot, index);
 
+        // index is changed in next method call
+        resetFiles(userRepositoryPath, index, toReset);
+
+        storage.writeIndex(index);
+        return 0;
+    }
+
+    private void resetFiles(Path userRepositoryPath, Index index, Set<Path> toReset) {
         for (Path p : toReset) {
             String file = p.subpath(userRepositoryPath.getNameCount(), p.getNameCount()).toString();
             Index.Entry e = index.getEntryByFile(file);
@@ -75,9 +58,33 @@ public class WitReset implements WitCommand {
                 System.out.println("File: " + file + " is not staged, omitting...");
             }
         }
+    }
 
+    private Set<Path> getFilesToReset(Path workingDir, Path userRepositoryPath, Path witRoot, Index index) throws IOException {
+        WitUtils.CollectedPaths collectedPaths
+                = WitUtils.collectExistingFiles(fileNames, witRoot);
 
-        storage.writeIndex(index);
-        return 0;
+        if (collectedPaths.prohibitedPaths.size() != 0) {
+            throw new FileIsProhibitedForControl(
+                    collectedPaths.prohibitedPaths.iterator().next().toString());
+        }
+
+        Set<Path> toReset = collectedPaths.existingPaths;
+
+        // also adding files, which are in index and deleted from tree,
+        // if specified, because there may be staged files, which were deleted from tree
+        Set<Path> nonExisting = collectedPaths.nonExistingPaths.stream()
+                .map(it -> workingDir.resolve(it).normalize()).collect(Collectors.toSet());
+        Set<Path> treeDeleted = WitStatusUtils.getTreeDeletedFiles(userRepositoryPath, index)
+                .collect(Collectors.toSet());
+        for (Path p : nonExisting) {
+            if (treeDeleted.contains(p)) {
+                toReset.add(p);
+            } else {
+                throw new FileNotFoundException(p.toString());
+            }
+        }
+
+        return toReset;
     }
 }
