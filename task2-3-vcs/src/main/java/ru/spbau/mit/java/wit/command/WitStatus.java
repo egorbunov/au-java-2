@@ -26,9 +26,12 @@ public class WitStatus implements WitCommand {
         String curBranch = storage.readCurBranchName();
         String mergeBranch = storage.readMergeFlag();
 
-        List<Index.Entry> stagedDeleted = WitStatusUtils.getStagedDeleted(index).collect(Collectors.toList());
-        List<Index.Entry> stagedModified = WitStatusUtils.getStagedModified(index).collect(Collectors.toList());
-        List<Index.Entry> stagedNew = WitStatusUtils.getStagedNew(index).collect(Collectors.toList());
+        List<Index.Entry> stagedDeleted = WitStatusUtils.getStagedDeleted(index)
+                .collect(Collectors.toList());
+        List<Index.Entry> stagedModified = WitStatusUtils.getStagedModified(index)
+                .collect(Collectors.toList());
+        List<Index.Entry> stagedNew = WitStatusUtils.getStagedNew(index)
+                .collect(Collectors.toList());
 
         List<Path> notStagedDeleted = WitStatusUtils.getTreeDeletedFiles(userRepositoryPath, index)
                 .collect(Collectors.toList());
@@ -42,14 +45,44 @@ public class WitStatus implements WitCommand {
             System.out.println("MERGING with branch: " + mergeBranch);
         }
 
-        if (stagedDeleted.size() == 0 && stagedModified.size() == 0 && stagedNew.size() == 0 &&
-                notStagedDeleted.size() == 0 && notStagedModified.size() == 0 && untrackedFiles.size() == 0) {
+        if (stagedDeleted.size() == 0 && stagedModified.size() == 0
+                && stagedNew.size() == 0 && notStagedDeleted.size() == 0
+                && notStagedModified.size() == 0 && untrackedFiles.size() == 0) {
             System.out.println("Everything is up to date.");
             return 0;
         }
 
+        listStagedFiles(workingDir, userRepositoryPath,
+                stagedDeleted, stagedModified, stagedNew);
+        listNotStaged(workingDir, notStagedDeleted, notStagedModified);
+        listNewFiles(workingDir, untrackedFiles);
 
-        // listing staged files if exist
+        return 0;
+    }
+
+    private void listNewFiles(Path workingDir, List<Path> untrackedFiles) {
+        if (untrackedFiles.size() != 0) {
+            System.out.println("Not tracked files:");
+            untrackedFiles.forEach(p -> {
+                System.out.println("               " + workingDir.relativize(p));
+            });
+        }
+    }
+
+    private void listNotStaged(Path workingDir, List<Path> notStagedDeleted, List<Path> notStagedModified) {
+        if (notStagedDeleted.size() != 0 || notStagedModified.size() != 0) {
+            System.out.println("Not staged changes:");
+            notStagedDeleted.forEach(p -> {
+                System.out.println("    deleted:   " + workingDir.relativize(p));
+            });
+            notStagedModified.forEach(p -> {
+                System.out.println("    modified:  " + workingDir.relativize(p));
+            });
+            System.out.println();
+        }
+    }
+
+    private void listStagedFiles(Path workingDir, Path userRepositoryPath, List<Index.Entry> stagedDeleted, List<Index.Entry> stagedModified, List<Index.Entry> stagedNew) {
         if (stagedDeleted.size() != 0 || stagedModified.size() != 0 || stagedNew.size() != 0) {
             System.out.println("Changes staged for commit: ");
             for (Index.Entry e : stagedDeleted) {
@@ -66,27 +99,5 @@ public class WitStatus implements WitCommand {
             }
             System.out.println();
         }
-
-        // listing not staged changed files if exist
-        if (notStagedDeleted.size() != 0 || notStagedModified.size() != 0) {
-            System.out.println("Not staged changes:");
-            notStagedDeleted.forEach(p -> {
-                System.out.println("    deleted:   " + workingDir.relativize(p));
-            });
-            notStagedModified.forEach(p -> {
-                System.out.println("    modified:  " + workingDir.relativize(p));
-            });
-            System.out.println();
-        }
-
-        // listing new files in tree if exist
-        if (untrackedFiles.size() != 0) {
-            System.out.println("Not tracked files:");
-            untrackedFiles.forEach(p -> {
-                System.out.println("               " + workingDir.relativize(p));
-            });
-        }
-
-        return 0;
     }
 }
