@@ -23,11 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Created by: Egor Gorbunov
- * Date: 9/26/16
- * Email: egor-mailbox@ya.com
- */
 
 @Command(name = "merge", description = "Merge some branch to currently active")
 public class WitMerge implements WitCommand {
@@ -35,8 +30,8 @@ public class WitMerge implements WitCommand {
     private String branch;
 
     private static class MergePair {
-        public final ShaId blobTo;
-        public final ShaId blobFrom;
+        final ShaId blobTo;
+        final ShaId blobFrom;
         public final String fileName;
 
 
@@ -47,6 +42,16 @@ public class WitMerge implements WitCommand {
         }
     }
 
+    private class FilesForMerge {
+        final List<MergePair> toMerge;
+        final List<Snapshot.Entry> toCheckout;
+
+        FilesForMerge(List<MergePair> toMerge, List<Snapshot.Entry> toCheckout) {
+            this.toMerge = toMerge;
+            this.toCheckout = toCheckout;
+        }
+    }
+
     @Override
     public int execute(Path workingDir, WitStorage storage) throws IOException {
         if (branch == null || branch.isEmpty()) {
@@ -54,26 +59,14 @@ public class WitMerge implements WitCommand {
         }
         Path userRepositoryPath = WitUtils.stripWitStoragePath(storage.getWitRoot());
 
-        /*
-            1) Read index of current branch
-            2) Read snapshot of merged branch
-            3) Separate conflicting files
-            4) Just checkout non-conflicting files
-            6) Merge conflicting files
-            7) Stage merged conflicting files
-            8) Merge logs
-         */
-
-        String curBranchName = storage.readCurBranchName();
-
         Branch mergingBranch = storage.readBranch(branch);
         if (mergingBranch == null) {
             System.err.println("Error: no such branch " + branch);
             return -1;
         }
 
-        // current index, which will be transformed to proper after-merged state
         Index index = storage.readIndex();
+
         if (!WitStatusUtils.getStagedEntries(index).findAny().equals(Optional.empty())) {
             throw new NotAllChangesCommitted();
         }
@@ -81,41 +74,37 @@ public class WitMerge implements WitCommand {
         Snapshot mergingSnapshot = storage.readSnapshot(
                 storage.readCommit(mergingBranch.getHeadCommitId()).getSnapshotId());
 
-        // determining conflicting and non-conflicting files
-        List<MergePair> toMerge = new ArrayList<>();
-        List<Snapshot.Entry> toCheckout = new ArrayList<>();
-        for (Snapshot.Entry entry : mergingSnapshot) {
-            if (index.contains(entry.fileName)) {
-                toMerge.add(new MergePair(
-                        index.getEntryByFile(entry.fileName).curBlobId,
-                        entry.id,
-                        entry.fileName
-                ));
-            } else {
-                toCheckout.add(entry);
-            }
-        }
+        FilesForMerge filesForMerge = getFilesForMerge(index, mergingSnapshot);
+        List<MergePair> toMerge = filesForMerge.toMerge;
+        List<Snapshot.Entry> toCheckout = filesForMerge.toCheckout;
 
         if (toMerge.size() == 0 && toCheckout.size() == 0) {
             System.out.println("Everything is up to date...");
             return 0;
         }
 
-        // simply checking out non-conflicting files (non-conflicting by names =))
-        // and staging them for commit
-        for (Snapshot.Entry entry : toCheckout) {
-            String name = entry.fileName;
-            Path pToCheckout = userRepositoryPath.resolve(name);
-            storage.checkoutBlob(entry.id, pToCheckout);
-            index.add(new Index.Entry(name, pToCheckout.toFile().lastModified(),
-                    entry.id, ShaId.EmptyId)); // file is treated as new one
+        checkoutNoConflict(storage, userRepositoryPath, index, toCheckout);
+        mergeConflicting(storage, userRepositoryPath, mergingBranch, index, toMerge);
+
+        storage.writeIndex(index);
+
+        System.out.println("Merge complete. Now you can commit merge changes using 'wit commit'.");
+        if (toMerge.size() > 0) {
+            System.out.println("IMPORTANT: fix automatically merged files by hand!");
+            System.out.println("           after fixing use 'wit add' to stage files");
         }
 
+        return 0;
+    }
+
+    private void mergeConflicting(WitStorage storage, Path userRepositoryPath,
+                                  Branch mergingBranch,
+                                  Index index, List<MergePair> toMerge) throws IOException {
         if (toMerge.size() > 0) {
             System.out.println("Merging...");
         }
 
-        // calculating diff between conflicting files and writing them
+        String curBranchName = storage.readCurBranchName();
         for (MergePair mp : toMerge) {
             try {
                 System.out.println("    " + mp.fileName);
@@ -141,17 +130,35 @@ public class WitMerge implements WitCommand {
         }
 
         storage.writeMergeFlag(branch);
+    }
 
-        // finally writing updated index
-        storage.writeIndex(index);
+    private void checkoutNoConflict(WitStorage storage, Path userRepositoryPath,
+                                    Index index, List<Snapshot.Entry> toCheckout) throws IOException {
+        for (Snapshot.Entry entry : toCheckout) {
+            String name = entry.fileName;
+            Path pToCheckout = userRepositoryPath.resolve(name);
+            storage.checkoutBlob(entry.id, pToCheckout);
+            index.add(new Index.Entry(name, pToCheckout.toFile().lastModified(),
+                    entry.id, ShaId.EmptyId)); // file is treated as new one
+        }
+    }
 
-        System.out.println("Merge complete. Now you can commit merge changes using 'wit commit'.");
-        if (toMerge.size() > 0) {
-            System.out.println("IMPORTANT: fix automatically merged files by hand!");
-            System.out.println("           after fixing use 'wit add' to stage files");
+    private FilesForMerge getFilesForMerge(Index index, Snapshot mergingSnapshot) {
+        List<MergePair> toMerge = new ArrayList<>();
+        List<Snapshot.Entry> toCheckout = new ArrayList<>();
+        for (Snapshot.Entry entry : mergingSnapshot) {
+            if (index.contains(entry.fileName)) {
+                toMerge.add(new MergePair(
+                        index.getEntryByFile(entry.fileName).curBlobId,
+                        entry.id,
+                        entry.fileName
+                ));
+            } else {
+                toCheckout.add(entry);
+            }
         }
 
-        return 0;
+        return new FilesForMerge(toMerge, toCheckout);
     }
 
     public void setBranch(String branch) {
