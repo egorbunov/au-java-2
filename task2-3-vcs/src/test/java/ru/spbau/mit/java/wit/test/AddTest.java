@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import ru.spbau.mit.java.wit.command.WitAdd;
 import ru.spbau.mit.java.wit.command.WitInit;
+import ru.spbau.mit.java.wit.command.except.FileIsProhibitedForControl;
 import ru.spbau.mit.java.wit.repository.WitStatusUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
@@ -85,7 +86,7 @@ public class AddTest {
         checkStaged(Collections.singletonList(f));
     }
 
-    @Test
+    @Test(expected = FileIsProhibitedForControl.class)
     public void testAddNotInRepo() throws IOException {
         Path f = Files.createTempFile(null, null);
         addCmd.setFileNames(Collections.singletonList(f.toString()));

@@ -9,6 +9,7 @@ import ru.spbau.mit.java.wit.command.WitAdd;
 import ru.spbau.mit.java.wit.command.WitBranch;
 import ru.spbau.mit.java.wit.command.WitCommit;
 import ru.spbau.mit.java.wit.command.WitInit;
+import ru.spbau.mit.java.wit.command.except.NoBaseCommitForBranch;
 import ru.spbau.mit.java.wit.model.Branch;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
@@ -51,7 +52,7 @@ public class BranchTest {
         addCmd.execute(userRepoDir, storage);
     }
 
-    @Test
+    @Test(expected = NoBaseCommitForBranch.class)
     public void testBranchNoCommits() throws IOException {
         String branchName = "NEW_BRANCH";
         WitBranch branchCmd = new WitBranch();

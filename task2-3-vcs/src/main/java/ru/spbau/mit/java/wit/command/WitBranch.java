@@ -2,6 +2,7 @@ package ru.spbau.mit.java.wit.command;
 
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
+import ru.spbau.mit.java.wit.command.except.NoBaseCommitForBranch;
 import ru.spbau.mit.java.wit.model.Branch;
 import ru.spbau.mit.java.wit.model.id.ShaId;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
@@ -32,12 +33,11 @@ public class WitBranch implements WitCommand {
         Branch curBranch = storage.readBranch(curBranchName);
         for (String branchName : branchNames) {
             if (storage.readBranch(branchName) != null) {
-                System.err.println("Error: Branch with name " + branchName + " already exists");
+                System.err.println("Branch with name " + branchName + " already exists");
                 continue;
             }
             if (curBranch.getHeadCommitId().equals(ShaId.EmptyId)) {
-                System.out.println("FATAL: can't branch, no commit to base branch on;");
-                return -1;
+                throw new NoBaseCommitForBranch();
             }
             createOneBranch(branchName, curBranch, storage);
         }

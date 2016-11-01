@@ -3,6 +3,7 @@ package ru.spbau.mit.java.wit;
 import io.airlift.airline.Cli;
 import io.airlift.airline.ParseException;
 import ru.spbau.mit.java.wit.command.*;
+import ru.spbau.mit.java.wit.command.except.*;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
 import java.io.IOException;
@@ -41,7 +42,7 @@ public class Wit {
         try {
             cmd = parser.parse(args);
         } catch (ParseException e) {
-            System.out.println("Error: " + e.getMessage());
+            System.out.println("FATAL: " + e.getMessage());
             return;
         }
 
@@ -63,7 +64,7 @@ public class Wit {
         // in case repository not found and command is not useful without it
         // print error
         if (storage == null && !(cmd instanceof WitInit) && !(cmd instanceof WitHelp)) {
-            System.err.println("Error: can't find wit repository near " + baseDir);
+            System.err.println("FATAL: can't find wit repository near " + baseDir);
             return;
         }
 
@@ -71,8 +72,29 @@ public class Wit {
         try {
             cmd.execute(baseDir, storage);
         } catch (IOException e) {
-            System.err.println("FATAL: repository write/read failed!");
+            System.err.println("FATAL: Repository write/read failed!");
             e.printStackTrace();
+        } catch (BranchNotFound e) {
+            System.err.println("FATAL: Branch not found: " + e.getBranchName());
+        } catch (BranchNotSpecified e) {
+            System.err.println("FATAL: Branch not specified");
+        } catch (CommitNotFound e) {
+            System.err.println("FATAL: Commit not found: " + e.getMessage());
+        } catch (FileIsProhibitedForControl e) {
+            System.err.println("FATAL: File is outside repository or/and prohibited " +
+                    "for control: " + e.getFilename());
+        } catch (MergingNotFinished e) {
+            System.err.println("FATAL: Finish merge before evaluating command");
+        } catch (MessageIsEmpty e) {
+            System.err.println("FATAL: Message is empty");
+        } catch (NoBaseCommitForBranch e) {
+            System.err.println("FATAL: No commit to base branch on");
+        } catch (NotAllChangesCommitted e) {
+            System.err.println("FATAL: There are not committed, but staged changes");
+        } catch (TooShortIdPrefix e) {
+            System.err.println("FATAL: Too short commit id prefix, can't determine commit");
+        } catch (WitRepoAlreadyExists e) {
+            System.err.println("FATAL: Wit repository is already initialized at: " + e.getPath());
         }
     }
 }

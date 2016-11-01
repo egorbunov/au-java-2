@@ -2,12 +2,14 @@ package ru.spbau.mit.java.wit.command;
 
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
+import ru.spbau.mit.java.wit.command.except.FileIsProhibitedForControl;
 import ru.spbau.mit.java.wit.model.Index;
 import ru.spbau.mit.java.wit.model.id.ShaId;
 import ru.spbau.mit.java.wit.repository.WitUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -28,10 +30,6 @@ public class WitAdd implements WitCommand {
     public int execute(Path workingDir, WitStorage storage) throws IOException {
         Path witRoot = storage.getWitRoot();
         Set<Path> filesForStage = resolveFilesToAdd(witRoot);
-        if (filesForStage == null) {
-            return -1;
-        }
-
         Index index = storage.readIndex();
         Path userRepositoryPath = WitUtils.stripWitStoragePath(witRoot);
         for (Path p : filesForStage) {
@@ -60,16 +58,13 @@ public class WitAdd implements WitCommand {
         WitUtils.CollectedPaths collectedPaths
                 = WitUtils.collectExistingFiles(fileNames, witRoot);
         if (collectedPaths.prohibitedPaths.size() != 0) {
-            System.out.println("Error: file "
-                    + collectedPaths.prohibitedPaths.iterator().next() +
-                    " is prohibited! (service or outside repo)");
-            return null;
+            throw new FileIsProhibitedForControl(
+                    collectedPaths.prohibitedPaths.iterator().next().toString()
+            );
         }
         if (collectedPaths.nonExistingPaths.size() != 0) {
-            System.out.println("Error: file "
-                    + collectedPaths.nonExistingPaths.iterator().next() +
-                    " not exists!");
-            return null;
+            throw new FileNotFoundException(
+                    collectedPaths.nonExistingPaths.iterator().next().toString());
         }
         return collectedPaths.existingPaths;
     }

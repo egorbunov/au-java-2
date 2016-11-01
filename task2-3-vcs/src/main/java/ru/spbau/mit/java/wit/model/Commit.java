@@ -19,9 +19,10 @@ public class Commit {
 
     public Commit() {}
 
-    public Commit(String msg, ShaId snapshotId, long timestamp) {
-        this.msg = msg;
+    public Commit(List<ShaId> parentCommitsIds, ShaId snapshotId, String msg, long timestamp) {
+        this.parentCommitsIds = parentCommitsIds;
         this.snapshotId = snapshotId;
+        this.msg = msg;
         this.timestamp = timestamp;
     }
 

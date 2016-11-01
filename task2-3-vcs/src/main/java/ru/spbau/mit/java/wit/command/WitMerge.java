@@ -3,6 +3,8 @@ package ru.spbau.mit.java.wit.command;
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
 import org.apache.commons.io.FileUtils;
+import ru.spbau.mit.java.wit.command.except.BranchNotSpecified;
+import ru.spbau.mit.java.wit.command.except.NotAllChangesCommitted;
 import ru.spbau.mit.java.wit.model.Branch;
 import ru.spbau.mit.java.wit.model.Index;
 import ru.spbau.mit.java.wit.model.Snapshot;
@@ -48,8 +50,7 @@ public class WitMerge implements WitCommand {
     @Override
     public int execute(Path workingDir, WitStorage storage) throws IOException {
         if (branch == null || branch.isEmpty()) {
-            System.err.println("Error: no branch specified to merge...");
-            return -1;
+            throw new BranchNotSpecified();
         }
         Path userRepositoryPath = WitUtils.stripWitStoragePath(storage.getWitRoot());
 
@@ -74,9 +75,7 @@ public class WitMerge implements WitCommand {
         // current index, which will be transformed to proper after-merged state
         Index index = storage.readIndex();
         if (!WitStatusUtils.getStagedEntries(index).findAny().equals(Optional.empty())) {
-            System.err.println("Error: you have staged changes in your repository, " +
-                    "commit them before merging.");
-            return -1;
+            throw new NotAllChangesCommitted();
         }
 
         Snapshot mergingSnapshot = storage.readSnapshot(
@@ -156,6 +155,7 @@ public class WitMerge implements WitCommand {
     }
 
     public void setBranch(String branch) {
+
         this.branch = branch;
     }
 }

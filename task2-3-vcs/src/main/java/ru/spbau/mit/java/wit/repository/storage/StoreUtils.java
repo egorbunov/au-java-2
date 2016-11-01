@@ -1,6 +1,7 @@
 package ru.spbau.mit.java.wit.repository.storage;
 
 import org.apache.commons.codec.binary.Hex;
+import ru.spbau.mit.java.wit.log.Logging;
 import ru.spbau.mit.java.wit.model.id.ShaId;
 
 import java.io.*;
@@ -8,6 +9,7 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 /**
  * Created by: Egor Gorbunov
@@ -16,6 +18,7 @@ import java.util.UUID;
  */
 
 public class StoreUtils {
+    private static Logger logger = Logging.getLogger(StoreUtils.class.getName());
     private StoreUtils() {}
 
     /**
@@ -84,8 +87,8 @@ public class StoreUtils {
         File newFile = dirName.resolve(id.toString()).toFile();
 
         if (!tmpFile.renameTo(newFile)) {
-            // very improbable (VERY!) scenario
-            throw new IOException("File already exists!");
+            logger.info("File is already exists in store " +
+                        "(or sha codes clash happen and universe is near it's end)");
         }
 
         return id;

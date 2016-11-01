@@ -2,6 +2,10 @@ package ru.spbau.mit.java.wit.command;
 
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
+import ru.spbau.mit.java.wit.command.except.CommitNotFound;
+import ru.spbau.mit.java.wit.command.except.MergingNotFinished;
+import ru.spbau.mit.java.wit.command.except.NotAllChangesCommitted;
+import ru.spbau.mit.java.wit.command.except.TooShortIdPrefix;
 import ru.spbau.mit.java.wit.log.Logging;
 import ru.spbau.mit.java.wit.model.Branch;
 import ru.spbau.mit.java.wit.model.Commit;
@@ -41,18 +45,13 @@ public class WitCheckout implements WitCommand {
         ShaId commitId;
         Branch checkOutBranch = storage.readBranch(ref);
         commitId = getCommitId(storage, checkOutBranch);
-        if (commitId == null) {
-            return -1;
-        }
+
         if (storage.readMergeFlag() != null) {
-            System.err.println("Error: finish merging before checkout");
-            return -1;
+            throw new MergingNotFinished();
         }
         Index curIndex = storage.readIndex();
         if (!WitStatusUtils.getStagedEntries(curIndex).findAny().equals(Optional.empty())) {
-            System.err.println("Error: you have staged changes in your repository, " +
-                    "commit them before checking out.");
-            return -1;
+            throw new NotAllChangesCommitted();
         }
 
         Commit commit = storage.readCommit(commitId);
@@ -106,12 +105,9 @@ public class WitCheckout implements WitCommand {
         } else {
             List<ShaId> ids = storage.resolveCommitIdsByPrefix(ref);
             if (ids.size() > 1) {
-                System.err.println("Error: can't resolve commit, " +
-                        "too short prefix: " + ref);
-                return null;
+                throw new TooShortIdPrefix(ref);
             } else if (ids.isEmpty()) {
-                System.err.println("Error: can't find commit or branch!");
-                return null;
+                throw new CommitNotFound(ref);
             }
             commitId = ids.get(0);
         }

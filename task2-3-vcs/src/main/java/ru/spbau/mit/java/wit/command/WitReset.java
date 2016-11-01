@@ -2,11 +2,13 @@ package ru.spbau.mit.java.wit.command;
 
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
+import ru.spbau.mit.java.wit.command.except.FileIsProhibitedForControl;
 import ru.spbau.mit.java.wit.model.Index;
 import ru.spbau.mit.java.wit.repository.WitStatusUtils;
 import ru.spbau.mit.java.wit.repository.WitUtils;
 import ru.spbau.mit.java.wit.repository.storage.WitStorage;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -34,10 +36,8 @@ public class WitReset implements WitCommand {
         WitUtils.CollectedPaths collectedPaths
                 = WitUtils.collectExistingFiles(fileNames, storage.getWitRoot());
         if (collectedPaths.prohibitedPaths.size() != 0) {
-            System.out.println("Error: file "
-                    + collectedPaths.prohibitedPaths.iterator().next() +
-                    " is prohibited! (service or outside repo)");
-            return -1;
+            throw new FileIsProhibitedForControl(
+                    collectedPaths.prohibitedPaths.iterator().next().toString());
         }
         Set<Path> toReset = collectedPaths.existingPaths;
 
@@ -52,8 +52,7 @@ public class WitReset implements WitCommand {
             if (treeDeleted.contains(p)) {
                 toReset.add(p);
             } else {
-                System.err.println("Error: file " + p + " not exists!");
-                return -1;
+                throw new FileNotFoundException(p.toString());
             }
         }
 

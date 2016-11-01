@@ -2,6 +2,7 @@ package ru.spbau.mit.java.wit.command;
 
 import io.airlift.airline.Command;
 import org.apache.commons.io.FileUtils;
+import ru.spbau.mit.java.wit.command.except.WitRepoAlreadyExists;
 import ru.spbau.mit.java.wit.model.Branch;
 import ru.spbau.mit.java.wit.model.Index;
 import ru.spbau.mit.java.wit.model.id.ShaId;
@@ -37,9 +38,7 @@ public class WitInit implements WitCommand {
         // checking if repository is already initialized
         Path repoRoot = findRepositoryRoot(workingDir);
         if (repoRoot != null) {
-            System.out.println("Wit Repository is already initialized under " +
-                    repoRoot.toString());
-            return -1;
+            throw new WitRepoAlreadyExists(repoRoot.toString());
         }
 
         // initializing new repository

@@ -2,6 +2,7 @@ package ru.spbau.mit.java.wit.command;
 
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
+import ru.spbau.mit.java.wit.command.except.BranchNotFound;
 import ru.spbau.mit.java.wit.model.Commit;
 import ru.spbau.mit.java.wit.model.id.IdCommit;
 import ru.spbau.mit.java.wit.model.id.ShaId;
@@ -36,8 +37,7 @@ public class WitLog implements WitCommand {
 
         for (String branchName : branchNames) {
             if (storage.readBranch(branchName) == null) {
-                System.err.println("Error: no such branch [ " + branchName + " ]");
-                return -1;
+                throw new BranchNotFound(branchName);
             }
         }
 

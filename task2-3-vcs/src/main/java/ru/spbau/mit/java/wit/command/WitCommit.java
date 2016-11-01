@@ -2,6 +2,7 @@ package ru.spbau.mit.java.wit.command;
 
 import io.airlift.airline.Command;
 import io.airlift.airline.Option;
+import ru.spbau.mit.java.wit.command.except.MessageIsEmpty;
 import ru.spbau.mit.java.wit.model.*;
 import ru.spbau.mit.java.wit.model.id.ShaId;
 import ru.spbau.mit.java.wit.repository.WitLogUtils;
@@ -30,8 +31,7 @@ public class WitCommit implements WitCommand {
     @Override
     public int execute(Path workingDir, WitStorage storage) throws IOException {
         if (msg.isEmpty()) {
-            System.err.println("Error: Empty message");
-            return -1;
+            throw new MessageIsEmpty();
         }
         Index index = storage.readIndex();
         List<Index.Entry> deleted = WitStatusUtils.getStagedDeleted(index).collect(Collectors.toList());
@@ -101,7 +101,7 @@ public class WitCommit implements WitCommand {
     }
 
     private Commit prepareCommit(ShaId snapshotId, WitStorage storage, Branch curBranch) throws IOException {
-        Commit commit = new Commit(msg, snapshotId, System.currentTimeMillis());
+
         List<ShaId> parents = new ArrayList<>();
         parents.add(curBranch.getHeadCommitId());
         // if merging stage --> need to set more parent commits
@@ -109,8 +109,7 @@ public class WitCommit implements WitCommand {
         if (mergingBranch != null) {
             parents.add(storage.readBranch(mergingBranch).getHeadCommitId());
         }
-        commit.setParentCommitsIds(parents);
-        return commit;
+        return new Commit(parents, snapshotId, msg, System.currentTimeMillis());
     }
 
     private static void updateIndex(Index index,

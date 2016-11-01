@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Command(name = "clean", description = "Remove all not tracked files from working repository tree")
 public class WitClean implements WitCommand {
     @Option(name = "-d", description = "Also delete untracked directories")
-    boolean deleteDirs;
+    private boolean deleteDirs;
 
     @Override
     public int execute(Path workingDir, WitStorage storage) throws IOException {

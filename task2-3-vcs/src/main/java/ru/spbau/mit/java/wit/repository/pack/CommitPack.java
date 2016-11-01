@@ -37,18 +37,15 @@ public class CommitPack {
     public static Commit unpack(InputStream in) throws IOException {
         MessageUnpacker u = MessagePack.newDefaultUnpacker(in);
 
-        Commit commit = new Commit();
-
         int size = u.unpackArrayHeader();
         List<ShaId> parentIds = new ArrayList<>(size);
         for (int i = 0; i < size; ++i) {
             parentIds.add(ShaId.create(u.unpackString()));
         }
-        commit.setParentCommitsIds(parentIds);
-        commit.setSnapshotId(ShaId.create(u.unpackString()));
-        commit.setMsg(u.unpackString());
-        commit.setTimestamp(u.unpackLong());
 
-        return commit;
+        return new Commit(parentIds,
+                          ShaId.create(u.unpackString()),
+                          u.unpackString(),
+                          u.unpackLong());
     }
 }
