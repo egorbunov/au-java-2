@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  * Email: egor-mailbox@ya.com
  */
 
-public class StoreUtils {
+class StoreUtils {
     private static Logger logger = Logging.getLogger(StoreUtils.class.getName());
     private StoreUtils() {}
 
@@ -25,7 +25,7 @@ public class StoreUtils {
      * Use that packer if you need to use {@code StoreUtils::writeSha}
      * or {@code StoreUtils::write} function to write File somewhere.
      */
-    public static InputStream filePack(File f) throws IOException {
+    static InputStream filePack(File f) throws IOException {
         return new BufferedInputStream(new FileInputStream(f));
     }
 
@@ -33,12 +33,12 @@ public class StoreUtils {
         return is;
     }
 
-    public static InputStream stringPack(String str) {
+    static InputStream stringPack(String str) {
         byte[] bytes = str.getBytes();
         return new ByteArrayInputStream(bytes, 0, bytes.length);
     }
 
-    public static String stringUnpack(InputStream is) throws IOException {
+    static String stringUnpack(InputStream is) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         // TODO: br is not explicitly closed, but unpack caller must call
         // TODO: close on `is` input parameter
@@ -55,7 +55,7 @@ public class StoreUtils {
      * @param dirName directory, to write file at
      * @param packer  function to convert given object to byte stream
      */
-    public static <T> ShaId writeSha(T obj, Path dirName, IOFunction<T, InputStream> packer)
+    static <T> ShaId writeSha(T obj, Path dirName, IOFunction<T, InputStream> packer)
             throws IOException {
 
         MessageDigest md;
@@ -102,7 +102,7 @@ public class StoreUtils {
      * @param fileName name of target file to be written
      * @param packer   object -> byte stream converter
      */
-    public static <T> void write(T obj, Path fileName, IOFunction<T, InputStream> packer)
+    static <T> void write(T obj, Path fileName, IOFunction<T, InputStream> packer)
             throws IOException {
 
         try (OutputStream out =
@@ -124,7 +124,7 @@ public class StoreUtils {
     /**
      * Reads file, but using unpacker to retrieve actual object
      */
-    public static <T> T read(Path fileName, IOFunction<InputStream, T> unpacker)
+    static <T> T read(Path fileName, IOFunction<InputStream, T> unpacker)
             throws IOException {
 
         try (InputStream is =

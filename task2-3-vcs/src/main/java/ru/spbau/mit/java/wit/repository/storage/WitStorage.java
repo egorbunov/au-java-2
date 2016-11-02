@@ -28,7 +28,6 @@ import java.util.stream.Stream;
  * <p>
  * It aimed to encapsulate all i/o operations with repository storage
  * <p>
- * TODO: generalize interfaces?
  */
 public class WitStorage {
     /**

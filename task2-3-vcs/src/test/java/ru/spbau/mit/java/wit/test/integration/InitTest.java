@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.wit.test;
+package ru.spbau.mit.java.wit.test.integration;
 
 import org.junit.Rule;
 import org.junit.Test;
