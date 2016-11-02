@@ -1,0 +1,34 @@
+group 'ru.spbau.mit.java'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+//create a single Jar with all dependencies
+
+jar {
+    manifest {
+        attributes "Main-Class": "ru.spbau.mit.java.wit.Wit"
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+dependencies {
+    compile group: 'io.airlift', name: 'airline', version: '0.7'
+    compile group: 'org.msgpack', 'name': 'msgpack-core', version: '0.8.10'
+    compile group: 'commons-io', name: 'commons-io', version: '2.5'
+    compile group: 'commons-codec', name: 'commons-codec', version: '1.10'
+    compile group: 'com.googlecode.java-diff-utils', name: 'diffutils', version: '1.2.1'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
+    dependencies { testCompile "org.mockito:mockito-core:1.+" }
+}
