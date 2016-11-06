@@ -1,0 +1,5 @@
+rootProject.name = 'Torrent'
+include 'client'
+include 'tracker'
+include 'protocol'
+
