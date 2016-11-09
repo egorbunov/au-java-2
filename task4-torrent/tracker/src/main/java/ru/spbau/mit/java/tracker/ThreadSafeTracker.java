@@ -1,7 +1,9 @@
 package ru.spbau.mit.java.tracker;
 
 
-import ru.spbau.mit.protocol.tracker.TrackerFile;
+import ru.spbau.mit.java.shared.tracker.FileInfo;
+import ru.spbau.mit.java.shared.tracker.Tracker;
+import ru.spbau.mit.java.shared.tracker.TrackerFile;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
