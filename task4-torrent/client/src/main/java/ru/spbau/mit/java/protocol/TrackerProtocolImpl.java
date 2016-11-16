@@ -16,8 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Straightforward client-side protocol implementation with
- * data streams
+ * Straightforward client-side protocol for talking to tracker
+ * server implementation with data streams.
+ *
  */
 public class TrackerProtocolImpl implements TrackerProtocol {
     private final DataInputStream dataIn;

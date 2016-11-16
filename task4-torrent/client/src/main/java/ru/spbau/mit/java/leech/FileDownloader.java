@@ -1,13 +1,15 @@
 package ru.spbau.mit.java.leech;
 
 
-import ru.spbau.mit.java.SeederConnectionFactory;
 import ru.spbau.mit.java.files.FileBlocksStorage;
-import ru.spbau.mit.java.shared.tracker.ClientId;
 import ru.spbau.mit.java.shared.tracker.Tracker;
 
 /**
  * One file downloader
+ *
+ * File downloader gets information about particular file
+ * from tracker about seeders and them establishes connections
+ * with this available clients to download file parts
  *
  * @param <T> client id type
  */

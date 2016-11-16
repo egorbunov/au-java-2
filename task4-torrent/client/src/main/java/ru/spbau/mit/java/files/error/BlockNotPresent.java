@@ -1,6 +1,4 @@
-package ru.spbau.mit.java.files;
-
-import ru.spbau.mit.java.shared.tracker.TrackerFile;
+package ru.spbau.mit.java.files.error;
 
 public class BlockNotPresent extends RuntimeException {
     private final int fileId;

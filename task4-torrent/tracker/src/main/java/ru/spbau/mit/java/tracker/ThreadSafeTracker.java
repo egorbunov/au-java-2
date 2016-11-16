@@ -5,11 +5,12 @@ import ru.spbau.mit.java.shared.tracker.FileInfo;
 import ru.spbau.mit.java.shared.tracker.Tracker;
 import ru.spbau.mit.java.shared.tracker.TrackerFile;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-public class ThreadSafeTracker<U, F> implements Tracker<U, F> {
+public class ThreadSafeTracker<U, F> implements Tracker<U, F>, Serializable {
     private final IdProducer<F> fileIdProducer;
     private final Map<F, TrackerFile<F>> fileMap;
     private final Map<F, Set<U>> seedsMap;

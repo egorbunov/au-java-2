@@ -1,6 +1,8 @@
 package ru.spbau.mit.java.shared.tracker;
 
-public class TrackerFile<T> {
+import java.io.Serializable;
+
+public class TrackerFile<T> implements Serializable {
     private final T id;
     private final String name;
     private final int size;

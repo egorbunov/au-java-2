@@ -1,7 +1,9 @@
 package ru.spbau.mit.java.shared.tracker;
 
 
-public class ClientId {
+import java.io.Serializable;
+
+public class ClientId implements Serializable {
     private final byte[] ip;
     private final short port;
 

@@ -1,15 +1,16 @@
 package ru.spbau.mit.java.files;
 
+import ru.spbau.mit.java.files.error.BadBlockSize;
+import ru.spbau.mit.java.files.error.BlockNotPresent;
+import ru.spbau.mit.java.files.error.FileNotExists;
 import ru.spbau.mit.java.shared.tracker.TrackerFile;
 
-import java.io.InputStream;
-
-public interface FileBlocksStorage {
+public abstract class FileBlocksStorage {
     /**
      * Returns block size in bytes relevant for current blocks storage
      * This block size is mandatory for all file blocks except the last one...
      */
-    default int getBlockSizeInBytes() {
+    final int getBlockSizeInBytes() {
         return 100000;
     }
 
@@ -19,7 +20,7 @@ public interface FileBlocksStorage {
      * @param fileInfo associated with local file tracker file info
      * @param localFilePath path to local file assoc. with file info
      */
-    void addLocalFile(TrackerFile<Integer> fileInfo, String localFilePath);
+    abstract void addLocalFile(TrackerFile<Integer> fileInfo, String localFilePath);
 
     /**
      * Creates file filled with zeros with size specified by {@code fileInfo}
@@ -27,7 +28,7 @@ public interface FileBlocksStorage {
      * @param fileInfo associated with local file tracker file info
      * @param localFilePath path to local file assoc. with file info
      */
-    void createEmptyFile(TrackerFile<Integer> fileInfo, String localFilePath);
+    abstract void createEmptyFile(TrackerFile<Integer> fileInfo, String localFilePath);
 
     /**
      * Reads one block from specified file
@@ -40,7 +41,7 @@ public interface FileBlocksStorage {
      * @throws FileNotExists in case there is no file with id specified in the storage
      * @throws BlockNotPresent if queried block is not downloaded yet
      */
-    byte[] readFileBlock(int fileId, int blockId);
+    abstract byte[] readFileBlock(int fileId, int blockId);
 
     /**
      * Writes one block to file, specified by fileId.
@@ -57,5 +58,5 @@ public interface FileBlocksStorage {
      *         Or it may happen if the block is last and it's size is not equal
      *         to pre-calculated last block size of the file
      */
-    void writeFileBlock(int fileId, int blockId, byte[] block);
+    abstract void writeFileBlock(int fileId, int blockId, byte[] block);
 }

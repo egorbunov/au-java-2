@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.files;
+package ru.spbau.mit.java.files.error;
 
 
 public class BadBlockSize extends RuntimeException {
