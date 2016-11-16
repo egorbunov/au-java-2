@@ -1,6 +1,9 @@
 package ru.spbau.mit.java.shared.request;
 
-
+/**
+ * Request, with which clients tells to tracker, that
+ * he want's to make available specified file for downloading
+ */
 public class UploadRequest {
     public static final byte code = 2;
 

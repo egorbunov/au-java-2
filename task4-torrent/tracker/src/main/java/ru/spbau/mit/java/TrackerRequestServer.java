@@ -12,10 +12,21 @@ import ru.spbau.mit.java.shared.response.UploadResponse;
 
 import java.io.IOException;
 
+/**
+ * This is request serving class. It uses request executor
+ * injected as dependency and it also ensures, that every request
+ * gets it response in case of no exceptions occurs
+ * (so it acts like part protocol a little bit)
+ */
 public class TrackerRequestServer implements RequestServer {
     private final TrackerProtocol trackerProtocol;
     private final TrackerRequestExecutor requestExecutor;
 
+    /**
+     *
+     * @param trackerProtocol rules for writing/reading requests/responses
+     * @param requestExecutor request executing logic
+     */
     public TrackerRequestServer(TrackerProtocol trackerProtocol,
                                 TrackerRequestExecutor requestExecutor) {
 

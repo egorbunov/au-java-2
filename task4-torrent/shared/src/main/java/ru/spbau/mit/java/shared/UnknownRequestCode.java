@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.protocol;
+package ru.spbau.mit.java.shared;
 
 
 public class UnknownRequestCode extends RuntimeException {

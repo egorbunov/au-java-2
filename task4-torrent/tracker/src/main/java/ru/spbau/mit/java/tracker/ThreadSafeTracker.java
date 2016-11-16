@@ -10,6 +10,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+/**
+ * Tracker implemented with lock-free data structures
+ * This tracker class is serializable because we have to
+ * save tracker state to restore it on every new server start
+ *
+ * TODO: is it efficient?
+ */
 public class ThreadSafeTracker<U, F> implements Tracker<U, F>, Serializable {
     private final IdProducer<F> fileIdProducer;
     private final Map<F, TrackerFile<F>> fileMap;

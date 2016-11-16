@@ -16,7 +16,10 @@ import ru.spbau.mit.java.shared.response.UpdateResponse;
  */
 public interface TrackerRequestExecutor {
     UpdateResponse executeUpdate(UpdateRequest r);
+
     UploadResponse executeUpload(UploadRequest r);
+
     SourcesResponse executeSource(SourcesRequest r);
+
     ListResponse executeList(ListRequest r);
 }

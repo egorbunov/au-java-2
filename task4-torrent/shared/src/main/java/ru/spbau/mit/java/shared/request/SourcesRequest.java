@@ -1,6 +1,8 @@
 package ru.spbau.mit.java.shared.request;
 
-
+/**
+ * Request for client ids, who are seeding file with id specified
+ */
 public class SourcesRequest {
     public static final byte code = 3;
 
