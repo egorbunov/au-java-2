@@ -3,7 +3,7 @@ package ru.spbau.mit.java;
 
 import ru.spbau.mit.java.protocol.TrackerProtocol;
 import ru.spbau.mit.java.shared.RequestServer;
-import ru.spbau.mit.java.shared.ServeIOError;
+import ru.spbau.mit.java.shared.error.ServeIOError;
 import ru.spbau.mit.java.shared.request.*;
 import ru.spbau.mit.java.shared.response.ListResponse;
 import ru.spbau.mit.java.shared.response.SourcesResponse;

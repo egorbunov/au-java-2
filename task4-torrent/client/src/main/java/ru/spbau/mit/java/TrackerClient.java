@@ -7,6 +7,7 @@ package ru.spbau.mit.java;
  *  3. Provides interface for file downloading and stuff
  */
 public class TrackerClient {
+    // TODO: implement tracker client
     public TrackerClient() {
         
     }

@@ -5,8 +5,7 @@ import ru.spbau.mit.java.protocol.request.GetPartRequest;
 import ru.spbau.mit.java.protocol.request.StatRequest;
 import ru.spbau.mit.java.protocol.response.GetPartResponse;
 import ru.spbau.mit.java.protocol.response.StatResponse;
-import ru.spbau.mit.java.shared.UnknownRequestCode;
-import ru.spbau.mit.java.shared.request.*;
+import ru.spbau.mit.java.shared.error.UnknownRequestCode;
 
 import java.io.*;
 

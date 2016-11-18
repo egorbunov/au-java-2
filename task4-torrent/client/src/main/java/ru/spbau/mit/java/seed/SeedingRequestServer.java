@@ -8,7 +8,7 @@ import ru.spbau.mit.java.protocol.request.StatRequest;
 import ru.spbau.mit.java.protocol.response.GetPartResponse;
 import ru.spbau.mit.java.protocol.response.StatResponse;
 import ru.spbau.mit.java.shared.RequestServer;
-import ru.spbau.mit.java.shared.ServeIOError;
+import ru.spbau.mit.java.shared.error.ServeIOError;
 
 import java.io.IOException;
 

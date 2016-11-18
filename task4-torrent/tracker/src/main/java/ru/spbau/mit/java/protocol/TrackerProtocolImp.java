@@ -1,6 +1,6 @@
 package ru.spbau.mit.java.protocol;
 
-import ru.spbau.mit.java.shared.UnknownRequestCode;
+import ru.spbau.mit.java.shared.error.UnknownRequestCode;
 import ru.spbau.mit.java.shared.request.*;
 import ru.spbau.mit.java.shared.response.ListResponse;
 import ru.spbau.mit.java.shared.response.SourcesResponse;

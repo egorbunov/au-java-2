@@ -15,6 +15,7 @@ import java.util.List;
  * waits for them being answered
  */
 public class RemoteTracker implements Tracker<ClientId, Integer> {
+    // TODO: implement remote tracker
     private TrackerProtocol trackerProtocol;
 
     public RemoteTracker(TrackerProtocol trackerProtocol) {
