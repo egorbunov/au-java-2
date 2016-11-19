@@ -1,7 +1,6 @@
 package ru.spbau.mit.java.protocol;
 
 
-import ru.spbau.mit.java.files.FileBlocksStorage;
 import ru.spbau.mit.java.protocol.request.GetPartRequest;
 import ru.spbau.mit.java.protocol.request.StatRequest;
 import ru.spbau.mit.java.protocol.response.GetPartResponse;
@@ -15,46 +14,46 @@ import java.util.List;
  * Simple implementation of leech protocol with data streams
  */
 public class LeechProtocolImpl implements LeechProtocol {
-    private final DataInputStream dataIn;
-    private final DataOutputStream dataOut;
+    private final DataInputStream responseIn;
+    private final DataOutputStream requestOut;
     private final int partSizeInBytes;
 
     /**
      *
-     * @param dataIn stream, there to write requests
-     * @param dataOut stream, from where to read responses
+     * @param responseIn stream, there to write requests
+     * @param requestOut stream, from where to read responses
      * @param partSizeInBytes one file part size in bytes
      */
-    public LeechProtocolImpl(InputStream dataIn, OutputStream dataOut, int partSizeInBytes) {
-        this.dataIn = new DataInputStream(dataIn);
-        this.dataOut = new DataOutputStream(dataOut);
+    public LeechProtocolImpl(InputStream responseIn, OutputStream requestOut, int partSizeInBytes) {
+        this.responseIn = new DataInputStream(responseIn);
+        this.requestOut = new DataOutputStream(requestOut);
         this.partSizeInBytes = partSizeInBytes;
     }
 
     @Override
     public void writeStatRequest(StatRequest request) throws IOException {
-        dataOut.writeByte(StatRequest.code);
-        dataOut.writeInt(request.getFileId());
+        requestOut.writeByte(StatRequest.code);
+        requestOut.writeInt(request.getFileId());
     }
 
     @Override
     public StatResponse readStatResponse() throws IOException {
-        int cnt = dataIn.readInt();
+        int cnt = responseIn.readInt();
         if (cnt < 0) {
             return null;
         }
         List<Integer> parts = new ArrayList<>(cnt);
         for (int i = 0; i < cnt; ++i) {
-            parts.add(dataIn.readInt());
+            parts.add(responseIn.readInt());
         }
         return new StatResponse(parts);
     }
 
     @Override
     public void writeGetPartRequest(GetPartRequest request) throws IOException {
-        dataOut.writeByte(GetPartRequest.code);
-        dataOut.writeInt(request.getFileId());
-        dataOut.writeInt(request.getPartId());
+        requestOut.writeByte(GetPartRequest.code);
+        requestOut.writeInt(request.getFileId());
+        requestOut.writeInt(request.getPartId());
     }
 
     @Override
@@ -62,7 +61,7 @@ public class LeechProtocolImpl implements LeechProtocol {
         byte[] part = new byte[partSizeInBytes];
         int readCnt = 0;
         while (readCnt != partSizeInBytes) {
-            readCnt += dataIn.read(part, readCnt, part.length - readCnt);
+            readCnt += responseIn.read(part, readCnt, part.length - readCnt);
         }
         return new GetPartResponse(part);
     }

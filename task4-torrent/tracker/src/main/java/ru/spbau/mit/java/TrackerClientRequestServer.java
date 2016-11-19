@@ -1,7 +1,7 @@
 package ru.spbau.mit.java;
 
 
-import ru.spbau.mit.java.protocol.TrackerProtocol;
+import ru.spbau.mit.java.shared.protocol.ServerTrackerProtocol;
 import ru.spbau.mit.java.shared.OneClientRequestServer;
 import ru.spbau.mit.java.shared.error.ServeIOError;
 import ru.spbau.mit.java.shared.request.*;
@@ -12,17 +12,23 @@ import ru.spbau.mit.java.shared.response.UploadResponse;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 /**
  * This is request serving class. It uses request executor
  * injected as dependency and it also ensures, that every request
  * gets it response in case of no exceptions occurs
  * (so it acts like part protocol a little bit)
+ *
+ * For every client exactly one request server must be created
  */
 public class TrackerClientRequestServer implements OneClientRequestServer {
+    private Logger logger = Logger.getLogger(TrackerClientRequestServer.class.getSimpleName());
     private Socket connection;
-    private final TrackerProtocol trackerProtocol;
+    private final ServerTrackerProtocol trackerProtocol;
     private final TrackerRequestExecutor requestExecutor;
+    private volatile long lastUpdate = 0;
+    private volatile short clientSeedPort = -1;
 
     /**
      *
@@ -30,7 +36,7 @@ public class TrackerClientRequestServer implements OneClientRequestServer {
      * @param requestExecutor request executing logic
      */
     public TrackerClientRequestServer(Socket connection,
-                                      TrackerProtocol trackerProtocol,
+                                      ServerTrackerProtocol trackerProtocol,
                                       TrackerRequestExecutor requestExecutor) {
         this.connection = connection;
         this.trackerProtocol = trackerProtocol;
@@ -43,7 +49,14 @@ public class TrackerClientRequestServer implements OneClientRequestServer {
             RequestCode requestCode = trackerProtocol.readRequestCode();
             switch (requestCode) {
                 case UPDATE: {
+                    lastUpdate = System.currentTimeMillis();
                     UpdateRequest r = trackerProtocol.readUpdateRequest();
+                    if (r.getClientPort() != clientSeedPort) {
+                        logger.info("Client seed port change: " + clientSeedPort + " -> " + r.getClientPort());
+                    }
+
+                    clientSeedPort = r.getClientPort();
+
                     UpdateResponse response = requestExecutor.executeUpdate(r);
                     trackerProtocol.writeUpdateResponse(response);
                     break;
@@ -77,5 +90,13 @@ public class TrackerClientRequestServer implements OneClientRequestServer {
         if (!connection.isClosed()) {
             connection.close();
         }
+    }
+
+    public long getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public short getClientSeedPort() {
+        return clientSeedPort;
     }
 }

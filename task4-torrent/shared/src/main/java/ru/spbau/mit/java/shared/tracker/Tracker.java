@@ -19,7 +19,7 @@ public interface Tracker<U, F> {
     /**
      * Finds files, which are currently available.
      * Available file is file, which was passed as
-     * parameter to {@code executeUpdate()} method
+     * parameter to {@code update()} method
      */
     Collection<TrackerFile<F>> list();
 
@@ -32,7 +32,7 @@ public interface Tracker<U, F> {
 
     /**
      * Add new file for tracking
-     * Clients can call executeUpdate function with id returned
+     * Clients can call update method with id returned
      * by this method to make file available for further
      * downloading
      * @param fileInfo file description

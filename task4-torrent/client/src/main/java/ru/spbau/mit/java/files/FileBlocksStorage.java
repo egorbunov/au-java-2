@@ -20,8 +20,8 @@ public interface FileBlocksStorage {
      * Returns block size in bytes relevant for current blocks storage
      * This block size is mandatory for all file blocks except the last one...
      */
-    default int getBlockSizeInBytes() {
-        return 100000;
+    default int getBlockSize() {
+        return 10000;
     }
 
     /**
@@ -68,7 +68,7 @@ public interface FileBlocksStorage {
      *         present in the storage
      * @throws BadBlockSize in case given block size is bad, that may happen when
      *         block is not last for the file (determined by blockId) and it's
-     *         size not equal to {@code getBlockSizeInBytes()} return value;
+     *         size not equal to {@code getBlockSize()} return value;
      *         Or it may happen if the block is last and it's size is not equal
      *         to pre-calculated last block size of the file
      */
@@ -91,4 +91,11 @@ public interface FileBlocksStorage {
      * @return collection of file ids
      */
     Collection<Integer> getAvailableFileIds();
+
+    /**
+     * Checks if file with given id is already in sotrage (it may be
+     * both fully downloaded or not)
+     * @param fileId id of the file
+     */
+    boolean isFileInStorage(int fileId);
 }

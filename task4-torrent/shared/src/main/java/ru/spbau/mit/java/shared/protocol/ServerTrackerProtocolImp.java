@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.protocol;
+package ru.spbau.mit.java.shared.protocol;
 
 import ru.spbau.mit.java.shared.error.UnknownRequestCode;
 import ru.spbau.mit.java.shared.request.*;
@@ -18,11 +18,11 @@ import java.util.List;
  * Straightforward server-side tracker protocol implementation with
  * data streams
  */
-public class TrackerProtocolImp implements TrackerProtocol {
+public class ServerTrackerProtocolImp implements ServerTrackerProtocol {
     private final DataInputStream dataIn;
     private final DataOutputStream dataOut;
 
-    public TrackerProtocolImp(InputStream dataIn, OutputStream dataOut) {
+    public ServerTrackerProtocolImp(InputStream dataIn, OutputStream dataOut) {
         this.dataIn = new DataInputStream(dataIn);
         this.dataOut = new DataOutputStream(dataOut);
     }

@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.protocol;
+package ru.spbau.mit.java.shared.protocol;
 
 
 import ru.spbau.mit.java.shared.request.*;
@@ -9,7 +9,7 @@ import ru.spbau.mit.java.shared.response.UploadResponse;
 
 import java.io.IOException;
 
-public interface TrackerProtocol {
+public interface ServerTrackerProtocol {
     RequestCode readRequestCode() throws IOException;
 
     UpdateRequest readUpdateRequest() throws IOException;

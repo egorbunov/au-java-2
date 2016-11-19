@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.protocol;
+package ru.spbau.mit.java.shared.protocol;
 
 import ru.spbau.mit.java.shared.request.ListRequest;
 import ru.spbau.mit.java.shared.request.SourcesRequest;
@@ -20,63 +20,63 @@ import java.util.List;
  * server implementation with data streams.
  *
  */
-public class TrackerProtocolImpl implements TrackerProtocol {
-    private final DataInputStream dataIn;
-    private final DataOutputStream dataOut;
+public class ClientTrackerProtocolImpl implements ClientTrackerProtocol {
+    private final DataInputStream responseIn;
+    private final DataOutputStream requestOut;
 
-    public TrackerProtocolImpl(InputStream dataIn, OutputStream dataOut) {
-        this.dataIn = new DataInputStream(dataIn);
-        this.dataOut = new DataOutputStream(dataOut);
+    public ClientTrackerProtocolImpl(InputStream responseIn, OutputStream requestOut) {
+        this.responseIn = new DataInputStream(responseIn);
+        this.requestOut = new DataOutputStream(requestOut);
     }
 
     @Override
     public void writeUpdateRequest(UpdateRequest r) throws IOException {
-        dataOut.writeByte(UpdateRequest.code);
-        dataOut.writeShort(r.getClientPort());
-        dataOut.writeInt(r.getFileIds().size());
+        requestOut.writeByte(UpdateRequest.code);
+        requestOut.writeShort(r.getClientPort());
+        requestOut.writeInt(r.getFileIds().size());
         for (Integer id : r.getFileIds()) {
-            dataOut.writeInt(id);
+            requestOut.writeInt(id);
         }
     }
 
     @Override
     public void writeUploadRequest(UploadRequest r) throws IOException {
-        dataOut.writeByte(UploadRequest.code);
-        dataOut.writeUTF(r.getName());
-        dataOut.writeInt(r.getSize());
+        requestOut.writeByte(UploadRequest.code);
+        requestOut.writeUTF(r.getName());
+        requestOut.writeInt(r.getSize());
     }
 
     @Override
     public void writeSourcesRequest(SourcesRequest r) throws IOException {
-        dataOut.writeByte(SourcesRequest.code);
-        dataOut.writeInt(r.getFileId());
+        requestOut.writeByte(SourcesRequest.code);
+        requestOut.writeInt(r.getFileId());
     }
 
     @Override
     public void writeListRequest(ListRequest r) throws IOException {
-        dataOut.writeByte(ListRequest.code);
+        requestOut.writeByte(ListRequest.code);
     }
 
     @Override
     public UpdateResponse readUpdateResponse() throws IOException {
-        boolean status = dataIn.readBoolean();
+        boolean status = responseIn.readBoolean();
         return new UpdateResponse(status);
     }
 
     @Override
     public UploadResponse readUploadResponse() throws IOException {
-        int fileId = dataIn.readInt();
+        int fileId = responseIn.readInt();
         return new UploadResponse(fileId);
     }
 
     @Override
     public ListResponse readListResponse() throws IOException {
-        int count = dataIn.readInt();
+        int count = responseIn.readInt();
         List<TrackerFile<Integer>> files = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            int fileId = dataIn.readInt();
-            String fileName = dataIn.readUTF();
-            int fileSize = dataIn.readInt();
+            int fileId = responseIn.readInt();
+            String fileName = responseIn.readUTF();
+            int fileSize = responseIn.readInt();
             files.add(new TrackerFile<>(fileId, fileName, fileSize));
         }
         return new ListResponse(files);
@@ -84,12 +84,12 @@ public class TrackerProtocolImpl implements TrackerProtocol {
 
     @Override
     public SourcesResponse readSourcesResponse() throws IOException {
-        int count = dataIn.readInt();
+        int count = responseIn.readInt();
         List<ClientId> clients = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             byte[] ip = new byte[4];
-            dataIn.readFully(ip);
-            short clientPort = dataIn.readShort();
+            responseIn.readFully(ip);
+            short clientPort = responseIn.readShort();
             clients.add(new ClientId(ip, clientPort));
         }
         return null;

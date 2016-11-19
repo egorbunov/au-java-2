@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.protocol;
+package ru.spbau.mit.java.shared.protocol;
 
 import ru.spbau.mit.java.shared.request.ListRequest;
 import ru.spbau.mit.java.shared.request.SourcesRequest;
@@ -12,14 +12,14 @@ import ru.spbau.mit.java.shared.response.UploadResponse;
 import java.io.IOException;
 
 
-public interface TrackerProtocol {
+public interface ClientTrackerProtocol {
     void writeUpdateRequest(UpdateRequest r) throws IOException;
 
     void writeUploadRequest(UploadRequest r) throws IOException;
 
-    void writeSourcesRequest(SourcesRequest r) throws IOException;
-
     void writeListRequest(ListRequest r) throws IOException;
+
+    void writeSourcesRequest(SourcesRequest r) throws IOException;
 
     UpdateResponse readUpdateResponse() throws IOException;
 

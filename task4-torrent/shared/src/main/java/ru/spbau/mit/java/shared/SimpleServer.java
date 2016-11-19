@@ -77,10 +77,7 @@ public abstract class SimpleServer {
                     continue;
                 }
 
-                ServerSession session = new ServerSession(
-                        createSessionRequestServer(dataChannel)
-                );
-
+                Runnable session = createSession(dataChannel);
                 Thread sessionThread = new Thread(session);
 
                 sessions.add(sessionThread);
@@ -92,7 +89,7 @@ public abstract class SimpleServer {
     }
 
 
-    abstract public OneClientRequestServer createSessionRequestServer(Socket dataChannel);
+    abstract public Runnable createSession(Socket dataChannel);
 }
 
 

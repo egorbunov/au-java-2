@@ -8,6 +8,7 @@ import ru.spbau.mit.java.files.error.FileNotExists;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
-public class SimpleBlockStorage implements FileBlocksStorage {
+public class SimpleBlockStorage implements FileBlocksStorage, Serializable {
     private class FileData {
         private final String localPath;
         private final int size;
@@ -28,7 +29,7 @@ public class SimpleBlockStorage implements FileBlocksStorage {
         }
 
         private int blockSize() {
-            return SimpleBlockStorage.this.getBlockSizeInBytes();
+            return SimpleBlockStorage.this.getBlockSize();
         }
 
         private int getBlocksNum() {
@@ -89,8 +90,8 @@ public class SimpleBlockStorage implements FileBlocksStorage {
         }
 
         long size = Files.size(Paths.get(localFilePath));
-        int partCnt = (int) size / getBlockSizeInBytes();
-        if (size % getBlockSizeInBytes() != 0) {
+        int partCnt = (int) size / getBlockSize();
+        if (size % getBlockSize() != 0) {
             partCnt += 1;
         }
 
@@ -110,7 +111,7 @@ public class SimpleBlockStorage implements FileBlocksStorage {
             throw new IllegalArgumentException("Negative file size");
         }
 
-        RandomAccessFile f = new RandomAccessFile(localFilePath, "w");
+        RandomAccessFile f = new RandomAccessFile(localFilePath, "rw");
         f.setLength(size);
         f.close();
 
@@ -127,7 +128,7 @@ public class SimpleBlockStorage implements FileBlocksStorage {
             throw new BlockNotPresent(fileId, blockId);
         }
         RandomAccessFile f = new RandomAccessFile(fd.localPath, "r");
-        f.seek(getBlockSizeInBytes() * blockId);
+        f.seek(getBlockSize() * blockId);
         byte[] part = new byte[fd.getBlockSize(blockId)];
         int bs = f.read(part);
         assert bs == part.length;
@@ -146,8 +147,12 @@ public class SimpleBlockStorage implements FileBlocksStorage {
         if (block.length != fd.getBlockSize(blockId)) {
             throw new BadBlockSize(fileId, blockId, block.length, fd.getBlockSize(blockId));
         }
-        RandomAccessFile f = new RandomAccessFile(fd.localPath, "w");
+        RandomAccessFile f = new RandomAccessFile(fd.localPath, "rw");
+        f.seek(getBlockSize() * blockId);
         f.write(block);
+
+        // make block available
+        fd.addAvailableBlock(blockId);
     }
 
     @Override
@@ -161,5 +166,10 @@ public class SimpleBlockStorage implements FileBlocksStorage {
     @Override
     public Collection<Integer> getAvailableFileIds() {
         return Collections.unmodifiableCollection(files.keySet());
+    }
+
+    @Override
+    public boolean isFileInStorage(int fileId) {
+        return files.containsKey(fileId);
     }
 }

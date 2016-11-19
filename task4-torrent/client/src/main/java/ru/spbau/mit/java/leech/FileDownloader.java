@@ -21,29 +21,41 @@ import java.util.stream.Collectors;
 public class FileDownloader<T> {
     private final Logger logger;
     private final int fileId;
+    private int fileSize;
+    private String destinationPath;
     private FileBlocksStorage fileBlocksStorage;
     private final Tracker<T, Integer> tracker;
     private final SeederConnectionFactory<T> seederConnectionFactory;
 
     public FileDownloader(int fileId,
+                          int fileSize,
+                          String destinationPath,
                           FileBlocksStorage fileBlocksStorage,
                           Tracker<T, Integer> tracker,
                           SeederConnectionFactory<T> seederConnectionFactory) {
 
         this.fileId = fileId;
+        this.fileSize = fileSize;
+        this.destinationPath = destinationPath;
         this.fileBlocksStorage = fileBlocksStorage;
         this.tracker = tracker;
         this.seederConnectionFactory = seederConnectionFactory;
         logger = Logger.getLogger("FileDownloader_" + fileId);
     }
 
-    void download() throws IOException {
+    public void download() throws IOException {
         Collection<T> clients = new HashSet<T>(tracker.source(fileId));
+
+        if (!fileBlocksStorage.isFileInStorage(fileId)) {
+            fileBlocksStorage.createEmptyFile(fileId, destinationPath, fileSize);
+        }
 
         HashSet<Integer> alreadyHandledBlocks = new HashSet<>(fileBlocksStorage.getAvailableFileBlocks(fileId));
         HashMap<T, LinkedList<Integer>> clientBlocks = new HashMap<>();
         HashMap<T, SeederConnection> clientConnections = new HashMap<>();
         HashMap<T, List<Integer>> finalClientBlockQueues = new HashMap<>();
+
+
 
         for (T client : clients) {
             SeederConnection conn = seederConnectionFactory.connectToClient(client);

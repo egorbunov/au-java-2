@@ -1,6 +1,6 @@
 package ru.spbau.mit.java;
 
-import ru.spbau.mit.java.protocol.TrackerProtocol;
+import ru.spbau.mit.java.shared.protocol.ClientTrackerProtocol;
 import ru.spbau.mit.java.shared.request.ListRequest;
 import ru.spbau.mit.java.shared.request.SourcesRequest;
 import ru.spbau.mit.java.shared.request.UpdateRequest;
@@ -24,9 +24,9 @@ import java.util.List;
  * waits for them being answered
  */
 public class RemoteTracker implements Tracker<ClientId, Integer> {
-    private TrackerProtocol trackerProtocol;
+    private ClientTrackerProtocol trackerProtocol;
 
-    public RemoteTracker(TrackerProtocol trackerProtocol) {
+    public RemoteTracker(ClientTrackerProtocol trackerProtocol) {
         this.trackerProtocol = trackerProtocol;
     }
 
@@ -55,7 +55,6 @@ public class RemoteTracker implements Tracker<ClientId, Integer> {
         }
 
     }
-
 
 
     @Override

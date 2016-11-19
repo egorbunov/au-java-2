@@ -4,6 +4,7 @@ import ru.spbau.mit.java.files.FileBlocksStorage;
 import ru.spbau.mit.java.protocol.SeedProtocol;
 import ru.spbau.mit.java.protocol.SeedProtocolImpl;
 import ru.spbau.mit.java.shared.OneClientRequestServer;
+import ru.spbau.mit.java.shared.ServerSession;
 import ru.spbau.mit.java.shared.SimpleServer;
 import ru.spbau.mit.java.shared.error.SessionStartError;
 
@@ -26,7 +27,7 @@ public class SeedingServer extends SimpleServer {
     }
 
     @Override
-    public OneClientRequestServer createSessionRequestServer(Socket dataChannel) {
+    public Runnable createSession(Socket dataChannel) {
         InputStream dataIn;
         OutputStream dataOut;
         try {
@@ -38,6 +39,9 @@ public class SeedingServer extends SimpleServer {
 
         SeedProtocol protocol = new SeedProtocolImpl(dataIn, dataOut);
         SeedingRequestExecutor executor = new SeedingRequestExecutorImpl(fileBlocksStorage);
-        return new LeecherRequestServer(dataChannel, protocol, executor);
+        LeecherRequestServer requestServer =
+                new LeecherRequestServer(dataChannel, protocol, executor);
+
+        return new ServerSession(requestServer);
     }
 }
