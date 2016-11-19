@@ -2,8 +2,6 @@ package ru.spbau.mit.java.shared;
 
 import ru.spbau.mit.java.shared.error.ServerShutdownError;
 import ru.spbau.mit.java.shared.error.ServerStartupError;
-import ru.spbau.mit.java.shared.tracker.ClientId;
-import ru.spbau.mit.java.shared.tracker.Tracker;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,9 +18,9 @@ import java.util.logging.Logger;
  * connections ({@link SimpleServer.AcceptingTask}. In this accepting
  * task
  */
-public abstract class SimpleServer implements Server {
+public abstract class SimpleServer {
     protected final Logger logger;
-    protected final List<ServerSession> sessions;
+    protected final List<Thread> sessions;
 
     private ServerSocket serverSocket;
     protected final String serverName;
@@ -36,7 +34,6 @@ public abstract class SimpleServer implements Server {
         this.sessions = new ArrayList<>();
     }
 
-    @Override
     final public void start() {
         try {
             serverSocket = new ServerSocket(port);
@@ -50,14 +47,14 @@ public abstract class SimpleServer implements Server {
         acceptingThread.start();
     }
 
-    @Override
     final public void stop() {
         acceptingThread.interrupt();
         try {
             serverSocket.close();
+            sessions.forEach(Thread::interrupt);
         } catch (IOException e) {
-            logger.severe("Can't close socket!");
-            throw new ServerShutdownError("Can't close socket, server = " + serverName, e);
+            logger.severe("Can't close socket or connections!");
+            throw new ServerShutdownError("server = " + serverName, e);
         }
     }
 
@@ -71,36 +68,31 @@ public abstract class SimpleServer implements Server {
         public void run() {
             while (!Thread.interrupted()) {
                 Socket dataChannel;
-                InputStream dataIn;
-                OutputStream dataOut;
 
                 try {
                     logger.info("Waiting for connection...");
                     dataChannel = serverSocket.accept();
-                    dataIn = dataChannel.getInputStream();
-                    dataOut = dataChannel.getOutputStream();
                 } catch (IOException e) {
                     logger.severe("Can't accept connection: " + e.getMessage());
                     continue;
                 }
 
                 ServerSession session = new ServerSession(
-                        createSessionRequestServer(dataChannel, dataIn, dataOut)
+                        createSessionRequestServer(dataChannel)
                 );
 
-                sessions.add(session);
+                Thread sessionThread = new Thread(session);
 
+                sessions.add(sessionThread);
                 logger.info("OK! Now running session thread.");
-                new Thread(session).start();
+                sessionThread.start();
             }
             logger.info("Accepting thread exit...");
         }
     }
 
 
-    abstract public RequestServer createSessionRequestServer(Socket dataChannel,
-                                                             InputStream dataIn,
-                                                             OutputStream dataOut);
+    abstract public OneClientRequestServer createSessionRequestServer(Socket dataChannel);
 }
 
 

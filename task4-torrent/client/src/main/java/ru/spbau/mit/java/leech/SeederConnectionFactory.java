@@ -1,6 +1,7 @@
 package ru.spbau.mit.java.leech;
 
-import ru.spbau.mit.java.leech.SeederConnection;
+import java.io.IOException;
+import java.net.UnknownHostException;
 
 /**
  * Seeders connections creator. If client want to download
@@ -10,5 +11,5 @@ import ru.spbau.mit.java.leech.SeederConnection;
  * @param <T> type of client id
  */
 public interface SeederConnectionFactory<T> {
-    SeederConnection getSeederConnection(T clientId);
+    SeederConnection connectToClient(T clientId) throws IOException;
 }

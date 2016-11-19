@@ -6,6 +6,7 @@ import ru.spbau.mit.java.protocol.request.StatRequest;
 import ru.spbau.mit.java.protocol.response.GetPartResponse;
 import ru.spbau.mit.java.protocol.response.StatResponse;
 
+import java.io.IOException;
 import java.util.Collection;
 
 /**
@@ -26,7 +27,7 @@ public class SeedingRequestExecutorImpl implements SeedingRequestExecutor {
     }
 
     @Override
-    public GetPartResponse executeGetPart(GetPartRequest request) {
+    public GetPartResponse executeGetPart(GetPartRequest request) throws IOException {
         byte[] block = fileBlocksStorage.readFileBlock(request.getFileId(), request.getPartId());
         return new GetPartResponse(block);
     }

@@ -15,18 +15,13 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
-// TODO: implement file block storage
-
-/**
- * Readers-Writer locking file block storage
- */
 public class SimpleBlockStorage implements FileBlocksStorage {
     private class FileData {
         private final String localPath;
         private final int size;
         private final Set<Integer> availableBlockIds;
 
-        FileData(String localPath, long size, Set<Integer> availableBlockIds) {
+        private FileData(String localPath, long size, Set<Integer> availableBlockIds) {
             this.localPath = localPath;
             this.size = (int) size;
             this.availableBlockIds = availableBlockIds;

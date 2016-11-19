@@ -2,7 +2,7 @@ package ru.spbau.mit.java;
 
 
 import ru.spbau.mit.java.protocol.TrackerProtocol;
-import ru.spbau.mit.java.shared.RequestServer;
+import ru.spbau.mit.java.shared.OneClientRequestServer;
 import ru.spbau.mit.java.shared.error.ServeIOError;
 import ru.spbau.mit.java.shared.request.*;
 import ru.spbau.mit.java.shared.response.ListResponse;
@@ -11,6 +11,7 @@ import ru.spbau.mit.java.shared.response.UpdateResponse;
 import ru.spbau.mit.java.shared.response.UploadResponse;
 
 import java.io.IOException;
+import java.net.Socket;
 
 /**
  * This is request serving class. It uses request executor
@@ -18,7 +19,8 @@ import java.io.IOException;
  * gets it response in case of no exceptions occurs
  * (so it acts like part protocol a little bit)
  */
-public class TrackerRequestServer implements RequestServer {
+public class TrackerClientRequestServer implements OneClientRequestServer {
+    private Socket connection;
     private final TrackerProtocol trackerProtocol;
     private final TrackerRequestExecutor requestExecutor;
 
@@ -27,9 +29,10 @@ public class TrackerRequestServer implements RequestServer {
      * @param trackerProtocol rules for writing/reading requests/responses
      * @param requestExecutor request executing logic
      */
-    public TrackerRequestServer(TrackerProtocol trackerProtocol,
-                                TrackerRequestExecutor requestExecutor) {
-
+    public TrackerClientRequestServer(Socket connection,
+                                      TrackerProtocol trackerProtocol,
+                                      TrackerRequestExecutor requestExecutor) {
+        this.connection = connection;
         this.trackerProtocol = trackerProtocol;
         this.requestExecutor = requestExecutor;
     }
@@ -66,6 +69,13 @@ public class TrackerRequestServer implements RequestServer {
             }
         } catch (IOException e) {
             throw new ServeIOError(e.getCause());
+        }
+    }
+
+    @Override
+    public void disconnect() throws IOException {
+        if (!connection.isClosed()) {
+            connection.close();
         }
     }
 }

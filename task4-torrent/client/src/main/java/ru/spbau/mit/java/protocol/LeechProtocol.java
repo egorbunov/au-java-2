@@ -16,6 +16,10 @@ import java.io.IOException;
 public interface LeechProtocol {
     void writeStatRequest(StatRequest request) throws IOException;
 
+    /**
+     * @return response or null in case of bad response
+     * @throws IOException
+     */
     StatResponse readStatResponse() throws IOException;
 
     void writeGetPartRequest(GetPartRequest request) throws IOException;

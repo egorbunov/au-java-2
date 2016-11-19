@@ -40,6 +40,9 @@ public class LeechProtocolImpl implements LeechProtocol {
     @Override
     public StatResponse readStatResponse() throws IOException {
         int cnt = dataIn.readInt();
+        if (cnt < 0) {
+            return null;
+        }
         List<Integer> parts = new ArrayList<>(cnt);
         for (int i = 0; i < cnt; ++i) {
             parts.add(dataIn.readInt());
