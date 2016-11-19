@@ -15,10 +15,8 @@ import ru.spbau.mit.java.shared.tracker.Tracker;
 import ru.spbau.mit.java.shared.tracker.TrackerFile;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 

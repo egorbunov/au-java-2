@@ -3,7 +3,6 @@ package ru.spbau.mit.java;
 import ru.spbau.mit.java.files.FileBlocksStorage;
 import ru.spbau.mit.java.leech.FileDownloader;
 import ru.spbau.mit.java.leech.SeederConnectionFactory;
-import ru.spbau.mit.java.leech.SeederConnectionFactoryImpl;
 import ru.spbau.mit.java.seed.SeedingServer;
 import ru.spbau.mit.java.shared.tracker.ClientId;
 import ru.spbau.mit.java.shared.tracker.FileInfo;
