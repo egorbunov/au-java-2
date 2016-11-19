@@ -2,6 +2,7 @@ package ru.spbau.mit.java;
 
 import ru.spbau.mit.java.files.FileBlocksStorage;
 import ru.spbau.mit.java.leech.FileDownloader;
+import ru.spbau.mit.java.leech.SeederConnectionFactory;
 import ru.spbau.mit.java.leech.SeederConnectionFactoryImpl;
 import ru.spbau.mit.java.seed.SeedingServer;
 import ru.spbau.mit.java.shared.tracker.ClientId;
@@ -9,7 +10,6 @@ import ru.spbau.mit.java.shared.tracker.FileInfo;
 import ru.spbau.mit.java.shared.tracker.TrackerFile;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -25,23 +25,35 @@ import java.util.logging.Logger;
  *  2. Starts thread for periodically updating it's info to the tracker
  *  3. Provides interface for file downloading and stuff
  */
-public class TrackerClient implements Serializable {
+public class TrackerClient {
     private final ClientId seederId;
     private Logger logger = Logger.getLogger(TrackerClient.class.getSimpleName());
     private final FileBlocksStorage blocksStorage;
     private final RemoteTracker remoteTracker;
     private int seedingPort;
+    private final SeederConnectionFactory<ClientId> seederConnectionFactory;
     private SeedingServer seedingServer;
     private Thread trackerUpdater;
+
+    public Map<String, Integer> getSeedingFiles() {
+        return seedingFiles;
+    }
+
+    public void setSeedingFiles(Map<String, Integer> seedingFiles) {
+        this.seedingFiles = seedingFiles;
+    }
+
     private Map<String, Integer> seedingFiles = new HashMap<>();
 
     public TrackerClient(FileBlocksStorage blocksStorage,
                          RemoteTracker remoteTracker,
                          int seedingPort,
+                         SeederConnectionFactory<ClientId> seederConnectionFactory,
                          byte[] clientIp) {
         this.blocksStorage = blocksStorage;
         this.remoteTracker = remoteTracker;
         this.seedingPort = seedingPort;
+        this.seederConnectionFactory = seederConnectionFactory;
         this.seederId = new ClientId(clientIp, (short) seedingPort);
     }
 
@@ -106,18 +118,23 @@ public class TrackerClient implements Serializable {
         remoteTracker.update(seederId, new ArrayList<>(seedingFiles.values()));
     }
 
-    public void downloadFile(TrackerFile<Integer> file, String destinationPath) throws IOException {
+    public void downloadFile(TrackerFile<Integer> file, String destinationPath) throws IOException, InterruptedException {
         FileDownloader<ClientId> fileDownloader = new FileDownloader<>(
                 file.getId(),
                 file.getSize(),
                 destinationPath,
                 blocksStorage,
                 remoteTracker,
-                new SeederConnectionFactoryImpl(blocksStorage.getBlockSize())
+                seederConnectionFactory
         );
+
+        logger.info("making file available for others before downloading...");
+        seedingFiles.put(destinationPath, file.getId());
+        remoteTracker.update(seederId, new ArrayList<>(seedingFiles.values()));
 
         logger.info("Downloading file " + file.getId() + "...");
         fileDownloader.download();
         logger.info("Downloaded!");
+
     }
 }

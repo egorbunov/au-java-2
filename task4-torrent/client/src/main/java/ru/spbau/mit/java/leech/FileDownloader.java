@@ -43,7 +43,7 @@ public class FileDownloader<T> {
         logger = Logger.getLogger("FileDownloader_" + fileId);
     }
 
-    public void download() throws IOException {
+    public void download() throws IOException, InterruptedException {
         Collection<T> clients = new HashSet<T>(tracker.source(fileId));
 
         if (!fileBlocksStorage.isFileInStorage(fileId)) {
@@ -99,13 +99,20 @@ public class FileDownloader<T> {
         }
 
         // starting downloading threads
+        List<Thread> downloadingThreads = new ArrayList<>();
         for (T client : clients) {
             if (finalClientBlockQueues.get(client) == null) {
                 continue;
             }
             SeederConnection connection = clientConnections.get(client);
             logger.info("Starting downloading thread for client: " + client);
-            new Thread(new OneClientDownloader(connection, finalClientBlockQueues.get(client))).start();
+            Thread t = new Thread(new OneClientDownloader(connection, finalClientBlockQueues.get(client)));
+            downloadingThreads.add(t);
+            t.start();
+        }
+
+        for (Thread t : downloadingThreads) {
+            t.join();
         }
     }
 
