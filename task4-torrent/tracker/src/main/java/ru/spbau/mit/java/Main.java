@@ -10,6 +10,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
     private static final Path trackerDataPath
@@ -25,7 +26,7 @@ public class Main {
             tracker = new ThreadSafeTracker<>(new ThreadSafeIntIdProducer(0));
         }
 
-        TrackerServer server = new TrackerServer(8081, tracker);
+        TrackerServer server = new TrackerServer(8081, tracker, TimeUnit.MINUTES.toMillis(5));
 
         server.start();
 

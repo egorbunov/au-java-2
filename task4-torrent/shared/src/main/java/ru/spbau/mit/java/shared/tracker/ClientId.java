@@ -2,10 +2,11 @@ package ru.spbau.mit.java.shared.tracker;
 
 
 import java.io.Serializable;
+import java.net.*;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class ClientId implements Serializable {
+public class ClientId implements Serializable, Comparable<ClientId> {
     private final byte[] ip;
     private final short port;
 
@@ -34,5 +35,19 @@ public class ClientId implements Serializable {
         }
         ClientId other = (ClientId) obj;
         return Arrays.equals(other.ip, ip) && other.port == port;
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return InetAddress.getByAddress(ip).toString() + ":" + Short.toString(port);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public int compareTo(ClientId o) {
+        return this.toString().compareTo(o.toString());
     }
 }

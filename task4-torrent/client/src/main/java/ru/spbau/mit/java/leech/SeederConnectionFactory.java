@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 
 /**
- * Seeders connections creator. If client want to download
+ * Seeders connections creator. If client want to start
  * file from many clients he normally queries class implementing
  * this interface to create connections for him
  *

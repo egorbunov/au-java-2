@@ -13,4 +13,9 @@ public class UpdateResponse {
     public boolean getStatus() {
         return status;
     }
+
+    @Override
+    public String toString() {
+        return "{status: " + Boolean.toString(status) + "}";
+    }
 }

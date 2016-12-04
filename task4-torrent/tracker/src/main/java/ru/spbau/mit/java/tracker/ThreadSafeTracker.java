@@ -29,7 +29,7 @@ public class ThreadSafeTracker<U, F> implements Tracker<U, F>, Serializable {
         this.seedsMap = new ConcurrentHashMap<>();
     }
 
-    public Collection<TrackerFile<F>> list() {
+    public List<TrackerFile<F>> list() {
         return fileMap.entrySet().stream()
                 // filtering files which are not seeded
                 .filter(it -> !seedsMap.get(it.getKey()).isEmpty()).map(Map.Entry::getValue)
@@ -56,11 +56,11 @@ public class ThreadSafeTracker<U, F> implements Tracker<U, F>, Serializable {
         return id;
     }
 
-    public Collection<U> source(F fileId) {
+    public List<U> source(F fileId) {
         if (!fileMap.containsKey(fileId)) {
             throw new IllegalArgumentException("No such file");
         }
-        return seedsMap.get(fileId);
+        return new ArrayList<>(seedsMap.get(fileId));
     }
 
     public void removeClient(U clientId) {

@@ -15,8 +15,8 @@ import ru.spbau.mit.java.shared.tracker.Tracker;
 import ru.spbau.mit.java.shared.tracker.TrackerFile;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Interface to tracker which resides on tracker-server side.
@@ -24,6 +24,7 @@ import java.util.List;
  * waits for them being answered
  */
 public class RemoteTracker implements Tracker<ClientId, Integer> {
+    private Logger logger = Logger.getLogger(RemoteTracker.class.getName());
     private ClientTrackerProtocol trackerProtocol;
 
     public RemoteTracker(ClientTrackerProtocol trackerProtocol) {
@@ -31,11 +32,13 @@ public class RemoteTracker implements Tracker<ClientId, Integer> {
     }
 
     @Override
-    public Collection<TrackerFile<Integer>> list() {
+    public List<TrackerFile<Integer>> list() {
         try {
+            logger.info("Making list request...");
             trackerProtocol.writeListRequest(new ListRequest());
-            ListResponse response = trackerProtocol.readListResponse();
-            return response.getFiles();
+            ListResponse r = trackerProtocol.readListResponse();
+            logger.info("Got response: " + r.toString());
+            return r.getFiles();
         } catch (IOException e) {
             throw new RemoteTrackerError("list", e);
         }
@@ -45,8 +48,10 @@ public class RemoteTracker implements Tracker<ClientId, Integer> {
     @Override
     public void update(ClientId clientId, List<Integer> fileIds) {
         try {
+            logger.info("Making update request...");
             trackerProtocol.writeUpdateRequest(new UpdateRequest(clientId.getPort(), fileIds));
             UpdateResponse r = trackerProtocol.readUpdateResponse();
+            logger.info("Got response: " + r.toString());
             if (!r.getStatus()) {
                 throw new RuntimeException("update response bad status");
             }
@@ -60,8 +65,10 @@ public class RemoteTracker implements Tracker<ClientId, Integer> {
     @Override
     public Integer upload(FileInfo fileInfo) {
         try {
+            logger.info("Making upload request...");
             trackerProtocol.writeUploadRequest(new UploadRequest(fileInfo.getName(), fileInfo.getSize()));
             UploadResponse r = trackerProtocol.readUploadResponse();
+            logger.info("Got response: " + r.toString());
             return r.getFileId();
         } catch (IOException e) {
             throw new RemoteTrackerError("upload", e);
@@ -69,10 +76,12 @@ public class RemoteTracker implements Tracker<ClientId, Integer> {
     }
 
     @Override
-    public Collection<ClientId> source(Integer fileId) {
+    public List<ClientId> source(Integer fileId) {
         try {
+            logger.info("Making sources request...");
             trackerProtocol.writeSourcesRequest(new SourcesRequest(fileId));
             SourcesResponse r = trackerProtocol.readSourcesResponse();
+            logger.info("Got response: " + r.toString());
             return r.getClients();
         } catch (IOException e) {
             throw new RemoteTrackerError("sources", e);
@@ -81,6 +90,6 @@ public class RemoteTracker implements Tracker<ClientId, Integer> {
 
     @Override
     public void removeClient(ClientId clientId) {
-        // pass
+        throw new UnsupportedOperationException("remove client on remote tracker");
     }
 }

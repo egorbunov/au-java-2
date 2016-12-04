@@ -1,6 +1,7 @@
 package ru.spbau.mit.java.shared.request;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -25,5 +26,12 @@ public class UpdateRequest {
 
     public List<Integer> getFileIds() {
         return fileIds;
+    }
+
+    @Override
+    public String toString() {
+        return "update {client_port:" + Integer.toString(clientPort) +
+                ", file_ids: " + fileIds.stream().map(Object::toString).collect(Collectors.joining(", ")) +
+                "}";
     }
 }

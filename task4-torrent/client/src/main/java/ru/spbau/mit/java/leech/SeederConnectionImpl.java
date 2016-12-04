@@ -63,12 +63,11 @@ public class SeederConnectionImpl implements SeederConnection {
      */
     @Override
     public byte[] downloadFileBlock(int fileId, int blockId) throws IOException {
-        logger.info("Sending download request " + fileId);
         GetPartRequest r = new GetPartRequest(fileId, blockId);
-        logger.info("Waiting for stat response");
+        logger.info("Sending start request" + r);
         protocol.writeGetPartRequest(r);
-        logger.info("Got response");
         GetPartResponse response = protocol.readGetPartResponse();
+        logger.info("Got response, byte cnt = " + response.getBytes().length);
         return response.getBytes();
     }
 

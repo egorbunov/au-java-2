@@ -4,6 +4,7 @@ package ru.spbau.mit.java;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.spbau.mit.java.shared.tracker.ClientId;
 import ru.spbau.mit.java.shared.tracker.FileInfo;
 import ru.spbau.mit.java.shared.tracker.Tracker;
 import ru.spbau.mit.java.shared.tracker.TrackerFile;
@@ -11,8 +12,8 @@ import ru.spbau.mit.java.tracker.ThreadSafeIntIdProducer;
 import ru.spbau.mit.java.tracker.ThreadSafeTracker;
 
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ThreadSafeTrackerTest {
     Tracker<Integer, Integer> tracker;
@@ -78,7 +79,7 @@ public class ThreadSafeTrackerTest {
                         .sorted().collect(Collectors.toList()).toArray(new Integer[]{}));
 
         for (int clientId = 0; clientId < numThreads; ++clientId) {
-            Collection<Integer> source = tracker.source(fileIds[clientId]);
+            List<Integer> source = tracker.source(fileIds[clientId]);
             Assert.assertEquals(1, source.size());
             Assert.assertEquals(clientId, (int) source.iterator().next());
         }

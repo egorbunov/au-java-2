@@ -21,4 +21,9 @@ public class GetPartRequest {
     public int getPartId() {
         return partId;
     }
+
+    @Override
+    public String toString() {
+        return "{file_id: " + fileId + ", part_id: " + partId + "}";
+    }
 }

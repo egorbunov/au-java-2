@@ -2,6 +2,7 @@ package ru.spbau.mit.java.protocol.response;
 
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 public class StatResponse {
     private final Collection<Integer> partIds;
@@ -12,5 +13,10 @@ public class StatResponse {
 
     public Collection<Integer> getPartIds() {
         return partIds;
+    }
+
+    @Override
+    public String toString() {
+        return "{" + partIds.stream().map(Object::toString).collect(Collectors.joining(", ")) + "}";
     }
 }

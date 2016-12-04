@@ -9,6 +9,12 @@ import ru.spbau.mit.java.shared.protocol.ClientTrackerProtocolImpl;
 import ru.spbau.mit.java.shared.protocol.ServerTrackerProtocol;
 import ru.spbau.mit.java.shared.protocol.ServerTrackerProtocolImp;
 import ru.spbau.mit.java.shared.request.*;
+import ru.spbau.mit.java.shared.response.ListResponse;
+import ru.spbau.mit.java.shared.response.SourcesResponse;
+import ru.spbau.mit.java.shared.response.UpdateResponse;
+import ru.spbau.mit.java.shared.response.UploadResponse;
+import ru.spbau.mit.java.shared.tracker.ClientId;
+import ru.spbau.mit.java.shared.tracker.TrackerFile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +23,7 @@ import java.io.PipedOutputStream;
 import java.util.Arrays;
 import java.util.List;
 
-public class TrackerProtocolTest {
+public class ClientTrackerProtocolTest {
     private ClientTrackerProtocol clientProtocol;
     private ServerTrackerProtocol serverProtocol;
 
@@ -75,5 +81,50 @@ public class TrackerProtocolTest {
         Assert.assertEquals(RequestCode.SOURCES, code);
         SourcesRequest actual = serverProtocol.readSourcesRequest();
         Assert.assertEquals(r.getFileId(), actual.getFileId());
+    }
+
+    @Test
+    public void testListResponse() throws IOException {
+        ListResponse expectedResponse =
+                new ListResponse(Arrays.asList(new TrackerFile<Integer>(1, "NAME", 1)));
+        serverProtocol.writeListResponse(expectedResponse);
+        ListResponse response = clientProtocol.readListResponse();
+
+        Assert.assertTrue(response.getFiles().size() == 1);
+        TrackerFile<Integer> tf = response.getFiles().get(0);
+
+        Assert.assertEquals("NAME", tf.getName());
+        Assert.assertEquals(1, (long) tf.getId());
+        Assert.assertEquals(1, tf.getSize());
+    }
+
+    @Test
+    public void testUpdateResponse() throws IOException {
+        UpdateResponse expectedResponse = new UpdateResponse(true);
+        serverProtocol.writeUpdateResponse(expectedResponse);
+        Assert.assertTrue(clientProtocol.readUpdateResponse().getStatus());
+    }
+
+    @Test
+    public void testUploadResponse() throws IOException {
+        UploadResponse expectedResponse = new UploadResponse(42);
+        serverProtocol.writeUploadResponse(expectedResponse);
+        UploadResponse actualResponse = clientProtocol.readUploadResponse();
+        Assert.assertEquals(42, actualResponse.getFileId());
+    }
+
+    @Test
+    public void testSourcesResponse() throws IOException {
+        ClientId id = new ClientId(
+                new byte[]{1,2,3,4},
+                (short) 42
+        );
+        SourcesResponse expectedResponse = new SourcesResponse(Arrays.asList(id));
+
+        serverProtocol.writeSourcesResponse(expectedResponse);
+        SourcesResponse actualResponse = clientProtocol.readSourcesResponse();
+
+        Assert.assertTrue(actualResponse.getClients().size() == 1);
+        Assert.assertEquals(id, actualResponse.getClients().get(0));
     }
 }

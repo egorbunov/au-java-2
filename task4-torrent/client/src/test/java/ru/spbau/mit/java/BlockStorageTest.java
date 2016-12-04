@@ -10,7 +10,6 @@ import ru.spbau.mit.java.files.SimpleBlockStorage;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -21,7 +20,7 @@ public class BlockStorageTest {
 
     @Test
     public void simpleBlockStorageAddLocalTest() throws IOException {
-        FileBlocksStorage s = new SimpleBlockStorage();
+        FileBlocksStorage s = new SimpleBlockStorage(42);
 
         Random r = new Random();
         File f = tmp.newFile("file.txt");
@@ -44,7 +43,7 @@ public class BlockStorageTest {
 
     @Test
     public void simpleBlockStorageAddNewTest() throws IOException {
-        FileBlocksStorage s = new SimpleBlockStorage();
+        FileBlocksStorage s = new SimpleBlockStorage(42);
         Path fp = tmp.getRoot().toPath().resolve("file.txt");
         s.createEmptyFile(1, fp.toString(), s.getBlockSize() * 3 + 42);
         Collection<Integer> availableBlocks = s.getAvailableFileBlocks(1);

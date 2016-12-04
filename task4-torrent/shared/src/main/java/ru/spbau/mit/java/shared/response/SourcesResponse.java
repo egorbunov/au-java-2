@@ -3,16 +3,24 @@ package ru.spbau.mit.java.shared.response;
 
 import ru.spbau.mit.java.shared.tracker.ClientId;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class SourcesResponse {
-    private final Collection<ClientId> clients;
+    private final List<ClientId> clients;
 
-    public SourcesResponse(Collection<ClientId> clients) {
+    public SourcesResponse(List<ClientId> clients) {
         this.clients = clients;
     }
 
-    public Collection<ClientId> getClients() {
+    public List<ClientId> getClients() {
         return clients;
+    }
+
+    @Override
+    public String toString() {
+        return "[" + clients.stream().map(Object::toString).collect(Collectors.joining(", ")) + "]";
     }
 }

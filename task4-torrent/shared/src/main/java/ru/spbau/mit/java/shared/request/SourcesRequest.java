@@ -15,4 +15,9 @@ public class SourcesRequest {
     public int getFileId() {
         return fileId;
     }
+
+    @Override
+    public String toString() {
+        return "sources {file_id: " + fileId + "}";
+    }
 }

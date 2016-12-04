@@ -17,13 +17,27 @@ import java.util.concurrent.TimeUnit;
 
 public class TrackerServer extends SimpleServer {
     private Tracker<ClientId, Integer> tracker;
+    private long clientExitCheckPeriod;
 
-    public TrackerServer(int port, Tracker<ClientId, Integer> tracker) {
+    /**
+     *
+     * @param port port where server listens for requests
+     * @param tracker tracker model
+     * @param clientExitCheckPeriod period, in which tracker server checks
+     *                              if client made an update request, if there was
+     *                              no update request then client treated as disconnected
+     *                              and all it's files info is deleted from tracker
+     */
+    public TrackerServer(int port, Tracker<ClientId, Integer> tracker, long clientExitCheckPeriod) {
         super("TrackerServer", port);
         this.tracker = tracker;
+        this.clientExitCheckPeriod = clientExitCheckPeriod;
     }
 
 
+    /**
+     * Creates one tracker session for one client with given client-server data channel
+     */
     @Override
     public Runnable createSession(Socket dataChannel) {
         InputStream dataIn;
@@ -50,14 +64,18 @@ public class TrackerServer extends SimpleServer {
             Thread timedTaskThread = new Thread(timedTask);
             timedTaskThread.start();
             while (!Thread.interrupted()) {
+                logger.info("Waiting for request...");
                 requestServer.serveOneRequest();
             }
+            logger.info("Tracker server interrupted!");
             timedTaskThread.interrupt();
             try {
+                logger.info("Disconnecting...");
                 requestServer.disconnect();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+            logger.info("OK");
         };
     }
 
@@ -81,7 +99,7 @@ public class TrackerServer extends SimpleServer {
             while (!Thread.interrupted()) {
                 long beforeSleep = System.currentTimeMillis();
                 try {
-                    Thread.sleep(TimeUnit.MINUTES.toMillis(5));
+                    Thread.sleep(TrackerServer.this.clientExitCheckPeriod);
                 } catch (InterruptedException e) {
                     break;
                 }

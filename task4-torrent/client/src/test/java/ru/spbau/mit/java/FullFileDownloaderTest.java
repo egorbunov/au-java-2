@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import ru.spbau.mit.java.files.FileBlocksStorage;
 import ru.spbau.mit.java.files.SimpleBlockStorage;
-import ru.spbau.mit.java.leech.FileDownloader;
+import ru.spbau.mit.java.leech.FullFileDownloader;
 import ru.spbau.mit.java.leech.SeederConnection;
 import ru.spbau.mit.java.leech.SeederConnectionFactory;
 import ru.spbau.mit.java.shared.tracker.FileInfo;
@@ -19,40 +19,41 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-public class FileDownloaderTest {
+public class FullFileDownloaderTest {
     @Rule
     public final TemporaryFolder tmp = new TemporaryFolder();
 
     private final int fileId = 42;
-    private FileBlocksStorage fileBlocksStorage = new SimpleBlockStorage();
-    private final int fileSize = fileBlocksStorage.getBlockSize() * 10;
-    private final List<Integer> fileBlocks = Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    private FileBlocksStorage fileBlocksStorage = new SimpleBlockStorage(10000);
+    private final int fileBlockNum = 5000;
+    private final int fileSize = fileBlocksStorage.getBlockSize() * fileBlockNum;
+    private final List<Integer> fileBlocks = IntStream.range(0, fileBlockNum).boxed().collect(Collectors.toList());
+    private final byte blockByte = 42;
 
-    private SeederConnectionFactory<Integer> seederConnectionFactory = clientId -> {
-        return new SeederConnection() {
-            @Override
-            public Collection<Integer> stat(int fileId) throws IOException {
-                return fileBlocks;
+    private SeederConnectionFactory<Integer> seederConnectionFactory = clientId -> new SeederConnection() {
+        @Override
+        public Collection<Integer> stat(int fileId) throws IOException {
+            return fileBlocks;
+        }
+
+        @Override
+        public byte[] downloadFileBlock(int fileId, int blockId) throws IOException {
+            byte[] block = new byte[fileBlocksStorage.getBlockSize()];
+            for (int i = 0; i < block.length; ++i) {
+                block[i] = blockByte;
             }
+            return block;
+        }
 
-            @Override
-            public byte[] downloadFileBlock(int fileId, int blockId) throws IOException {
-                byte[] block = new byte[fileBlocksStorage.getBlockSize()];
-                for (int i = 0; i < block.length; ++i) {
-                    block[i] = 42;
-                }
-                return block;
-            }
-
-            @Override
-            public void disconnect() throws IOException {}
-        };
+        @Override
+        public void disconnect() throws IOException {}
     };
 
     private Tracker<Integer, Integer> tracker = new Tracker<Integer, Integer>() {
         @Override
-        public Collection<TrackerFile<Integer>> list() {
+        public List<TrackerFile<Integer>> list() {
             throw new UnsupportedOperationException();
         }
 
@@ -67,7 +68,7 @@ public class FileDownloaderTest {
         }
 
         @Override
-        public Collection<Integer> source(Integer fileId) {
+        public List<Integer> source(Integer fileId) {
             return Arrays.asList(1, 2, 3, 4, 5);
         }
 
@@ -78,8 +79,8 @@ public class FileDownloaderTest {
     };
 
     @Test
-    public void test() throws IOException, InterruptedException {
-        FileDownloader<Integer> fileDownloader = new FileDownloader<Integer>(
+    public void testStopResume() throws IOException, InterruptedException {
+        FullFileDownloader<Integer> fileDownloader = new FullFileDownloader<>(
                 fileId,
                 fileSize,
                 tmp.getRoot().toPath().resolve("file.txt").toString(),
@@ -88,7 +89,15 @@ public class FileDownloaderTest {
                 seederConnectionFactory
         );
 
-        fileDownloader.download();
+        fileDownloader.start();
+
+        for (int i = 0; i < 10; ++i) {
+            fileDownloader.stop();
+            Thread.sleep(50);
+            fileDownloader.resume();
+        }
+
+        fileDownloader.join();
 
         Assert.assertTrue(fileBlocksStorage.isFileInStorage(fileId));
         Collection<Integer> blocks = fileBlocksStorage.getAvailableFileBlocks(fileId);
@@ -96,5 +105,13 @@ public class FileDownloaderTest {
         Assert.assertArrayEquals(
                 fileBlocks.toArray(new Integer[]{}),
                 blocks.stream().sorted().collect(Collectors.toList()).toArray(new Integer[] {}));
+
+        for (Integer id : fileBlocks) {
+            byte[] bytes = fileBlocksStorage.readFileBlock(fileId, id);
+            Assert.assertEquals(fileBlocksStorage.getBlockSize(), bytes.length);
+            for (byte x : bytes) {
+                Assert.assertEquals(blockByte, x);
+            }
+        }
     }
 }

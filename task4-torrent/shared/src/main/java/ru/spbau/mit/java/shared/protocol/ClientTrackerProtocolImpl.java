@@ -92,6 +92,6 @@ public class ClientTrackerProtocolImpl implements ClientTrackerProtocol {
             short clientPort = responseIn.readShort();
             clients.add(new ClientId(ip, clientPort));
         }
-        return null;
+        return new SourcesResponse(clients);
     }
 }

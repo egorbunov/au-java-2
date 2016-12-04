@@ -28,7 +28,7 @@ public abstract class SimpleServer {
     private Thread acceptingThread;
 
     public SimpleServer(String serverName, int port) {
-        logger = Logger.getLogger(serverName);
+        logger = Logger.getLogger(SimpleServer.class.getName());
         this.serverName = serverName;
         this.port = port;
         this.sessions = new ArrayList<>();
@@ -38,7 +38,7 @@ public abstract class SimpleServer {
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
-            logger.severe("ERROR: can't create server socket at port " + port);
+            logger.severe("[" + serverName + "] ERROR: can't create server socket at port " + port);
             throw new ServerStartupError("Can't start server: " + serverName, e);
         }
 
@@ -53,7 +53,7 @@ public abstract class SimpleServer {
             serverSocket.close();
             sessions.forEach(Thread::interrupt);
         } catch (IOException e) {
-            logger.severe("Can't close socket or connections!");
+            logger.severe("[" + serverName + "] Can't close socket or connections!");
             throw new ServerShutdownError("server = " + serverName, e);
         }
     }
@@ -70,10 +70,10 @@ public abstract class SimpleServer {
                 Socket dataChannel;
 
                 try {
-                    logger.info("Waiting for connection...");
+                    logger.info("[" + serverName + "] Waiting for connection...");
                     dataChannel = serverSocket.accept();
                 } catch (IOException e) {
-                    logger.severe("Can't accept connection: " + e.getMessage());
+                    logger.severe("[" + serverName + "] Can't accept connection: " + e.getMessage());
                     continue;
                 }
 
@@ -81,10 +81,10 @@ public abstract class SimpleServer {
                 Thread sessionThread = new Thread(session);
 
                 sessions.add(sessionThread);
-                logger.info("OK! Now running session thread.");
+                logger.info("[" + serverName + "] OK! Now running session thread.");
                 sessionThread.start();
             }
-            logger.info("Accepting thread exit...");
+            logger.info("[" + serverName + "] Accepting thread exit...");
         }
     }
 

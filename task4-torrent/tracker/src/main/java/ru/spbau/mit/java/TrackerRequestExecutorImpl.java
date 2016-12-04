@@ -16,6 +16,7 @@ import ru.spbau.mit.java.shared.tracker.Tracker;
 
 /**
  * Simple request executing logic, which delegates everything to Tracker object
+ * Only one Tracker request executor instantiated for one client
  */
 public class TrackerRequestExecutorImpl implements TrackerRequestExecutor {
     private byte[] clientIpAddress;

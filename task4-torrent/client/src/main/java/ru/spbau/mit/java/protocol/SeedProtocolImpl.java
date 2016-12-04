@@ -60,5 +60,6 @@ public class SeedProtocolImpl implements SeedProtocol {
     @Override
     public void writeGetPartResponse(GetPartResponse response) throws IOException {
         responseOut.write(response.getBytes());
+        responseOut.flush();
     }
 }

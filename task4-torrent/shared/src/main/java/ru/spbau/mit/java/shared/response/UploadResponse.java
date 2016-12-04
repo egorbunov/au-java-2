@@ -12,4 +12,9 @@ public class UploadResponse {
     public int getFileId() {
         return fileId;
     }
+
+    @Override
+    public String toString() {
+        return "{file_id: " + Integer.toString(fileId) + "}";
+    }
 }

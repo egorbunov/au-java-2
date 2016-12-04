@@ -10,13 +10,16 @@ import ru.spbau.mit.java.shared.response.SourcesResponse;
 import ru.spbau.mit.java.shared.response.UpdateResponse;
 import ru.spbau.mit.java.shared.response.UploadResponse;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.logging.Logger;
 
 /**
- * This is request serving class. It uses request executor
- * injected as dependency and it also ensures, that every request
+ * TrackerClientRequestServer reads request using given protocol
+ * and serves this request using request executor.
+ *
+ * It also ensures, that every request
  * gets it response in case of no exceptions occurs
  * (so it acts like part protocol a little bit)
  *
@@ -43,14 +46,25 @@ public class TrackerClientRequestServer implements OneClientRequestServer {
         this.requestExecutor = requestExecutor;
     }
 
+    /**
+     * Main method. It firstly tries to read request and after that calls
+     * request executor tp serve it...
+     */
     @Override
     public void serveOneRequest() {
         try {
-            RequestCode requestCode = trackerProtocol.readRequestCode();
+            RequestCode requestCode;
+            try {
+                requestCode = trackerProtocol.readRequestCode();
+            } catch (EOFException e) {
+                logger.info("No more requests (got EOF)...returning...");
+                return;
+            }
             switch (requestCode) {
                 case UPDATE: {
                     lastUpdate = System.currentTimeMillis();
                     UpdateRequest r = trackerProtocol.readUpdateRequest();
+                    logger.info("Got request " + r);
                     if (r.getClientPort() != clientSeedPort) {
                         logger.info("Client seed port change: " + clientSeedPort + " -> " + r.getClientPort());
                     }
@@ -63,18 +77,24 @@ public class TrackerClientRequestServer implements OneClientRequestServer {
                 }
                 case UPLOAD: {
                     UploadRequest r = trackerProtocol.readUploadRequest();
+                    logger.info("Got request " + r);
+
                     UploadResponse response = requestExecutor.executeUpload(r);
                     trackerProtocol.writeUploadResponse(response);
                     break;
                 }
                 case SOURCES: {
                     SourcesRequest r = trackerProtocol.readSourcesRequest();
+                    logger.info("Got request " + r);
+
                     SourcesResponse response = requestExecutor.executeSource(r);
                     trackerProtocol.writeSourcesResponse(response);
                     break;
                 }
                 case LIST: {
                     ListRequest r = trackerProtocol.readListRequest();
+                    logger.info("Got request " + r);
+
                     ListResponse response = requestExecutor.executeList(r);
                     trackerProtocol.writeListResponse(response);
                     break;

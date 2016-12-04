@@ -1,7 +1,5 @@
 package ru.spbau.mit.java.shared.tracker;
 
-import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -21,7 +19,7 @@ public interface Tracker<U, F> {
      * Available file is file, which was passed as
      * parameter to {@code update()} method
      */
-    Collection<TrackerFile<F>> list();
+    List<TrackerFile<F>> list();
 
     /**
      * Update list of files, which are seeded by specified seed
@@ -45,7 +43,7 @@ public interface Tracker<U, F> {
      * @param fileId file identifier
      * @return collection of seeds (clients) ids
      */
-    Collection<U> source(F fileId);
+    List<U> source(F fileId);
 
 
     /**

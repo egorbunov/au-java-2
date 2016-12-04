@@ -22,4 +22,9 @@ public class UploadRequest {
     public int getSize() {
         return size;
     }
+
+    @Override
+    public String toString() {
+        return "upload { name: " + name + ", size = " + size + "}";
+    }
 }

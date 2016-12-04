@@ -31,4 +31,9 @@ public class TrackerFile<T> implements Serializable {
     public T getId() {
         return id;
     }
+
+    @Override
+    public String toString() {
+        return "{id: " + id + ", name: " + name + ", size: " + size +"}";
+    }
 }
