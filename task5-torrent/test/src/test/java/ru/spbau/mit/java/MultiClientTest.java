@@ -49,13 +49,14 @@ public class MultiClientTest {
         }
     }
 
-//    @After
-    public void destroy() {
+    @After
+    public void destroy() throws InterruptedException {
         for (TrackerClient tc : trackerClients) {
             tc.stopSeedingServerThread();
             tc.stopTrackerPeriodicUpdater();
         }
         trackerServer.stop();
+        Thread.sleep(100); // sometimes socket do not have time to become free (or I'am mad)
     }
 
 

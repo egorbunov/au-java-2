@@ -43,10 +43,11 @@ public class OneClientTest {
     }
 
     @After
-    public void destroy() {
+    public void destroy() throws InterruptedException {
         trackerServer.stop();
         client.stopSeedingServerThread();
         client.stopTrackerPeriodicUpdater();
+        Thread.sleep(100); // sometimes socket do not have time to become free (or I'am mad)
     }
 
     @Test(expected = FileAlreadyDownloaded.class)

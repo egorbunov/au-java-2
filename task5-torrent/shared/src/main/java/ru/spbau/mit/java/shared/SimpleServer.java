@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -18,7 +19,7 @@ import java.util.logging.Logger;
  */
 public abstract class SimpleServer {
     protected final Logger logger;
-    protected final List<Thread> sessions;
+    protected final List<RunningSession> runningSessions;
 
     private ServerSocket serverSocket;
     protected final String serverName;
@@ -29,7 +30,7 @@ public abstract class SimpleServer {
         logger = Logger.getLogger(SimpleServer.class.getName());
         this.serverName = serverName;
         this.port = port;
-        this.sessions = new ArrayList<>();
+        this.runningSessions = Collections.synchronizedList(new ArrayList<>());
     }
 
     final public void start() {
@@ -49,7 +50,9 @@ public abstract class SimpleServer {
         acceptingThread.interrupt();
         try {
             serverSocket.close();
-            sessions.forEach(Thread::interrupt);
+            for (RunningSession runningSession : runningSessions) {
+                runningSession.terminate();
+            }
         } catch (IOException e) {
             logger.severe("[" + serverName + "] Can't close socket or connections!");
             throw new ServerShutdownError("server = " + serverName, e);
@@ -78,11 +81,31 @@ public abstract class SimpleServer {
                 Runnable session = createSession(dataChannel);
                 Thread sessionThread = new Thread(session);
 
-                sessions.add(sessionThread);
+                runningSessions.add(new RunningSession(dataChannel, sessionThread));
+
                 logger.info("[" + serverName + "] OK! Now running session thread.");
                 sessionThread.start();
             }
             logger.info("[" + serverName + "] Accepting thread exit...");
+        }
+    }
+
+    /**
+     * Session contains of thread and data channel...we store
+     * it for further termination handlong
+     */
+    private class RunningSession {
+        private final Socket connection;
+        private final Thread sessionThread;
+
+        private RunningSession(Socket connection, Thread sessionThread) {
+            this.connection = connection;
+            this.sessionThread = sessionThread;
+        }
+
+        void terminate() throws IOException {
+            sessionThread.interrupt();
+            connection.close();
         }
     }
 

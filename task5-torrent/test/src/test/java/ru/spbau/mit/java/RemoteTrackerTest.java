@@ -52,8 +52,9 @@ public class RemoteTrackerTest {
     }
 
     @After
-    public void destroy() {
+    public void destroy() throws InterruptedException {
         trackerServer.stop();
+        Thread.sleep(100); // sometimes socket do not have time to become free (or I'am mad)
     }
 
     @Test
