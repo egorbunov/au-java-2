@@ -7,6 +7,16 @@ repositories {
     mavenCentral()
 }
 
+jar {
+    manifest {
+        attributes "Main-Class": "ru.spbau.mit.java.FtpClientCli"
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
 dependencies {
     compile project(':protocol')
     compile group: 'commons-io', name: 'commons-io', version: '2.5'

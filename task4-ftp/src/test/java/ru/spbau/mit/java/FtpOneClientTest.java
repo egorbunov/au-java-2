@@ -43,11 +43,6 @@ public class FtpOneClientTest {
         server.stop();
     }
 
-
-    @Test
-    public void testConnectDisconnectStop() throws InterruptedException, IOException {
-    }
-
     @Test
     public void testListFiles() throws IOException {
         Path dir = baseFolder.getRoot().toPath().toAbsolutePath();

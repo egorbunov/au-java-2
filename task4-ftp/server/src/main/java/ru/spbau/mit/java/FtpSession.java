@@ -36,7 +36,7 @@ public class FtpSession implements Runnable {
     private final DataOutputStream dataOut;
     private final DataOutputStream statusOut;
 
-    private boolean isRunning = false;
+    private volatile boolean isRunning = false;
 
     public FtpSession(InputStream dataIn,
                       OutputStream dataOut,
@@ -49,37 +49,44 @@ public class FtpSession implements Runnable {
     @Override
     public void run() {
         isRunning = true;
-        while (isRunning) {
-            try {
-                int cmd = dataIn.readInt();
 
-                if (cmd == Command.DISCONNECT) {
-                    logger.info("Got DISCONNECT signal. Aborting session.");
+        while (isRunning) {
+            logger.info("Serving request...");
+            try {
+                if (!serveRequest()) {
                     break;
                 }
-
-                int code = serve(cmd);
-                statusOut.writeInt(code);
-            } catch (EOFException e) {
-                try {
-                    dataOut.close();
-                    statusOut.close();
-                } catch (IOException e1) {
-                    throw new IOError(e1); // cheese and rice =(
-                }
-                break;
             } catch (IOException e) {
-                try {
-                    statusOut.writeInt(ResponseCode.SERVER_ERROR);
-                } catch (IOException e1) {
-                    throw new IOError(e1); // cheese and rice =(
-                }
+                logger.severe("ERROR: " + e.getMessage());
             }
         }
+        logger.info("Exiting session...");
         if (!isRunning) {
             logger.info("Session was stopped");
         }
 
+    }
+
+    private boolean serveRequest() throws IOException {
+        try {
+            logger.info("Waiting for cmd...");
+            int cmd = dataIn.readInt();
+            if (cmd == Command.DISCONNECT) {
+                logger.info("Got DISCONNECT signal. Aborting session.");
+                return false;
+            }
+            int code = serve(cmd);
+            statusOut.writeInt(code);
+        } catch (EOFException e) {
+            logger.info("Got EOF, closing all streams...");
+            dataOut.close();
+            statusOut.close();
+            return false;
+        } catch (IOException e) {
+            logger.info("Writing error response!");
+            statusOut.writeInt(ResponseCode.SERVER_ERROR);
+        }
+        return true;
     }
 
     public void stop() {

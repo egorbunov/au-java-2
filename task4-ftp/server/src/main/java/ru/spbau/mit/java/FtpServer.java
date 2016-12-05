@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -17,7 +18,8 @@ public class FtpServer {
     private final int port;
     private ServerSocket serverSocket;
     private AcceptingTask acceptingTask;
-    private List<FtpSession> sessions = new ArrayList<>();
+    private List<FtpSession> sessions = Collections.synchronizedList(new ArrayList<>());
+    private List<Connection> connections = Collections.synchronizedList(new ArrayList<>());
 
     public FtpServer(int port) {
         this.port = port;
@@ -44,8 +46,14 @@ public class FtpServer {
         logger.info("Aborting all sessions...");
         sessions.forEach(FtpSession::stop);
 
+
         try {
+            logger.info("Closing sockets...");
             serverSocket.close();
+            for (Connection c : connections) {
+                c.dataSocket.close();
+                c.statusSocket.close();
+            }
         } catch (IOException e) {
             logger.severe("Can't close socket " + e.getMessage());
         }
@@ -65,6 +73,7 @@ public class FtpServer {
             while (isRunning) {
                 Connection connection;
                 try {
+                    logger.info("Waiting for connection...");
                     connection = performHandshake(serverSocket);
                     if (connection == null) {
                         logger.severe("ERROR: handshake failed");
@@ -83,6 +92,7 @@ public class FtpServer {
                             connection.dataSocket.getOutputStream(),
                             connection.statusSocket.getOutputStream()
                     );
+                    connections.add(connection);
                 } catch (IOException e) {
                     logger.severe("ERROR: Can't create ftp session; " + e.getMessage());
                     continue;
@@ -93,7 +103,7 @@ public class FtpServer {
                 logger.info("OK! Now running session thread.");
                 new Thread(ftpSession).start();
             }
-            if (isRunning) {
+            if (!isRunning) {
                 logger.info("Accepting thread was stopped normally...");
             } else {
                 logger.info("Accepting thread was stopped for some reason...");

@@ -16,6 +16,14 @@ public class FtpClientCli {
     private static void help() {
         System.out.println("USAGE: java FtpClientCli <host> <port>");
     }
+
+    private static void printCliHelp() {
+        System.out.println("Commands: ");
+        System.out.println("     - list ");
+        System.out.println("            list files available on the server ");
+        System.out.println("     - get <Filename> [<destination>]");
+        System.out.println("            download file from server (if destination not specified file is printed)");
+    }
     public static void main(String[] args) throws IOException {
         if (args.length != 2) {
             help();
@@ -77,6 +85,8 @@ public class FtpClientCli {
                 } catch (Exception e) {
                     System.err.println("ERROR: can't execute get: " + e.getMessage());
                 }
+            } else {
+                printCliHelp();
             }
         }
     }
