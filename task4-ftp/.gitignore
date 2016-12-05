@@ -9,4 +9,3 @@ hs_err_pid*
 build/
 .gradle/
 .idea/
-gradle/wrapper/gradle-wrapper.properties
