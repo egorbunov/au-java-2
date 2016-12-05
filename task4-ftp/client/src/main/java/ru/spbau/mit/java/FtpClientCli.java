@@ -19,8 +19,8 @@ public class FtpClientCli {
 
     private static void printCliHelp() {
         System.out.println("Commands: ");
-        System.out.println("     - list ");
-        System.out.println("            list files available on the server ");
+        System.out.println("     - list <dir>");
+        System.out.println("            list files available on the server at specified dir");
         System.out.println("     - get <Filename> [<destination>]");
         System.out.println("            download file from server (if destination not specified file is printed)");
     }
@@ -59,8 +59,7 @@ public class FtpClientCli {
                 }
                 break;
             }
-
-            String[] split = str.split(" ");
+            String[] split = str.split("\\s+");
             if (split[0].equals("list") && split.length == 2) {
                 try {
                     List<FileInfo> fileInfos = client.executeList(split[1]);
@@ -72,15 +71,24 @@ public class FtpClientCli {
                 } catch (Exception e) {
                     System.err.println("ERROR: can't execute list: " + e.getMessage());
                 }
-            } else if (split[0].equals("get") && split.length == 3) {
+            } else if (split[0].equals("get")) {
                 try {
+                    if (split.length < 1) {
+                        System.out.println("ERROR: no file specified");
+                        continue;
+                    }
                     FtpFile ftpFile = client.executeGet(split[1]);
                     if (ftpFile == null) {
                         System.out.println("No such file");
                     } else {
-                        OutputStream out = new FileOutputStream(split[2]);
+                        OutputStream out = System.out;
+                        if (split.length > 2) {
+                            out = new FileOutputStream(split[2]);
+                        }
                         IOUtils.copy(ftpFile.getInputStream(), out);
-                        out.close();
+                        if (split.length > 2) {
+                            out.close();
+                        }
                     }
                 } catch (Exception e) {
                     System.err.println("ERROR: can't execute get: " + e.getMessage());
