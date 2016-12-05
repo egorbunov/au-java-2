@@ -1,7 +1,5 @@
 package ru.spbau.mit.java.files.error;
 
-import java.io.File;
-
 public class FileNotExists extends RuntimeException {
     private final int fileId;
 

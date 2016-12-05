@@ -49,6 +49,9 @@ public class FullFileDownloader<T> implements FileBlocksDownloader {
 
     @Override
     public void start() throws IOException {
+        if (!fileBlocksStorage.isFileInStorage(fileId)) {
+            fileBlocksStorage.createEmptyFile(fileId, destinationPath, fileSize);
+        }
         resume();
     }
 
@@ -89,13 +92,6 @@ public class FullFileDownloader<T> implements FileBlocksDownloader {
     private class DownloadingTask implements Runnable {
         @Override
         public void run() {
-            if (!fileBlocksStorage.isFileInStorage(fileId)) {
-                try {
-                    fileBlocksStorage.createEmptyFile(fileId, destinationPath, fileSize);
-                } catch (IOException e) {
-                    throw new IOError(e);
-                }
-            }
             logger.info("Staring downloading...");
             while (!Thread.interrupted()) {
                 if (fileBlocksStorage.getAvailableFileBlocksNumber(fileId) ==

@@ -145,7 +145,9 @@ public class TrackerClient {
                 seederConnectionFactory
         );
 
-        remoteTracker.update(seederId, blocksStorage.getAvailableFileIds());
+        ArrayList<Integer> newFileIds = new ArrayList<>(blocksStorage.getAvailableFileIds());
+        newFileIds.add(file.getId());
+        remoteTracker.update(seederId, newFileIds);
 
         return fileDownloader;
     }

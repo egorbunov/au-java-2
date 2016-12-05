@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.logging.Logger;
 
 public class SeederConnectionFactoryImpl implements SeederConnectionFactory<ClientId>, Serializable {

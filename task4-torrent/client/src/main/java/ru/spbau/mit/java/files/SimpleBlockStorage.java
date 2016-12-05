@@ -168,17 +168,14 @@ public class SimpleBlockStorage implements FileBlocksStorage, Serializable {
 
     @Override
     public boolean isFileFullyAvailable(int fileId) {
-        if (!files.containsKey(fileId)) {
-            return false;
-        }
-        return getAvailableFileBlocksNumber(fileId) == getTotalBlockNumber(fileId);
+        return files.containsKey(fileId) && getAvailableFileBlocksNumber(fileId) == getTotalBlockNumber(fileId);
     }
 
 
     /**
      * Info about files stored in storage
      */
-    private class FileData {
+    private class FileData implements Serializable {
         private final String localPath;
         private final int size;
         private final Set<Integer> availableBlockIds;

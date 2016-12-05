@@ -3,9 +3,7 @@ package ru.spbau.mit.java.shared.response;
 
 import ru.spbau.mit.java.shared.tracker.TrackerFile;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ListResponse {

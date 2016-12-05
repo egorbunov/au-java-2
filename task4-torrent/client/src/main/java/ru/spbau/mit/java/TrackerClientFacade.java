@@ -54,6 +54,10 @@ public class TrackerClientFacade {
         return remoteTracker.list();
     }
 
+    List<ClientId> listSeedersForFile(int fileId) {
+        return remoteTracker.source(fileId);
+    }
+
     /**
      * Uploads file information to tracker and adds information about blocks to
      * block storage
@@ -79,7 +83,7 @@ public class TrackerClientFacade {
      *  - seeding server
      */
     void start() throws IOException {
-        Socket serverConnection = new Socket(trackerHost, trackerPort);
+        serverConnection = new Socket(trackerHost, trackerPort);
         remoteTracker = new RemoteTracker(
                 new ClientTrackerProtocolImpl(
                         serverConnection.getInputStream(),

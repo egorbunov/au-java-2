@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ClientTrackerProtocolTest {
@@ -86,7 +87,7 @@ public class ClientTrackerProtocolTest {
     @Test
     public void testListResponse() throws IOException {
         ListResponse expectedResponse =
-                new ListResponse(Arrays.asList(new TrackerFile<Integer>(1, "NAME", 1)));
+                new ListResponse(Collections.singletonList(new TrackerFile<>(1, "NAME", 1)));
         serverProtocol.writeListResponse(expectedResponse);
         ListResponse response = clientProtocol.readListResponse();
 
@@ -119,7 +120,7 @@ public class ClientTrackerProtocolTest {
                 new byte[]{1,2,3,4},
                 (short) 42
         );
-        SourcesResponse expectedResponse = new SourcesResponse(Arrays.asList(id));
+        SourcesResponse expectedResponse = new SourcesResponse(Collections.singletonList(id));
 
         serverProtocol.writeSourcesResponse(expectedResponse);
         SourcesResponse actualResponse = clientProtocol.readSourcesResponse();

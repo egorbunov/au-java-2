@@ -1,7 +1,6 @@
 package ru.spbau.mit.java;
 
 import ru.spbau.mit.java.shared.tracker.ClientId;
-import ru.spbau.mit.java.shared.tracker.FileInfo;
 import ru.spbau.mit.java.shared.tracker.Tracker;
 import ru.spbau.mit.java.tracker.ThreadSafeIntIdProducer;
 import ru.spbau.mit.java.tracker.ThreadSafeTracker;
@@ -17,7 +16,7 @@ public class Main {
             = Paths.get(System.getProperty("java.io.tmpdir")).resolve("tracker_data.bin");
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
-        Tracker<ClientId, Integer> tracker = null;
+        Tracker<ClientId, Integer> tracker;
         if (Files.exists(trackerDataPath)) {
             ObjectInputStream oi = new ObjectInputStream(new FileInputStream(trackerDataPath.toFile()));
             tracker = (Tracker<ClientId, Integer>) oi.readObject();

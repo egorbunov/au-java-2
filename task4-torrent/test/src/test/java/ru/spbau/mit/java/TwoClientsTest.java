@@ -3,12 +3,7 @@ package ru.spbau.mit.java;
 
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
-import ru.spbau.mit.java.files.FileBlocksStorage;
-import ru.spbau.mit.java.files.SimpleBlockStorage;
 import ru.spbau.mit.java.leech.FileBlocksDownloader;
-import ru.spbau.mit.java.leech.SeederConnectionFactory;
-import ru.spbau.mit.java.leech.SeederConnectionFactoryImpl;
-import ru.spbau.mit.java.shared.protocol.ClientTrackerProtocolImpl;
 import ru.spbau.mit.java.shared.tracker.ClientId;
 import ru.spbau.mit.java.shared.tracker.Tracker;
 import ru.spbau.mit.java.shared.tracker.TrackerFile;

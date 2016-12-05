@@ -3,7 +3,6 @@ package ru.spbau.mit.java.seed;
 import ru.spbau.mit.java.files.FileBlocksStorage;
 import ru.spbau.mit.java.protocol.SeedProtocol;
 import ru.spbau.mit.java.protocol.SeedProtocolImpl;
-import ru.spbau.mit.java.shared.OneClientRequestServer;
 import ru.spbau.mit.java.shared.ServerSession;
 import ru.spbau.mit.java.shared.SimpleServer;
 import ru.spbau.mit.java.shared.error.SessionStartError;

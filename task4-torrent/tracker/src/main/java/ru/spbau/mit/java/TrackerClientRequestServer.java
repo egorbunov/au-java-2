@@ -58,6 +58,7 @@ public class TrackerClientRequestServer implements OneClientRequestServer {
                 requestCode = trackerProtocol.readRequestCode();
             } catch (EOFException e) {
                 logger.info("No more requests (got EOF)...returning...");
+                Thread.currentThread().interrupt();
                 return;
             }
             switch (requestCode) {

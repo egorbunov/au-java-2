@@ -4,7 +4,6 @@ package ru.spbau.mit.java;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.spbau.mit.java.shared.tracker.ClientId;
 import ru.spbau.mit.java.shared.tracker.FileInfo;
 import ru.spbau.mit.java.shared.tracker.Tracker;
 import ru.spbau.mit.java.shared.tracker.TrackerFile;
@@ -13,7 +12,6 @@ import ru.spbau.mit.java.tracker.ThreadSafeTracker;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class ThreadSafeTrackerTest {
     Tracker<Integer, Integer> tracker;

@@ -1,7 +1,6 @@
 package ru.spbau.mit.java.leech;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 
 /**
  * Seeders connections creator. If client want to start

@@ -16,6 +16,7 @@ import ru.spbau.mit.java.tracker.ThreadSafeTracker;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -58,7 +59,7 @@ public class RemoteTrackerTest {
     @Test
     public void testUploadUpdate() {
         Integer id = remoteTracker.upload(new FileInfo(10, "name"));
-        remoteTracker.update(clientId, Arrays.asList(id));
+        remoteTracker.update(clientId, Collections.singletonList(id));
 
         List<TrackerFile<Integer>> files = serverTracker.list();
         Assert.assertTrue(files.size() == 1);
@@ -72,7 +73,7 @@ public class RemoteTrackerTest {
     @Test
     public void testSources() {
         Integer id = remoteTracker.upload(new FileInfo(10, "name"));
-        remoteTracker.update(clientId, Arrays.asList(id));
+        remoteTracker.update(clientId, Collections.singletonList(id));
         List<ClientId> source = remoteTracker.source(id);
         Assert.assertTrue(source.size() == 1);
         ClientId client = source.get(0);
@@ -82,7 +83,7 @@ public class RemoteTrackerTest {
     @Test
     public void testList() {
         Integer id = remoteTracker.upload(new FileInfo(10, "name"));
-        remoteTracker.update(clientId, Arrays.asList(id));
+        remoteTracker.update(clientId, Collections.singletonList(id));
 
         List<TrackerFile<Integer>> files = remoteTracker.list();
         Assert.assertTrue(files.size() == 1);

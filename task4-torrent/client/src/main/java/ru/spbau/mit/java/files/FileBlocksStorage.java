@@ -3,7 +3,6 @@ package ru.spbau.mit.java.files;
 import ru.spbau.mit.java.files.error.BadBlockSize;
 import ru.spbau.mit.java.files.error.BlockNotPresent;
 import ru.spbau.mit.java.files.error.FileNotExists;
-import ru.spbau.mit.java.shared.tracker.TrackerFile;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

@@ -1,8 +1,6 @@
 package ru.spbau.mit.java.protocol.request;
 
 
-import ru.spbau.mit.java.protocol.response.GetPartResponse;
-
 public class GetPartRequest {
     public static final byte code = 2;
 
