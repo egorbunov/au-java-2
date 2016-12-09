@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.logging.Logger;
 
 /**
- * One seeder connection
+ * Connection to one seeding client. So this code is executed by leecher.
  */
 public class SeederConnectionImpl implements SeederConnection {
     private Logger logger = Logger.getLogger(SeederConnectionImpl.class.getSimpleName());
