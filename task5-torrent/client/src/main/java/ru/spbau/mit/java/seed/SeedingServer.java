@@ -37,7 +37,7 @@ public class SeedingServer extends SimpleServer {
         }
 
         SeedProtocol protocol = new SeedProtocolImpl(dataIn, dataOut);
-        SeedingRequestExecutor executor = new SeedingRequestExecutorImpl(fileBlocksStorage);
+        LeecherRequestExecutor executor = new LeecherRequestExecutorImpl(fileBlocksStorage);
         LeecherRequestServer requestServer =
                 new LeecherRequestServer(dataChannel, protocol, executor);
 

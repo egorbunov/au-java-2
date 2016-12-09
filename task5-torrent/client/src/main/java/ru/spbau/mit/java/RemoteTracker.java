@@ -90,6 +90,7 @@ public class RemoteTracker implements Tracker<ClientId, Integer> {
 
     @Override
     public void removeClient(ClientId clientId) {
+        // todo: send update with empty list to server
         throw new UnsupportedOperationException("remove client on remote tracker");
     }
 }

@@ -16,6 +16,9 @@ import java.net.Socket;
 import java.util.logging.Logger;
 
 /**
+ * Leecher means, that requests come from leechers (clients, who want to download
+ * from us something)
+ *
  * Class, which works with protocol and ensures that for every request
  * response is written (in case there is no exception...)
  */
@@ -23,7 +26,7 @@ public class LeecherRequestServer implements OneClientRequestServer {
     private Logger logger = Logger.getLogger(LeecherRequestServer.class.getName());
     private Socket connection;
     private final SeedProtocol protocol;
-    private final SeedingRequestExecutor requestExecutor;
+    private final LeecherRequestExecutor requestExecutor;
 
     /**
      * @param connection leecher-seeder connection
@@ -32,7 +35,7 @@ public class LeecherRequestServer implements OneClientRequestServer {
      */
     public LeecherRequestServer(Socket connection,
                                 SeedProtocol protocol,
-                                SeedingRequestExecutor requestExecutor) {
+                                LeecherRequestExecutor requestExecutor) {
         this.connection = connection;
         this.protocol = protocol;
         this.requestExecutor = requestExecutor;

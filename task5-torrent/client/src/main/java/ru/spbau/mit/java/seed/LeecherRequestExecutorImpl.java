@@ -12,10 +12,10 @@ import java.util.Collection;
 /**
  * Simple seeding request executor using {@link FileBlocksStorage}
  */
-public class SeedingRequestExecutorImpl implements SeedingRequestExecutor {
+public class LeecherRequestExecutorImpl implements LeecherRequestExecutor {
     private FileBlocksStorage fileBlocksStorage;
 
-    public SeedingRequestExecutorImpl(FileBlocksStorage fileBlocksStorage) {
+    public LeecherRequestExecutorImpl(FileBlocksStorage fileBlocksStorage) {
 
         this.fileBlocksStorage = fileBlocksStorage;
     }

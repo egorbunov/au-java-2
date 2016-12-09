@@ -9,10 +9,12 @@ import ru.spbau.mit.java.protocol.response.StatResponse;
 import java.io.IOException;
 
 /**
+ * Logic for executing requests came from leech-clients.
+ *
  * One may have multiple request executing logic for some reason,
  * so every such logic is implemented via implementation of this interface
  */
-public interface SeedingRequestExecutor {
+public interface LeecherRequestExecutor {
     StatResponse executeStat(StatRequest request);
 
     GetPartResponse executeGetPart(GetPartRequest request) throws IOException;
