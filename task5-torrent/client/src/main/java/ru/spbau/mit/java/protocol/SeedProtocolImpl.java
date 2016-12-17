@@ -25,7 +25,7 @@ public class SeedProtocolImpl implements SeedProtocol {
     }
 
     @Override
-    public ClientRequestCode readRequestCode() throws IOException {
+    public ClientRequestCode readRequestCode() throws IOException, UnknownRequestCode {
         byte code = requestIn.readByte();
         switch (code) {
             case StatRequest.code:

@@ -1,6 +1,7 @@
 package ru.spbau.mit.java.shared.protocol;
 
 
+import ru.spbau.mit.java.shared.error.UnknownRequestCode;
 import ru.spbau.mit.java.shared.request.*;
 import ru.spbau.mit.java.shared.response.ListResponse;
 import ru.spbau.mit.java.shared.response.SourcesResponse;
@@ -10,7 +11,7 @@ import ru.spbau.mit.java.shared.response.UploadResponse;
 import java.io.IOException;
 
 public interface ServerTrackerProtocol {
-    RequestCode readRequestCode() throws IOException;
+    RequestCode readRequestCode() throws IOException, UnknownRequestCode;
 
     UpdateRequest readUpdateRequest() throws IOException;
     UploadRequest readUploadRequest() throws IOException;

@@ -11,6 +11,7 @@ import ru.spbau.mit.java.protocol.SeedProtocolImpl;
 import ru.spbau.mit.java.protocol.request.ClientRequestCode;
 import ru.spbau.mit.java.protocol.request.GetPartRequest;
 import ru.spbau.mit.java.protocol.request.StatRequest;
+import ru.spbau.mit.java.shared.error.UnknownRequestCode;
 
 import java.io.*;
 
@@ -31,7 +32,7 @@ public class LeechSeedProtocolsTest {
 
 
     @Test
-    public void testStatRequest() throws IOException {
+    public void testStatRequest() throws IOException, UnknownRequestCode {
         StatRequest expectedRequest = new StatRequest(42);
         leechProtocol.writeStatRequest(expectedRequest);
         ClientRequestCode code = seedProtocol.readRequestCode();
@@ -41,7 +42,7 @@ public class LeechSeedProtocolsTest {
     }
 
     @Test
-    public void testGetRequest() throws IOException {
+    public void testGetRequest() throws IOException, UnknownRequestCode {
         GetPartRequest expectedRequest = new GetPartRequest(42, 43);
         leechProtocol.writeGetPartRequest(expectedRequest);
         ClientRequestCode code = seedProtocol.readRequestCode();

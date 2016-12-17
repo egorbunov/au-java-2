@@ -1,6 +1,7 @@
 package ru.spbau.mit.java;
 
 
+import ru.spbau.mit.java.shared.error.UnknownRequestCode;
 import ru.spbau.mit.java.shared.protocol.ServerTrackerProtocol;
 import ru.spbau.mit.java.shared.OneClientRequestServer;
 import ru.spbau.mit.java.shared.error.ServerIOError;
@@ -59,6 +60,9 @@ public class TrackerClientRequestServer implements OneClientRequestServer {
             } catch (EOFException e) {
                 logger.info("No more requests (got EOF)...returning...");
                 Thread.currentThread().interrupt();
+                return;
+            } catch (UnknownRequestCode e) {
+                logger.severe("Bad request code read. Returning...");
                 return;
             }
             switch (requestCode) {

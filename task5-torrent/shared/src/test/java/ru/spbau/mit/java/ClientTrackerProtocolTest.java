@@ -4,6 +4,7 @@ package ru.spbau.mit.java;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.spbau.mit.java.shared.error.UnknownRequestCode;
 import ru.spbau.mit.java.shared.protocol.ClientTrackerProtocol;
 import ru.spbau.mit.java.shared.protocol.ClientTrackerProtocolImpl;
 import ru.spbau.mit.java.shared.protocol.ServerTrackerProtocol;
@@ -40,7 +41,7 @@ public class ClientTrackerProtocolTest {
     }
 
     @Test
-    public void testListRequest() throws IOException {
+    public void testListRequest() throws IOException, UnknownRequestCode {
         ListRequest r = new ListRequest();
         clientProtocol.writeListRequest(r);
         RequestCode code = serverProtocol.readRequestCode();
@@ -49,7 +50,7 @@ public class ClientTrackerProtocolTest {
     }
 
     @Test
-    public void testUpdateRequest() throws IOException {
+    public void testUpdateRequest() throws IOException, UnknownRequestCode {
         List<Integer> fileIds = Arrays.asList(1, 2, 3);
         UpdateRequest r = new UpdateRequest((short) 42, fileIds);
         clientProtocol.writeUpdateRequest(r);
@@ -63,7 +64,7 @@ public class ClientTrackerProtocolTest {
     }
 
     @Test
-    public void testUploadRequest() throws IOException {
+    public void testUploadRequest() throws IOException, UnknownRequestCode {
         UploadRequest r = new UploadRequest("filename", 42);
         clientProtocol.writeUploadRequest(r);
         RequestCode code = serverProtocol.readRequestCode();
@@ -75,7 +76,7 @@ public class ClientTrackerProtocolTest {
     }
 
     @Test
-    public void testSourcesRequest() throws IOException {
+    public void testSourcesRequest() throws IOException, UnknownRequestCode {
         SourcesRequest r = new SourcesRequest(42);
         clientProtocol.writeSourcesRequest(r);
         RequestCode code = serverProtocol.readRequestCode();

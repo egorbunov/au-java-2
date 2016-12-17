@@ -31,7 +31,7 @@ public class ServerTrackerProtocolImpl implements ServerTrackerProtocol {
      * @throws UnknownRequestCode if read request code is unknown!
      */
     @Override
-    public RequestCode readRequestCode() throws IOException {
+    public RequestCode readRequestCode() throws IOException, UnknownRequestCode {
         byte code = dataIn.readByte();
         switch (code) {
             case UpdateRequest.code:

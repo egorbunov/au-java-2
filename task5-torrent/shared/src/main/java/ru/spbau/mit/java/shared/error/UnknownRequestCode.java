@@ -1,7 +1,7 @@
 package ru.spbau.mit.java.shared.error;
 
 
-public class UnknownRequestCode extends RuntimeException {
+public class UnknownRequestCode extends Exception {
     private final byte code;
 
     public UnknownRequestCode(byte code) {

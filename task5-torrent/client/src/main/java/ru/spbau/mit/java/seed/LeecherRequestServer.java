@@ -9,6 +9,7 @@ import ru.spbau.mit.java.protocol.response.GetPartResponse;
 import ru.spbau.mit.java.protocol.response.StatResponse;
 import ru.spbau.mit.java.shared.OneClientRequestServer;
 import ru.spbau.mit.java.shared.error.ServerIOError;
+import ru.spbau.mit.java.shared.error.UnknownRequestCode;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -50,6 +51,9 @@ public class LeecherRequestServer implements OneClientRequestServer {
             } catch (EOFException e) {
                 logger.info("No more requests (got EOF)...returning...");
                 Thread.currentThread().interrupt();
+                return;
+            } catch (UnknownRequestCode e) {
+                logger.severe("Read bad request code. Returning");
                 return;
             }
             switch (code) {
