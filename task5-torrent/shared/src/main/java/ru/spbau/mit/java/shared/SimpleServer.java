@@ -1,6 +1,5 @@
 package ru.spbau.mit.java.shared;
 
-import ru.spbau.mit.java.shared.error.ServerShutdownError;
 import ru.spbau.mit.java.shared.error.ServerStartupError;
 
 import java.io.IOException;

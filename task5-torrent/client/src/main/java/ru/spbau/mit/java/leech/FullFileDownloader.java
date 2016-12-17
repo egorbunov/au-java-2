@@ -1,7 +1,6 @@
 package ru.spbau.mit.java.leech;
 
 import ru.spbau.mit.java.files.FileBlocksStorage;
-import ru.spbau.mit.java.files.error.FileNotExistsInStorage;
 import ru.spbau.mit.java.shared.tracker.Tracker;
 
 import java.io.IOError;

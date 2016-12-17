@@ -17,7 +17,6 @@ import java.util.Random;
  * Tracker client command line interface, I guess
  */
 public class Main {
-    private static Path fileStoragePath;
 
     public static void printHelp() {
         System.out.println("USAGE: java -jar client.jar <CLIENT_ID>");
@@ -43,7 +42,7 @@ public class Main {
         }
         String curClientId = args[0];
 
-        fileStoragePath = Paths.get(System.getProperty("java.io.tmpdir"))
+        Path fileStoragePath = Paths.get(System.getProperty("java.io.tmpdir"))
                 .resolve("file_storage_data_" + curClientId + ".bin");
 
         FileBlocksStorage fileBlocksStorage;

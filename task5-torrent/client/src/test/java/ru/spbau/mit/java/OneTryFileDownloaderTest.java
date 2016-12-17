@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import ru.spbau.mit.java.files.FileBlocksStorage;
 import ru.spbau.mit.java.files.SimpleBlockStorage;
-import ru.spbau.mit.java.files.error.FileNotExistsInStorage;
 import ru.spbau.mit.java.leech.OneTryFileBlocksDownloader;
 import ru.spbau.mit.java.leech.SeederConnection;
 import ru.spbau.mit.java.leech.SeederConnectionFactory;

@@ -2,9 +2,7 @@ package ru.spbau.mit.java.files;
 
 import ru.spbau.mit.java.files.error.BadBlockSize;
 import ru.spbau.mit.java.files.error.BlockNotPresent;
-import ru.spbau.mit.java.files.error.FileNotExistsInStorage;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;

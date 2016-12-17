@@ -3,7 +3,6 @@ package ru.spbau.mit.java.leech;
 
 import ru.spbau.mit.java.files.FileBlocksStorage;
 import ru.spbau.mit.java.files.error.BadBlockSize;
-import ru.spbau.mit.java.files.error.FileNotExistsInStorage;
 
 import java.io.IOException;
 import java.util.*;

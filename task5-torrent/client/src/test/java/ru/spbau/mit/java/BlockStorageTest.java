@@ -8,7 +8,6 @@ import org.junit.rules.TemporaryFolder;
 import ru.spbau.mit.java.files.FileBlocksStorage;
 import ru.spbau.mit.java.files.SimpleBlockStorage;
 import ru.spbau.mit.java.files.error.BadBlockSize;
-import ru.spbau.mit.java.files.error.FileNotExistsInStorage;
 
 import java.io.*;
 import java.nio.file.Path;

@@ -4,7 +4,6 @@ package ru.spbau.mit.java;
 import ru.spbau.mit.java.shared.error.UnknownRequestCode;
 import ru.spbau.mit.java.shared.protocol.ServerTrackerProtocol;
 import ru.spbau.mit.java.shared.OneClientRequestServer;
-import ru.spbau.mit.java.shared.error.ServerIOError;
 import ru.spbau.mit.java.shared.request.*;
 import ru.spbau.mit.java.shared.response.ListResponse;
 import ru.spbau.mit.java.shared.response.SourcesResponse;

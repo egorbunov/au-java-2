@@ -1,7 +1,6 @@
 package ru.spbau.mit.java.seed;
 
 
-import ru.spbau.mit.java.files.error.FileNotExistsInStorage;
 import ru.spbau.mit.java.protocol.SeedProtocol;
 import ru.spbau.mit.java.protocol.request.ClientRequestCode;
 import ru.spbau.mit.java.protocol.request.GetPartRequest;
@@ -9,13 +8,11 @@ import ru.spbau.mit.java.protocol.request.StatRequest;
 import ru.spbau.mit.java.protocol.response.GetPartResponse;
 import ru.spbau.mit.java.protocol.response.StatResponse;
 import ru.spbau.mit.java.shared.OneClientRequestServer;
-import ru.spbau.mit.java.shared.error.ServerIOError;
 import ru.spbau.mit.java.shared.error.UnknownRequestCode;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Collections;
 import java.util.logging.Logger;
 
 /**
