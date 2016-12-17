@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import ru.spbau.mit.java.files.FileBlocksStorage;
 import ru.spbau.mit.java.files.SimpleBlockStorage;
+import ru.spbau.mit.java.files.error.BlockNotPresent;
 import ru.spbau.mit.java.leech.FullFileDownloader;
 import ru.spbau.mit.java.leech.SeederConnection;
 import ru.spbau.mit.java.leech.SeederConnectionFactory;
@@ -79,7 +80,7 @@ public class FullFileDownloaderTest {
     };
 
     @Test
-    public void testStopResume() throws IOException, InterruptedException {
+    public void testStopResume() throws IOException, InterruptedException, BlockNotPresent {
         FullFileDownloader<Integer> fileDownloader = new FullFileDownloader<>(
                 fileId,
                 fileSize,

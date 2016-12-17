@@ -55,7 +55,7 @@ public interface FileBlocksStorage {
      *
      * @throws BlockNotPresent if queried block is not downloaded yet
      */
-    byte[] readFileBlock(int fileId, int blockId) throws IOException;
+    byte[] readFileBlock(int fileId, int blockId) throws IOException, BlockNotPresent;
 
     /**
      * Writes one block to file, specified by fileId.

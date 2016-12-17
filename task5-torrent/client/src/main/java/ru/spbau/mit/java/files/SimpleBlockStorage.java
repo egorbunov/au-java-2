@@ -84,7 +84,7 @@ public class SimpleBlockStorage implements FileBlocksStorage, Serializable {
     }
 
     @Override
-    public byte[] readFileBlock(int fileId, int blockId) throws IOException {
+    public byte[] readFileBlock(int fileId, int blockId) throws IOException, BlockNotPresent {
         if (!files.containsKey(fileId)) {
             throw new FileNotExistsInStorage(fileId);
         }

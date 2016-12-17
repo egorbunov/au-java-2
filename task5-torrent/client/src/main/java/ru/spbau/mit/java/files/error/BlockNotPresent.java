@@ -1,6 +1,6 @@
 package ru.spbau.mit.java.files.error;
 
-public class BlockNotPresent extends RuntimeException {
+public class BlockNotPresent extends Exception {
     private final int fileId;
     private final int blockId;
 
