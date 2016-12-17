@@ -1,8 +1,10 @@
 package ru.spbau.mit.java.shared;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 public class ServerSession implements Runnable {
+    private Logger logger = Logger.getLogger(ServerSession.class.getName());
     private OneClientRequestServer requestServer;
 
     public ServerSession(OneClientRequestServer requestServer) {
@@ -11,13 +13,18 @@ public class ServerSession implements Runnable {
 
     @Override
     public void run() {
-        while (!Thread.interrupted()) {
-            requestServer.serveOneRequest();
-        }
         try {
-            requestServer.disconnect();
+            while (!Thread.interrupted()) {
+                requestServer.serveOneRequest();
+            }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            logger.severe("Error serving one request: " + e.getMessage());
+        } finally {
+            try {
+                requestServer.disconnect();
+            } catch (IOException e) {
+                logger.severe("Error disconnecting request server");
+            }
         }
     }
 }

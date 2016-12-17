@@ -1,13 +1,14 @@
 package ru.spbau.mit.java.leech;
 
 
-import ru.spbau.mit.java.files.error.FileNotExists;
+import ru.spbau.mit.java.files.error.FileNotExistsInStorage;
 import ru.spbau.mit.java.protocol.LeechProtocol;
 import ru.spbau.mit.java.protocol.request.GetPartRequest;
 import ru.spbau.mit.java.protocol.request.StatRequest;
 import ru.spbau.mit.java.protocol.response.GetPartResponse;
 import ru.spbau.mit.java.protocol.response.StatResponse;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Collection;
@@ -38,7 +39,8 @@ public class SeederConnectionImpl implements SeederConnection {
      *
      * @param fileId id of the file to stat
      * @return collection of file parts
-     * @throws ru.spbau.mit.java.files.error.FileNotExists in case of no file with
+     * @throws IOException in case of error while reading/writing response/request
+     *         FileNotFoundException in case of no file with
      *         id specified available on the seeder side
      */
     @Override
@@ -50,7 +52,7 @@ public class SeederConnectionImpl implements SeederConnection {
         StatResponse response = protocol.readStatResponse();
         logger.info("Got response");
         if (response == null) {
-            throw new FileNotExists(fileId);
+            throw new FileNotFoundException(Integer.toString(fileId));
         }
         return response.getPartIds();
     }

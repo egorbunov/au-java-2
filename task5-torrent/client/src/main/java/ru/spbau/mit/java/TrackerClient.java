@@ -2,6 +2,7 @@ package ru.spbau.mit.java;
 
 import ru.spbau.mit.java.error.FileAlreadyDownloaded;
 import ru.spbau.mit.java.files.FileBlocksStorage;
+import ru.spbau.mit.java.files.error.FileNotExistsInStorage;
 import ru.spbau.mit.java.leech.FileBlocksDownloader;
 import ru.spbau.mit.java.leech.FullFileDownloader;
 import ru.spbau.mit.java.leech.SeederConnectionFactory;

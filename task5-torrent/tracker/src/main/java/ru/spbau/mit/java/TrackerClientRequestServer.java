@@ -19,11 +19,11 @@ import java.util.logging.Logger;
 /**
  * TrackerClientRequestServer reads request using given protocol
  * and serves this request using request executor.
- *
+ * <p>
  * It also ensures, that every request
  * gets it response in case of no exceptions occurs
  * (so it acts like part protocol a little bit)
- *
+ * <p>
  * For every client exactly one request server must be created
  */
 public class TrackerClientRequestServer implements OneClientRequestServer {
@@ -35,7 +35,6 @@ public class TrackerClientRequestServer implements OneClientRequestServer {
     private volatile short clientSeedPort = -1;
 
     /**
-     *
      * @param trackerProtocol rules for writing/reading requests/responses
      * @param requestExecutor request executing logic
      */
@@ -52,61 +51,57 @@ public class TrackerClientRequestServer implements OneClientRequestServer {
      * request executor tp serve it...
      */
     @Override
-    public void serveOneRequest() {
+    public void serveOneRequest() throws IOException {
+        RequestCode requestCode;
         try {
-            RequestCode requestCode;
-            try {
-                requestCode = trackerProtocol.readRequestCode();
-            } catch (EOFException e) {
-                logger.info("No more requests (got EOF)...returning...");
-                Thread.currentThread().interrupt();
-                return;
-            } catch (UnknownRequestCode e) {
-                logger.severe("Bad request code read. Returning...");
-                return;
+            requestCode = trackerProtocol.readRequestCode();
+        } catch (EOFException e) {
+            logger.info("No more requests (got EOF)...returning...");
+            Thread.currentThread().interrupt();
+            return;
+        } catch (UnknownRequestCode e) {
+            logger.severe("Bad request code read. Returning...");
+            return;
+        }
+        switch (requestCode) {
+            case UPDATE: {
+                lastUpdate = System.currentTimeMillis();
+                UpdateRequest r = trackerProtocol.readUpdateRequest();
+                logger.info("Got request " + r);
+                if (r.getClientPort() != clientSeedPort) {
+                    logger.info("Client seed port change: " + clientSeedPort + " -> " + r.getClientPort());
+                }
+
+                clientSeedPort = r.getClientPort();
+
+                UpdateResponse response = requestExecutor.executeUpdate(r);
+                trackerProtocol.writeUpdateResponse(response);
+                break;
             }
-            switch (requestCode) {
-                case UPDATE: {
-                    lastUpdate = System.currentTimeMillis();
-                    UpdateRequest r = trackerProtocol.readUpdateRequest();
-                    logger.info("Got request " + r);
-                    if (r.getClientPort() != clientSeedPort) {
-                        logger.info("Client seed port change: " + clientSeedPort + " -> " + r.getClientPort());
-                    }
+            case UPLOAD: {
+                UploadRequest r = trackerProtocol.readUploadRequest();
+                logger.info("Got request " + r);
 
-                    clientSeedPort = r.getClientPort();
-
-                    UpdateResponse response = requestExecutor.executeUpdate(r);
-                    trackerProtocol.writeUpdateResponse(response);
-                    break;
-                }
-                case UPLOAD: {
-                    UploadRequest r = trackerProtocol.readUploadRequest();
-                    logger.info("Got request " + r);
-
-                    UploadResponse response = requestExecutor.executeUpload(r);
-                    trackerProtocol.writeUploadResponse(response);
-                    break;
-                }
-                case SOURCES: {
-                    SourcesRequest r = trackerProtocol.readSourcesRequest();
-                    logger.info("Got request " + r);
-
-                    SourcesResponse response = requestExecutor.executeSource(r);
-                    trackerProtocol.writeSourcesResponse(response);
-                    break;
-                }
-                case LIST: {
-                    ListRequest r = trackerProtocol.readListRequest();
-                    logger.info("Got request " + r);
-
-                    ListResponse response = requestExecutor.executeList(r);
-                    trackerProtocol.writeListResponse(response);
-                    break;
-                }
+                UploadResponse response = requestExecutor.executeUpload(r);
+                trackerProtocol.writeUploadResponse(response);
+                break;
             }
-        } catch (IOException e) {
-            throw new ServerIOError(e.getCause());
+            case SOURCES: {
+                SourcesRequest r = trackerProtocol.readSourcesRequest();
+                logger.info("Got request " + r);
+
+                SourcesResponse response = requestExecutor.executeSource(r);
+                trackerProtocol.writeSourcesResponse(response);
+                break;
+            }
+            case LIST: {
+                ListRequest r = trackerProtocol.readListRequest();
+                logger.info("Got request " + r);
+
+                ListResponse response = requestExecutor.executeList(r);
+                trackerProtocol.writeListResponse(response);
+                break;
+            }
         }
     }
 

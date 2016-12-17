@@ -46,16 +46,23 @@ public abstract class SimpleServer {
         acceptingThread.start();
     }
 
-    final public void stop() {
-        acceptingThread.interrupt();
+    public void stop() {
         try {
             serverSocket.close();
-            for (RunningSession runningSession : runningSessions) {
-                runningSession.terminate();
-            }
         } catch (IOException e) {
-            logger.severe("[" + serverName + "] Can't close socket or connections!");
-            throw new ServerShutdownError("server = " + serverName, e);
+            logger.severe("Can't close server socket");
+        }
+        acceptingThread.interrupt();
+        logger.info("Session num " + runningSessions.size());
+        for (RunningSession runningSession : runningSessions) {
+            logger.info("Terminating session " + runningSession.connection.getInetAddress());
+            try {
+                runningSession.terminate();
+            } catch (IOException e) {
+                logger.severe("[" + serverName + "] Can't terminate connection for "
+                        + runningSession.connection.getInetAddress().toString());
+//                throw new ServerShutdownError("server = " + serverName, e);
+            }
         }
     }
 
@@ -108,7 +115,6 @@ public abstract class SimpleServer {
             connection.close();
         }
     }
-
 
     abstract public Runnable createSession(Socket dataChannel);
 }

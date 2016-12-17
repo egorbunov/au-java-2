@@ -3,6 +3,7 @@ package ru.spbau.mit.java;
 
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
+import ru.spbau.mit.java.files.error.FileNotExistsInStorage;
 import ru.spbau.mit.java.leech.FileBlocksDownloader;
 import ru.spbau.mit.java.shared.tracker.ClientId;
 import ru.spbau.mit.java.shared.tracker.Tracker;

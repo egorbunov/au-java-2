@@ -1,6 +1,7 @@
 package ru.spbau.mit.java.seed;
 
 
+import ru.spbau.mit.java.files.error.FileNotExistsInStorage;
 import ru.spbau.mit.java.protocol.request.GetPartRequest;
 import ru.spbau.mit.java.protocol.request.StatRequest;
 import ru.spbau.mit.java.protocol.response.GetPartResponse;

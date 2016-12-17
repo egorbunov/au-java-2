@@ -7,6 +7,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import ru.spbau.mit.java.files.FileBlocksStorage;
 import ru.spbau.mit.java.files.SimpleBlockStorage;
+import ru.spbau.mit.java.files.error.BadBlockSize;
+import ru.spbau.mit.java.files.error.FileNotExistsInStorage;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -42,7 +44,7 @@ public class BlockStorageTest {
     }
 
     @Test
-    public void simpleBlockStorageAddNewTest() throws IOException {
+    public void simpleBlockStorageAddNewTest() throws IOException, BadBlockSize {
         FileBlocksStorage s = new SimpleBlockStorage(42);
         Path fp = tmp.getRoot().toPath().resolve("file.txt");
         s.createEmptyFile(1, fp.toString(), s.getBlockSize() * 3 + 42);

@@ -1,7 +1,7 @@
 package ru.spbau.mit.java.files.error;
 
 
-public class BadBlockSize extends RuntimeException {
+public class BadBlockSize extends Exception {
     private final int fileId;
     private final int blockId;
     private final int actualBlockSize;

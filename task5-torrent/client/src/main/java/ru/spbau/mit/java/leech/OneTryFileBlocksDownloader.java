@@ -2,6 +2,8 @@ package ru.spbau.mit.java.leech;
 
 
 import ru.spbau.mit.java.files.FileBlocksStorage;
+import ru.spbau.mit.java.files.error.BadBlockSize;
+import ru.spbau.mit.java.files.error.FileNotExistsInStorage;
 
 import java.io.IOException;
 import java.util.*;
@@ -178,7 +180,7 @@ public class OneTryFileBlocksDownloader<T> implements FileBlocksDownloader {
                     logger.info("Downloading one block: " + blockId);
                     byte[] bs = connection.downloadFileBlock(fileId, blockId);
                     fileBlocksStorage.writeFileBlock(fileId, blockId, bs);
-                } catch (IOException e) {
+                } catch (IOException | BadBlockSize e) {
                     throw new RuntimeException("error downloading block", e);
                 }
             }

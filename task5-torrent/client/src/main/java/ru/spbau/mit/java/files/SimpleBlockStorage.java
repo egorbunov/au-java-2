@@ -4,7 +4,7 @@ package ru.spbau.mit.java.files;
 import ru.spbau.mit.java.files.error.BadBlockSize;
 import ru.spbau.mit.java.files.error.BlockNotPresent;
 import ru.spbau.mit.java.files.error.FileIdClashError;
-import ru.spbau.mit.java.files.error.FileNotExists;
+import ru.spbau.mit.java.files.error.FileNotExistsInStorage;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -21,10 +21,10 @@ import java.util.stream.IntStream;
 /**
  * That is very simple block storage, which is implemented using
  * {@see RandomAccessFile} class.
- *
+ * <p>
  * Some structures used in this implementations are concurrent due to
  * multithreaded nature of it's possible usage
- *
+ * <p>
  * If I've got everything right we do not need to protect writeBlock or readBlock
  * methods from race conditions because every call works with it's own particular
  * file / part of the file.
@@ -34,7 +34,6 @@ public class SimpleBlockStorage implements FileBlocksStorage, Serializable {
     private Map<Integer, FileData> files = new ConcurrentHashMap<>();
 
     /**
-     *
      * @param blockSize size of one block in bytes, this block is minimal readable/writable
      *                  entity
      */
@@ -87,7 +86,7 @@ public class SimpleBlockStorage implements FileBlocksStorage, Serializable {
     @Override
     public byte[] readFileBlock(int fileId, int blockId) throws IOException {
         if (!files.containsKey(fileId)) {
-            throw new FileNotExists(fileId);
+            throw new FileNotExistsInStorage(fileId);
         }
         FileData fd = files.get(fileId);
         if (!fd.isBlockAvailable(blockId)) {
@@ -104,9 +103,9 @@ public class SimpleBlockStorage implements FileBlocksStorage, Serializable {
     }
 
     @Override
-    public void writeFileBlock(int fileId, int blockId, byte[] block) throws IOException {
+    public void writeFileBlock(int fileId, int blockId, byte[] block) throws IOException, BadBlockSize {
         if (!files.containsKey(fileId)) {
-            throw new FileNotExists(fileId);
+            throw new FileNotExistsInStorage(fileId);
         }
         FileData fd = files.get(fileId);
         if (fd.isBlockAvailable(blockId)) {
@@ -127,7 +126,7 @@ public class SimpleBlockStorage implements FileBlocksStorage, Serializable {
     @Override
     public Collection<Integer> getAvailableFileBlocks(int fileId) {
         if (!files.containsKey(fileId)) {
-            throw new FileNotExists(fileId);
+            throw new FileNotExistsInStorage(fileId);
         }
         return files.get(fileId).getAvailableBlockIds();
     }
@@ -145,7 +144,7 @@ public class SimpleBlockStorage implements FileBlocksStorage, Serializable {
     @Override
     public int getAvailableFileBlocksNumber(int fileId) {
         if (!files.containsKey(fileId)) {
-            throw new FileNotExists(fileId);
+            throw new FileNotExistsInStorage(fileId);
         }
         return files.get(fileId).getAvailableBlockIds().size();
     }
@@ -153,7 +152,7 @@ public class SimpleBlockStorage implements FileBlocksStorage, Serializable {
     @Override
     public int getTotalBlockNumber(int fileId) {
         if (!files.containsKey(fileId)) {
-            throw new FileNotExists(fileId);
+            throw new FileNotExistsInStorage(fileId);
         }
         return files.get(fileId).getBlocksNum();
     }
@@ -161,7 +160,7 @@ public class SimpleBlockStorage implements FileBlocksStorage, Serializable {
     @Override
     public String getLocalFilePath(int fileId) {
         if (!files.containsKey(fileId)) {
-            throw new FileNotExists(fileId);
+            throw new FileNotExistsInStorage(fileId);
         }
         return files.get(fileId).localPath;
     }
@@ -246,7 +245,7 @@ public class SimpleBlockStorage implements FileBlocksStorage, Serializable {
             }
             checkBlockValid(blockId);
             availableBlockIds.add(blockId);
-         }
+        }
     }
 
 }

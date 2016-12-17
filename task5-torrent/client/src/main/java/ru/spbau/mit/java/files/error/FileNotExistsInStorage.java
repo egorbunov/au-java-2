@@ -1,9 +1,9 @@
 package ru.spbau.mit.java.files.error;
 
-public class FileNotExists extends RuntimeException {
+public class FileNotExistsInStorage extends RuntimeException {
     private final int fileId;
 
-    public FileNotExists(int id) {
+    public FileNotExistsInStorage(int id) {
         this.fileId = id;
     }
 

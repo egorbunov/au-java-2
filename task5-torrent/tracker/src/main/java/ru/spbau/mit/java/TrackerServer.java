@@ -1,9 +1,9 @@
 package ru.spbau.mit.java;
 
-import ru.spbau.mit.java.shared.protocol.ServerTrackerProtocol;
-import ru.spbau.mit.java.shared.protocol.ServerTrackerProtocolImpl;
 import ru.spbau.mit.java.shared.SimpleServer;
 import ru.spbau.mit.java.shared.error.SessionStartError;
+import ru.spbau.mit.java.shared.protocol.ServerTrackerProtocol;
+import ru.spbau.mit.java.shared.protocol.ServerTrackerProtocolImpl;
 import ru.spbau.mit.java.shared.tracker.ClientId;
 import ru.spbau.mit.java.shared.tracker.Tracker;
 
@@ -61,19 +61,25 @@ public class TrackerServer extends SimpleServer {
             TimedClientChecker timedTask = new TimedClientChecker(dataChannel.getInetAddress().getAddress(), requestServer);
             Thread timedTaskThread = new Thread(timedTask);
             timedTaskThread.start();
-            while (!Thread.interrupted()) {
-                logger.info("Waiting for request...");
-                requestServer.serveOneRequest();
-            }
-            logger.info("Tracker server interrupted!");
-            timedTaskThread.interrupt();
             try {
-                logger.info("Disconnecting...");
-                requestServer.disconnect();
+                while (!Thread.interrupted()) {
+                    logger.info("Waiting for request...");
+                    requestServer.serveOneRequest();
+                }
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                logger.severe("Error serving request: " + e.getMessage());
+                // todo: maybe throw eception here?
+            } finally {
+                logger.info("Tracker server exited!");
+                timedTaskThread.interrupt();
+                try {
+                    logger.info("Disconnecting...");
+                    requestServer.disconnect();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                logger.info("OK");
             }
-            logger.info("OK");
         };
     }
 

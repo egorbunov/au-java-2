@@ -33,11 +33,7 @@ public class Main {
         while (true) {
             System.out.print("CMD >> ");
             String str = br.readLine();
-            if (str == null) {
-                server.stop();
-                break;
-            }
-            if (str.equals("stop")) {
+            if (str == null || str.equals("stop")) {
                 server.stop();
                 break;
             }

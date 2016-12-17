@@ -1,6 +1,7 @@
 package ru.spbau.mit.java.leech;
 
 import ru.spbau.mit.java.files.FileBlocksStorage;
+import ru.spbau.mit.java.files.error.FileNotExistsInStorage;
 import ru.spbau.mit.java.shared.tracker.Tracker;
 
 import java.io.IOError;
@@ -11,7 +12,6 @@ import java.util.logging.Logger;
 /**
  * This downloader uses {@link OneTryFileBlocksDownloader} many times in a row
  * to ensure that all of the file blocks are downloaded...
- *
  */
 public class FullFileDownloader<T> implements FileBlocksDownloader {
     private final Logger logger = Logger.getLogger(FullFileDownloader.class.getName());
@@ -23,14 +23,14 @@ public class FullFileDownloader<T> implements FileBlocksDownloader {
     private final SeederConnectionFactory<T> seederConnectionFactory;
     private Thread downloadingThread = null;
     private volatile OneTryFileBlocksDownloader<T> curTryDownloader = null;
+    private FileDownloadingStatus status;
 
     /**
-     *
-     * @param fileId id of the file to start
-     * @param fileSize size of the file to start
-     * @param destinationPath target path where to start file
-     * @param fileBlocksStorage blocks storage with which file blocks are written to disk...
-     * @param tracker tracker to get available seeder ids
+     * @param fileId                  id of the file to start
+     * @param fileSize                size of the file to start
+     * @param destinationPath         target path where to start file
+     * @param fileBlocksStorage       blocks storage with which file blocks are written to disk...
+     * @param tracker                 tracker to get available seeder ids
      * @param seederConnectionFactory factory to produce connection to seeds for downloading
      */
     public FullFileDownloader(int fileId,
@@ -45,6 +45,7 @@ public class FullFileDownloader<T> implements FileBlocksDownloader {
         this.fileBlocksStorage = fileBlocksStorage;
         this.tracker = tracker;
         this.seederConnectionFactory = seederConnectionFactory;
+        this.status = FileDownloadingStatus.NOT_STARTED;
     }
 
     @Override
@@ -93,10 +94,12 @@ public class FullFileDownloader<T> implements FileBlocksDownloader {
         @Override
         public void run() {
             logger.info("Staring downloading...");
+            FullFileDownloader.this.status = FileDownloadingStatus.IN_PROGRESS;
             while (!Thread.interrupted()) {
                 if (fileBlocksStorage.getAvailableFileBlocksNumber(fileId) ==
                         fileBlocksStorage.getTotalBlockNumber(fileId)) {
                     logger.info("All blocks downloaded...");
+                    FullFileDownloader.this.status = FileDownloadingStatus.FINISHED;
                     break;
                 }
 
@@ -117,7 +120,6 @@ public class FullFileDownloader<T> implements FileBlocksDownloader {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-
             }
         }
     }

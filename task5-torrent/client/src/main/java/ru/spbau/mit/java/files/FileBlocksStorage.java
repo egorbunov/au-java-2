@@ -2,7 +2,7 @@ package ru.spbau.mit.java.files;
 
 import ru.spbau.mit.java.files.error.BadBlockSize;
 import ru.spbau.mit.java.files.error.BlockNotPresent;
-import ru.spbau.mit.java.files.error.FileNotExists;
+import ru.spbau.mit.java.files.error.FileNotExistsInStorage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -55,10 +55,9 @@ public interface FileBlocksStorage {
      * @param blockId block index
      * @return bytes of the block
      *
-     * @throws FileNotExists in case there is no file with id specified in the storage
      * @throws BlockNotPresent if queried block is not downloaded yet
      */
-    byte[] readFileBlock(int fileId, int blockId) throws FileNotFoundException, IOException;
+    byte[] readFileBlock(int fileId, int blockId) throws IOException;
 
     /**
      * Writes one block to file, specified by fileId.
@@ -67,22 +66,20 @@ public interface FileBlocksStorage {
      * @param blockId block index, where user wants to write data
      * @param block byte block data
      *
-     * @throws FileNotExists in case file specified by {@code fileId} is not
-     *         present in the storage
      * @throws BadBlockSize in case given block size is not equal to {@code getBlockSize()}
      *         return. The block must always be that size, even if this block is the last
      *         block of the file, but in this case Storage must write only
      *         prefix of this block to real file.
+     * @throws IOException in case file local file, where actually blocks are written,
+     *         not present, or if write to file failed
      */
-    void writeFileBlock(int fileId, int blockId, byte[] block) throws IOException;
+    void writeFileBlock(int fileId, int blockId, byte[] block) throws IOException, BadBlockSize;
 
     /**
      * Returns list of file blocks available to start for specified file
      *
      * @param fileId id of the file to get blocks of
      * @return collection of block numbers
-     *
-     * @throws FileNotExists in case specified file is not exist
      */
     Collection<Integer> getAvailableFileBlocks(int fileId);
 
@@ -115,9 +112,8 @@ public interface FileBlocksStorage {
     int getTotalBlockNumber(int fileId);
 
     /**
-     *
-     * @param fileId
-     * @return local file path of the file
+     * @param fileId id of the file of interest
+     * @return local file path for file with given id
      */
     String getLocalFilePath(int fileId);
 
