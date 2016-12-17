@@ -1,7 +1,7 @@
 package ru.spbau.mit.java;
 
 import ru.spbau.mit.java.shared.protocol.ServerTrackerProtocol;
-import ru.spbau.mit.java.shared.protocol.ServerTrackerProtocolImp;
+import ru.spbau.mit.java.shared.protocol.ServerTrackerProtocolImpl;
 import ru.spbau.mit.java.shared.SimpleServer;
 import ru.spbau.mit.java.shared.error.SessionStartError;
 import ru.spbau.mit.java.shared.tracker.ClientId;
@@ -47,7 +47,7 @@ public class TrackerServer extends SimpleServer {
             throw new SessionStartError("Can't open client-tracker io streams");
         }
 
-        ServerTrackerProtocol protocol = new ServerTrackerProtocolImp(dataIn, dataOut);
+        ServerTrackerProtocol protocol = new ServerTrackerProtocolImpl(dataIn, dataOut);
 
         TrackerRequestExecutor requestExecutor = new TrackerRequestExecutorImpl(
                 dataChannel.getInetAddress().getAddress(),

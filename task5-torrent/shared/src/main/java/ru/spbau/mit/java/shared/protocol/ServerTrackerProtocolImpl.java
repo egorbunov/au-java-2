@@ -18,11 +18,11 @@ import java.util.List;
  * Straightforward server-side tracker protocol implementation with
  * data streams
  */
-public class ServerTrackerProtocolImp implements ServerTrackerProtocol {
+public class ServerTrackerProtocolImpl implements ServerTrackerProtocol {
     private final DataInputStream dataIn;
     private final DataOutputStream dataOut;
 
-    public ServerTrackerProtocolImp(InputStream dataIn, OutputStream dataOut) {
+    public ServerTrackerProtocolImpl(InputStream dataIn, OutputStream dataOut) {
         this.dataIn = new DataInputStream(dataIn);
         this.dataOut = new DataOutputStream(dataOut);
     }

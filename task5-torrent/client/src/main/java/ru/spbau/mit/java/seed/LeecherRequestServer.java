@@ -8,7 +8,7 @@ import ru.spbau.mit.java.protocol.request.StatRequest;
 import ru.spbau.mit.java.protocol.response.GetPartResponse;
 import ru.spbau.mit.java.protocol.response.StatResponse;
 import ru.spbau.mit.java.shared.OneClientRequestServer;
-import ru.spbau.mit.java.shared.error.ServeIOError;
+import ru.spbau.mit.java.shared.error.ServerIOError;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -72,7 +72,7 @@ public class LeecherRequestServer implements OneClientRequestServer {
                 }
             }
         } catch (IOException e) {
-            throw new ServeIOError(e);
+            throw new ServerIOError(e);
         }
 
     }

@@ -7,7 +7,7 @@ import org.junit.Test;
 import ru.spbau.mit.java.shared.protocol.ClientTrackerProtocol;
 import ru.spbau.mit.java.shared.protocol.ClientTrackerProtocolImpl;
 import ru.spbau.mit.java.shared.protocol.ServerTrackerProtocol;
-import ru.spbau.mit.java.shared.protocol.ServerTrackerProtocolImp;
+import ru.spbau.mit.java.shared.protocol.ServerTrackerProtocolImpl;
 import ru.spbau.mit.java.shared.request.*;
 import ru.spbau.mit.java.shared.response.ListResponse;
 import ru.spbau.mit.java.shared.response.SourcesResponse;
@@ -36,7 +36,7 @@ public class ClientTrackerProtocolTest {
         InputStream responseIn = new PipedInputStream(responseOut);
 
         clientProtocol = new ClientTrackerProtocolImpl(responseIn, requestOut);
-        serverProtocol = new ServerTrackerProtocolImp(requestIn, responseOut);
+        serverProtocol = new ServerTrackerProtocolImpl(requestIn, responseOut);
     }
 
     @Test
