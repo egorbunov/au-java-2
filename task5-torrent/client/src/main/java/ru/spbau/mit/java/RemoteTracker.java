@@ -24,11 +24,12 @@ import java.util.logging.Logger;
  * waits for them being answered
  */
 public class RemoteTracker implements Tracker<ClientId, Integer> {
-    private Logger logger = Logger.getLogger(RemoteTracker.class.getName());
+    private final Logger logger;
     private ClientTrackerProtocol trackerProtocol;
 
     public RemoteTracker(ClientTrackerProtocol trackerProtocol) {
         this.trackerProtocol = trackerProtocol;
+        logger = Logger.getLogger(RemoteTracker.class.getName());
     }
 
     @Override

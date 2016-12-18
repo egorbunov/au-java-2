@@ -17,6 +17,12 @@ public class SourcesRequest {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        return (obj == this) ||
+                (obj instanceof SourcesRequest && ((SourcesRequest) obj).fileId == fileId);
+    }
+
+    @Override
     public String toString() {
         return "sources {file_id: " + fileId + "}";
     }

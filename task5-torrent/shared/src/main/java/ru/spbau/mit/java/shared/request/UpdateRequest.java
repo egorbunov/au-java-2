@@ -34,4 +34,16 @@ public class UpdateRequest {
                 ", file_ids: " + fileIds.stream().map(Object::toString).collect(Collectors.joining(", ")) +
                 "}";
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof UpdateRequest) {
+            UpdateRequest r = (UpdateRequest) obj;
+            return r.fileIds.equals(fileIds) && r.clientPort == clientPort;
+        }
+        return false;
+    }
 }

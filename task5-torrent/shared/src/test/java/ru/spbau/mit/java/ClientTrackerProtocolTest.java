@@ -35,7 +35,6 @@ public class ClientTrackerProtocolTest {
         PipedOutputStream responseOut = new PipedOutputStream();
         InputStream requestIn = new PipedInputStream(requestOut);
         InputStream responseIn = new PipedInputStream(responseOut);
-
         clientProtocol = new ClientTrackerProtocolImpl(responseIn, requestOut);
         serverProtocol = new ServerTrackerProtocolImpl(requestIn, responseOut);
     }
