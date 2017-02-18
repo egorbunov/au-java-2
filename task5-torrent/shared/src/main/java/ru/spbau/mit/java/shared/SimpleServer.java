@@ -45,7 +45,7 @@ public abstract class SimpleServer {
         acceptingThread.start();
     }
 
-    public void stop() {
+    final public void stop() {
         try {
             serverSocket.close();
         } catch (IOException e) {

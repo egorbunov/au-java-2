@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.mockito.InOrder;
 import ru.spbau.mit.java.shared.protocol.ClientTrackerProtocol;
 import ru.spbau.mit.java.shared.protocol.ClientTrackerProtocolImpl;
-import ru.spbau.mit.java.shared.request.ListRequest;
 import ru.spbau.mit.java.shared.request.SourcesRequest;
 import ru.spbau.mit.java.shared.request.UpdateRequest;
 import ru.spbau.mit.java.shared.request.UploadRequest;
